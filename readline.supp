@@ -1,0 +1,26 @@
+
+{
+   readline_init_trash
+   Memcheck:Leak
+   ...
+   fun:rl_initialize
+   ...
+}
+
+
+{
+   readline_init_trash
+   Memcheck:Leak
+   ...
+   fun:readline_internal_setup
+   ...
+}
+
+{
+   readline_init_trash
+   Memcheck:Leak
+   ...
+   fun:rl_set_prompt
+   ...
+}
+

@@ -1,0 +1,6 @@
+othint
+*.log
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+autostart*.local

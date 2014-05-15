@@ -1,0 +1,57 @@
+
+llvm 3.3 final shows wrong hint for namespace mismatch on undeclared identifier
+
+llvm 3.3 final shows wrong hint for namespace mismatch on undeclared identifier,
+we have identifier nOT::nUtils::cSpaceFromEscape()
+and when code refers to cSpaceFromEscape without proper namespace,
+then llvm hints that we have available object:
+nOTHint::cSpaceFromEscape
+this is not correct, there is no cSpaceFromEscape() inside nOTHint.
+
+Instead we expected llvm to hint us about existance of nOT::nUtils::cSpaceFromEscape().
+
+
+--- test case (not cleared up) ---
+
+We have a test case (not trimmed down yet code), it is likelly that doing similar testcase
+from scratch using nested namespaces would work as well, as we seen this kind of error
+before.
+
+Please appologize not nice C++ code here we're in middle of refactoring.
+
+To properly build this code inside src/othint/ you need to follow README instructions,
+first buil entire project Open-Transaction and have external libraries.
+(Sorry, we might write smaller testcase later).
+
+
+In sources form git object 75b24e85ae731662144a13612b6f5007933d0e70
+of https://github.com/rfree2/Open-Transactions
+running build will show error messages;
+
+usign
+
+$CXX --version
+clang version 3.3 (tags/RELEASE_33/final)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+
+
+we have error:
+
+[100%] Building CXX object CMakeFiles/othint.dir/template.cpp.o
+/home/rafalot/p/main.cpp:2029:32: error: use of undeclared identifier 'cSpaceFromEscape'; did you mean 'nOTHint::cSpaceFromEscape'?
+                out[i] = /* nOT::nUtils:: */ cSpaceFromEscape(rec); // CLANG error in error reporting
+                                             ^~~~~~~~~~~~~~~~
+                                             nOTHint::cSpaceFromEscape
+/home/rafalot/p/utils.hpp:13:13: note: 'nOTHint::cSpaceFromEscape' declared here
+std::string cSpaceFromEscape(const std::string &s);
+            ^
+
+the error wrongly hints about "nOTHint::cSpaceFromEscape" from utils.hpp:13:13, because that code declares function in other namespace:
+it is inside
+
+namespace nOT { namespace nUtils {
+std::string cSpaceFromEscape(const std::string &s);
+} } 
+
+

@@ -1,0 +1,6 @@
+compile simplehint.cpp:
+	$ g++ simplehint.cpp -o simplehint
+source ot script:
+	$ source ot
+test:
+	ot sendmsg --mynym

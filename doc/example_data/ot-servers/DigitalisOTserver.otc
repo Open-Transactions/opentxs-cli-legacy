@@ -1,0 +1,94 @@
+-----BEGIN SIGNED CONTRACT-----
+Hash: SAMY
+
+<?xml version="1.0"?>
+<notaryProviderContract version="1.0">
+
+<entity shortname="Digitalis"
+longname="Digitalis Data Services" 
+email="markmetson@sourceforge.net"
+serverURL="http://sourceforge.net/p/galacticmilieu/home/Home/"/>
+
+<notaryServer hostname="ot.knotwork.com"
+ port="7084"
+ URL="http://sourceforge.net/p/galacticmilieu/home/Home/" />
+
+<condition name="backing">
+  Neither Digitalis Data Services, nor SourceForge, actually issue the
+  currencies or digital assets, and they do not back any of the same. 
+  You are solely responsible for whom you choose to trade with. 
+</condition>
+
+<condition name="audit">
+  Open Transactions software is open source, and
+  code audits are randomly performed by hackers in the 
+  open source community. Fellow Traveler (the author of the
+  software) also uses Valgrind. 
+</condition>
+
+<condition name="rate">
+  Hopefully at some point some kind of fee structure will be
+  implemented to support the running of the server. Possibly
+  something similar to loom's usage-tokens but if so we would
+  probably use bitNicKeLs for the purpose (as that is the kind
+  of purpose for which bitNicKeLs were intended).
+</condition>
+
+<condition name="liability">
+  Issuers are solely liable to perform according to
+  the conditions specified in their asset contracts.
+</condition>
+
+<condition name="mint">
+  Float - the total quantity of any digital asset outstanding -
+  is created by the issuer from his own mint, and signed by his
+  private key.
+
+  Disbursements from the Mint account are to be made on receipt of
+  duly signed and public authorization from the Issuer.  All
+  disbursements from the Mint account are to be made to the single
+  Currency Comptroller account identified by the authorization.
+
+  From time to time, the Currency Comptroller may direct the
+  Currency Manager to return digital assets to the Mint
+  for the express purpose of reducing the float. Digital assets
+  so delivered are to be deposited into the Mint account,
+  thus reducing the float by that amount.
+</condition>
+
+<condition name="privacy">
+  The purchase, redemption and trading at Digitalis OT server
+  normally are done on the basis of strong privacy. We try to
+  never release any of your information unless compelled by law.
+</condition>
+
+<!-- KEYS -->
+
+<key name="contract">
+- -----BEGIN CERTIFICATE-----
+MIICPzCCAaigAwIBAgIBADANBgkqhkiG9w0BAQQFADAlMQswCQYDVQQGEwJVSzEW
+MBQGA1UEAxMNT3BlblNTTCBHcm91cDAeFw0xMTEyMDQwNTM2MjdaFw0yMTEyMDEw
+NTM2MjdaMCUxCzAJBgNVBAYTAlVLMRYwFAYDVQQDEw1PcGVuU1NMIEdyb3VwMIGf
+MA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCvjeMKIacyh7LyVwaxHopSa0EY0SdD
+hVeXRFQ+JyvRcTp2CBOFuUZ9mx7MgSyblaZssue/C6CdMtuJfabQgUHhK2zaArx6
+rrvQ57SHH4p38xmVG8frD22pS4/wF+M2tmt6yCj9kxTLY6cWPve70gf1HE6sS4BJ
+gl2uM8ZcDr5deQIDAQABo38wfTAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQE
+AwIBBjAdBgNVHQ4EFgQUBti7sfjamiXcNkp/WSir5iOauo0wEQYJYIZIAYb4QgEB
+BAQDAgIEMCgGCWCGSAGG+EIBDQQbFhlleGFtcGxlIGNvbW1lbnQgZXh0ZW5zaW9u
+MA0GCSqGSIb3DQEBBAUAA4GBAFZ4UxLkWRWvpcpqEs+jATB+2c1X7g2m00+7IXjv
+2WG99F0I+ZGWmuowaxnzMAOmTNXFYplEKPYeoYjWaVOaqDq2L+bsaP6SxJDn/+wW
+xGBJFBqNqzH8VkLQf/8lhuE8FMsX7H1k94Q2pACRGUZRRGaPlmV0fcx5/zCnhvcQ
+wmkq
+- -----END CERTIFICATE-----
+</key>
+
+</transactionServerContract>
+
+-----BEGIN CONTRACT SIGNATURE-----
+Version: Open Transactions 0.75
+Comment: http://github.com/FellowTraveler/Open-Transactions/wiki
+
+CoABFojWQphmaNv2WOIsGuvvqtO4zIJS74K9+rieHoeJ7jNu9SGFgPhvIPw84Ghi
+ual/poyRK870Fs2y2T9dMctWiuj+D3+2bURcLfv/Kz3wXmldGfV9UAeYQhlVSkIv
+BMyUqVu6LIIDle9CUFRICjNohX89qCr55b+Wqvcppbj7oEY=
+-----END CONTRACT SIGNATURE-----
