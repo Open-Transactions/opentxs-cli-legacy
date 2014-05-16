@@ -34,7 +34,7 @@ class cRunOptions {
 		cRunOptions();
 
 		vector<string> ExecuteRunoptionsAndRemoveThem(const vector<string> & args);
-		void Exec(string runoption); // eg: Exec("+debug");
+		void Exec(const string & runoption); // eg: Exec("+debug");
 
 		void Normalize();
 };

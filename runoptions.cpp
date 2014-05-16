@@ -25,7 +25,7 @@ vector<string> cRunOptions::ExecuteRunoptionsAndRemoveThem(const vector<string> 
 	for (auto arg : args) {
 		bool thisIsRunoption=false;
 
-		if (arg.size()>=0) {
+		if (arg.size()>0) {
 			if (arg.at(0) == '+') thisIsRunoption=true;
 		}
 
@@ -39,6 +39,7 @@ vector<string> cRunOptions::ExecuteRunoptionsAndRemoveThem(const vector<string> 
 }
 
 void cRunOptions::Exec(const string & runoption) { // eg: Exec("+debug");
+cerr << runoption << endl; // XXX DEBUG
 	if (runoption == "+nodebug") mDebug=false;
 	else if (runoption == "+debug") mDebug=true;
 	else if (runoption == "+debugcerr") mDebugSendToCerr=true;

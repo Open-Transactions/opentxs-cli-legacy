@@ -1,7 +1,6 @@
 /* See other files here for the LICENCE that applies here. */
 
-#include "lib_common1.hpp
-"
+#include "lib_common1.hpp"
 #include "runoptions.hpp"
 
 #include "otcli.hpp"
