@@ -55,8 +55,8 @@ const char* DbgShortenCodeFileName(const char *s) {
 // ====================================================================
 
 std::ostream & cLogger::write_stream(int level) {
-	setOutStream();
-	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; } return g_nullstream; 
+	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; } 
+	return g_nullstream; 
 }
 
 template<typename T, typename ...Args>
@@ -66,18 +66,27 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 }
 
 void cLogger::setOutStream() {
+	cerr<<__FUNCTION__<<endl; // XXX
+	cerr<<"mDebug="<<gRunOptions.mDebug<<endl; // XXX
 	if ( gRunOptions.mDebug ) {
-		if (gRunOptions.mDebugSendToFile){
+		if (gRunOptions.mDebugSendToFile) {
+			cerr << "file" << endl;
 			outfile =  make_unique<std::ofstream> ("log.txt");
 			mStream = & (*outfile);
 		}
-		else if (gRunOptions.mDebugSendToCerr)
+		else if (gRunOptions.mDebugSendToCerr) {
+			cerr << "cerr" << endl;
 			mStream = & std::cerr;
-		else
-			mStream = & std::cerr;
+		}
+		else {
+			cerr << "null" << endl;
+			mStream = & g_nullstream;
+		}
 	}
-	else
+	else {
+		cerr << "no debug" << endl;
 		mStream = & g_nullstream;
+	}
 }
 
 void cLogger::setDebugLevel(int level) {
@@ -98,9 +107,9 @@ std::string cLogger::icon(int level) const {
 	if (level >=  90) return cc::fore::red    + ToStr("Warn  ");
 	if (level >=  70) return cc::fore::cyan   + ToStr("Note ");
 	if (level >=  50) return cc::fore::green  + ToStr("info ");
-	if (level >=  40) return cc::fore::blue   + ToStr("dbg ");
-	if (level >=  30) return cc::fore::blue   + ToStr("dbg ");
-	if (level >=  30) return cc::fore::blue   + ToStr("dbg ");
+	if (level >=  40) return cc::fore::blue   + ToStr("dbg  ");
+	if (level >=  30) return cc::fore::blue   + ToStr("dbg  ");
+	if (level >=  30) return cc::fore::blue   + ToStr("dbg  ");
 
 	return "  ";
 }

@@ -15,15 +15,17 @@ int main(int argc, const char **argv) {
 		nOT::nNewcli::cOTCli application;
 
 
-		vector<string> args_full;	// eg: argv_full: ot +debug +debugfile msg sendfrom rafal piotr +thisisplussign
+		vector<string> args_full;	// eg: args_full: ot +debug +debugfile msg sendfrom rafal piotr +thisisplussign
 		for (int i=0; i<argc; ++i) {
 			args_full.push_back( argv[i] );
 		}
 
 		vector<string> args_clear = nOT::gRunOptions.ExecuteRunoptionsAndRemoveThem(args_full); 
-		// eg: argv_minus: ot msg sendfrom rafal piotr +thisisplussign 
+		// eg: args_clear: ot msg sendfrom rafal piotr +thisisplussign 
 		// +debug +debugfile <-- this will be Executed by gRunOptions
 
+		nOT::nUtils::current_logger.setOutStream();
+		_dbg1("Running the program with arguments: " + nOT::nUtils::vectorToStr(args_clear));
 		ret = application.Run(args_clear);
 	}
 	catch (const std::exception &e) {

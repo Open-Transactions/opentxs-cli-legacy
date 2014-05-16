@@ -1,2 +1,2 @@
 #!/bin/sh
-./othint +debugfile --complete-shell
+./othint +debugcerr --complete-shell

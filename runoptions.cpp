@@ -40,14 +40,18 @@ vector<string> cRunOptions::ExecuteRunoptionsAndRemoveThem(const vector<string> 
 
 void cRunOptions::Exec(const string & runoption) { // eg: Exec("+debug");
 cerr << runoption << endl; // XXX DEBUG
-	if (runoption == "+nodebug") mDebug=false;
-	else if (runoption == "+debug") mDebug=true;
-	else if (runoption == "+debugcerr") mDebugSendToCerr=true;
-	else if (runoption == "+debugfile") mDebugSendToFile=true;
+	if (runoption == "+nodebug") { mDebug=false; }
+	else if (runoption == "+debug") { mDebug=true; }
+	else if (runoption == "+debugcerr") { mDebug=true;  mDebugSendToCerr=true; }
+	else if (runoption == "+debugfile") { mDebug=true;  mDebugSendToFile=true; }
+	else if (runoption == "+demo") { mRunMode=eRunModeDemo; }
+	else if (runoption == "+normal") { mRunMode=eRunModeNormal; }
+	else if (runoption == "+current") { mRunMode=eRunModeCurrent; }
 	else {
 		cerr << "Unknown runoption in Exec: '" << runoption << "'" << endl;
 		throw std::runtime_error("Unknown runoption");
 	}
+	cerr<<"debug="<<mDebug<<endl;
 }
 
 void cRunOptions::Normalize() {

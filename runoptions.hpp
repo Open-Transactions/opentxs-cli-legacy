@@ -26,8 +26,8 @@ class cRunOptions {
 		tRunMode mRunMode; ///< selected run mode
 
 		bool mDebug; // turn debug on, Eg: +debug without it probably nothing will be written to debug (maybe just error etc)
-		bool mDebugSendToFile; // send to file, Eg: for +debugfile
-		bool mDebugSendToCerr; // send to cerr, Eg: for +debugcerr
+		bool mDebugSendToFile; // send to file, Eg: for +debugfile ; also turns on debug
+		bool mDebugSendToCerr; // send to cerr, Eg: for +debugcerr ; also turns on debug
 		// if debug is set but not any other DebugSend* then we will default to sending to debugcerr
 
 	public:

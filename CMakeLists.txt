@@ -86,7 +86,7 @@ endif(LOCAL_OT)
 
 # make run
 add_custom_target(run
-		COMMAND bash run-devel.sh
+		COMMAND bash start-devel.sh
     DEPENDS othint
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
