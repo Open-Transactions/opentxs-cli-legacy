@@ -10,11 +10,14 @@
 
 #include "ccolor.hpp"
 
+#include "lib_common1.hpp"
+
+#include "runoptions.hpp"
+
 namespace nOT {
 namespace nUtils {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
-
 
 // text trimming
 // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
@@ -51,8 +54,30 @@ const char* DbgShortenCodeFileName(const char *s) {
 
 // ====================================================================
 
-std::ostream & cLogger::write_stream(int level) { 
+std::ostream & cLogger::write_stream(int level) {
+	setOutStream();
 	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; } return g_nullstream; 
+}
+
+template<typename T, typename ...Args>
+std::unique_ptr<T> make_unique( Args&& ...args )
+{
+    return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
+}
+
+void cLogger::setOutStream() {
+	if ( gRunOptions.Debug ) {
+		if (gRunOptions.DebugSendToFile){
+			outfile =  make_unique<std::ofstream> ("log.txt");
+			mStream = & (*outfile);
+		}
+		else if (gRunOptions.DebugSendToCerr)
+			mStream = & std::cerr;
+		else
+			mStream = & std::cerr;
+	}
+	else
+		mStream = & g_nullstream;
 }
 
 void cLogger::setDebugLevel(int level) {

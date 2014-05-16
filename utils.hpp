@@ -59,11 +59,13 @@ class cLogger {
 	public:
 		cLogger();
 		std::ostream & write_stream(int level);
+		void setOutStream();
 		std::string icon(int level) const;
 		std::string endline() const;
 		void setDebugLevel(int level);
 	protected:
-		std::ostream *mStream; // pointing only
+		unique_ptr<std::ofstream> outfile;
+		std::ostream * mStream; // pointing only
 		int mLevel;
 };
 
