@@ -284,12 +284,15 @@ basket ls
 basket exchange
 cash send <mynym> <hisnym>
 cheque new
-contract new  # Managed by asset new / server new
-contract get <contractID>
-contract sign
-market
+contract? new  # Managed by asset new / server new
+contract? get <contractID>
+contract? sign
+------------------------------
+market # can't test markets for now
 market ls
+------------------------------
 mint new
+------------------------------
 *msg			# should show what options do you have with this topic
 /msg sendto		# should ask you about nyms ?
 msg sendto <hisnym> 		# Send message from default nym to <hisnym>
@@ -305,11 +308,7 @@ msg mv			# move message to different directory in your mail box
 msg rm <index>		# remove message with <index> number for current nym
 msg rm --all		# remove all messages from mail box for current nym
 *msg rm <nymName> <index> # remove <index> message from mail inbox for <nymName>
---- Test ---
-msguard info   # test, imaginary comand "msguard" (microsoft guard) info - shows windows firewall status for OT tcp
-msguard start
-msguard stop
-------------
+------------------------------
 *nym 			# can display active (default) nym
 *nym ls			# list of all nyms
 nym new			# make new nym with UI (it should ask potential user to give the name
@@ -330,12 +329,15 @@ nym export		# export nyms to (outerspace) :) ?
 nym-cred new 			# change credential to trust?
 nym-cred revoke
 nym-cred show			# show all credential to trust?
+------------------------------
 receipt?
+------------------------------
 server			# can display active (default) server
 /server ls			# as above but all servers are listed TODO: Display more information about servers
 server add		# add new server contract
 server new 	# like newserver
 server set-default # set default server
+------------------------------
 *text encode	# interactively get multiline text
 *text encode <text>
 text encode <textfile>
@@ -345,6 +347,7 @@ text decode <textfile>
 text encrypt <textfile>
 *text decrypt # interactively get multiline text
 text decrypt <textfile>
+------------------------------
 voucher new
 wallet? status
 #------List of all included commands-----#
@@ -722,7 +725,7 @@ TODO - planned new tree of commands using lambda
 
 	if (full_words<1) { // at 1st word (topic) -> show all level 1 cmdnames
 		//TODO new option that will show actual settings (nym, account, server, purse) -> implement profiles
-		return WordsThatMatch(  current_word  ,  vector<string>{"account", "account-in", "account-out", "asset", "basket", "cash", "cheque", "contract", "market", "mint", "msg", "msguard", "nym", "nym-cred", /*"receipt"??,*/ "server", "text", "voucher"/*, "wallet"??*/} + cmdFrontOpt  ) ;
+		return WordsThatMatch(  current_word  ,  vector<string>{"account", "account-in", "account-out", "asset", "basket", "cash", "cheque", "contract", "market", "mint", "msg", "nym", "nym-cred", /*"receipt"??,*/ "server", "text", "voucher"/*, "wallet"??*/} + cmdFrontOpt  ) ;
 		//commented procedures are those which we ain't sure if they will appear - definitions below
 	}
 
