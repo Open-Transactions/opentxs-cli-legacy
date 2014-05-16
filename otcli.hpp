@@ -18,7 +18,7 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
 class cOTCli {
 	public:
-		int Run(const int argc, const char **argv);
+		int Run(const vector<string> args_without_programname); 
 
 		bool LoadScript_Main(const std::string &thefile_name);
 		void LoadScript(const std::string &script_filename, const std::string &title);

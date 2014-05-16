@@ -12,16 +12,15 @@ namespace nNewcli {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
-int cOTCli::Run(const int argc, const char **argv) {
-
+int cOTCli::Run(const vector<string> args_without_programname) { 
 	LoadScript("autostart-dev.local", "autostart script"); // todo depending on execution mode? +devel ?
 
-	vector<string> args;
+	auto args = args_without_programname;
+
 	int status = 0;
-	if (! (argc>=1)) {
+	if (args.size() == 0) {
 		throw std::runtime_error("Main program called with 0 arguments (not even program name).");
 	}
-	args.reserve(argc-1); for (int i=1; i<argc; ++i) args.push_back(argv[i]); // from 1 - skip program name
 
 	size_t nr=0;
 	for(auto arg: args) {

@@ -25,13 +25,18 @@ class cRunOptions {
 	public: // TODO private and set/get later
 		tRunMode mRunMode; ///< selected run mode
 
-		bool Debug; // turn debug on, Eg: +debug without it probably nothing will be written to debug (maybe just error etc)
-		bool DebugSendToFile; // send to file, Eg: for +debugfile
-		bool DebugSendToCerr; // send to cerr, Eg: for +debugcerr
+		bool mDebug; // turn debug on, Eg: +debug without it probably nothing will be written to debug (maybe just error etc)
+		bool mDebugSendToFile; // send to file, Eg: for +debugfile
+		bool mDebugSendToCerr; // send to cerr, Eg: for +debugcerr
 		// if debug is set but not any other DebugSend* then we will default to sending to debugcerr
 
 	public:
 		cRunOptions();
+
+		vector<string> ExecuteRunoptionsAndRemoveThem(const vector<string> & args);
+		void Exec(string runoption); // eg: Exec("+debug");
+
+		void Normalize();
 };
 
 extern cRunOptions gRunOptions;
