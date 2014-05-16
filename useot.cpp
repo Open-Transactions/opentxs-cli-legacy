@@ -277,15 +277,21 @@ const string cUseOT::assetGetContract(const std::string & assetID){
 	return strContract;
 }
 
+const string cUseOT::assetGetDefault(){
+	return mPurseID;
+}
+
+void cUseOT::assetSetDefault(const std::string & assetName){
+	if(!Init())
+		return ;
+	mPurseID = assetGetId(assetName);
+}
+
 const string cUseOT::contractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
 	if(!Init())
 		return "";
 	return OTAPI_Wrap::AddSignature(nymID, contract);
 }
-
-
-
-
 
 const vector<string> cUseOT::msgGetAll() { ///< Get all messages from all Nyms.
 	if(!Init())

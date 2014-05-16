@@ -56,6 +56,8 @@ namespace nUse {
 		const string assetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract);
 		const string assetNew(const std::string & nymID, const std::string & xmlContents);
 		const string assetGetContract(const std::string & assetID);
+		const string assetGetDefault(); // Also known as purse
+		void assetSetDefault(const std::string & assetName); // Also known as purse
 
 		const string contractSign(const std::string & nymID, const std::string & contract);
 
