@@ -36,11 +36,13 @@ namespace nUse {
 		bool Init();
 
 		bool accountCheckIfExists(const string & accountName);
+		const int64_t accountGetBalance(const string & accountName);
 		const string accountGetId(const string & accountName);
 		const string accountGetDefault();
 		const string accountGetName(const string & accountID);
 		string accountDelete(const string & accountName);
 		const vector<string> accountGetIds();
+		void accountRefreshAll();
 		const string accountRename(const string & oldAccountName, const string & newAccountName);
 		void accountSetDefault(const string & accountName);
 		const string accountSetName(const string & accountID, const string & NewAccountName);

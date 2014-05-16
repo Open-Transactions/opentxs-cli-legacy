@@ -66,6 +66,14 @@ bool cUseOT::accountCheckIfExists(const string & accountName) {
 	return false;
 }
 
+const int64_t cUseOT::accountGetBalance(const string & accountName) {
+	if(!Init())
+		return "";
+
+	int64_t balance = OTAPI_Wrap::GetAccountWallet_Balance	( accountGetId(accountName) );
+	return balance;
+}
+
 const string cUseOT::accountGetId(const string & accountName) {
 	if(!Init())
 	return "";
@@ -76,6 +84,7 @@ const string cUseOT::accountGetId(const string & accountName) {
 	}
 	return "";
 }
+
 const string cUseOT::accountGetDefault() {
 	if(!Init())
 		return "";
@@ -115,6 +124,39 @@ const vector<string> cUseOT::accountGetIds() {
 		accountsIDs.push_back(OTAPI_Wrap::GetAccountWallet_ID (i));
 	}
 	return accountsIDs;
+}
+
+void cUseOT::accountRefreshAll() {
+	if(!Init())
+		return;
+
+	// Retrieve Accounts based on Moneychanger
+
+	OT_ME madeEasy;
+
+	int32_t nymCount = OTAPI_Wrap::GetAccountCount();
+
+	int32_t serverCount = OTAPI_Wrap::GetServerCount();
+
+	for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+	{
+		string serverId = OTAPI_Wrap::GetServer_ID(serverIndex);
+
+		for (int32_t accountIndex = 0; accountIndex < nymCount; ++accountIndex)
+		{
+			std::string accountId = OTAPI_Wrap::GetAccountWallet_ID(accountIndex);
+
+			std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountId);
+			std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
+
+			bool bRetrievalAttempted = false;
+			bool bRetrievalSucceeded = false;
+			{
+				bRetrievalAttempted = true;
+				bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true); // forcing download
+			}
+		}
+	}
 }
 
 const string cUseOT::accountRename(const string & oldAccountName, const string & newAccountName) {
