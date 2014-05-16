@@ -68,7 +68,7 @@ bool cUseOT::accountCheckIfExists(const string & accountName) {
 
 const int64_t cUseOT::accountGetBalance(const string & accountName) {
 	if(!Init())
-		return "";
+		return 0; //FIXME
 
 	int64_t balance = OTAPI_Wrap::GetAccountWallet_Balance	( accountGetId(accountName) );
 	return balance;

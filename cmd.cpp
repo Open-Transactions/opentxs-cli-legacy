@@ -3,12 +3,12 @@
 
 #include "cmd.hpp"
 
-#include "lib_common1.hpp"
+#include "lib_common2.hpp"
 
 namespace nOT {
 namespace nNewcli {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
 
 cCmdProcessing cCmdParser::StartProcessing(const vector<string> &words) {
@@ -16,7 +16,7 @@ cCmdProcessing cCmdParser::StartProcessing(const vector<string> &words) {
 }
 
 cCmdProcessing cCmdParser::StartProcessing(const string &words) {
-	return StartProcessing( vector<string>{"msg","sendfrom","ra"} ); // TODO @vyrly
+	return cCmdProcessing( shared_from_this() , nUtils::SplitString(words) );
 }
 
 void cCmdParser::Test() {

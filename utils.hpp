@@ -116,11 +116,12 @@ void DBGDisplayVectorEndl(const std::vector<T> &v, const std::string &delim=" ")
 void DisplayStringEndl(std::ostream & out, const std::string text);
 
 bool CheckIfBegins(const std::string & beggining, const std::string & all);
-std::string cEscapeFromSpace(const std::string &s); // TODO rename
+std::string SpaceFromEscape(const std::string &s);
+std::string EscapeFromSpace(const std::string &s);
 vector<string> WordsThatMatch(const std::string & sofar, const vector<string> & possib);
 char GetLastChar(const std::string & str);
 std::string GetLastCharIf(const std::string & str); // TODO unicode?
-std::string cEscapeString(const std::string &s);
+std::string EscapeString(const std::string &s);
 
 // ====================================================================
 // assert
