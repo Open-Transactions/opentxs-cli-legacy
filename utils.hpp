@@ -135,6 +135,7 @@ void Assert(bool result, const std::string &stamp);
 // advanced string
 
 const std::string GetMultiline(string endLine = "~");
+vector<string> SplitString(const string & str);
 
 // ====================================================================
 

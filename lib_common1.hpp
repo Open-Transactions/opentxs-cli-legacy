@@ -5,19 +5,17 @@
 #define INCLUDE_OT_NEWCLI_COMMON1
 
 #include <string>
-#include <iostream>
+#include <cstring>
 #include <vector>
-#include <list>
-#include <set>
 #include <map>
+#include <list>
+#include <algorithm>
 #include <iostream>
 #include <fstream>
-#include <memory>
 #include <sstream>
+#include <set>
 #include <iterator>
 #include <stdexcept>
-#include <algorithm>
-#include <cstring>
 
 #include <functional>
 #include <memory>

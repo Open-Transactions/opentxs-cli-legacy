@@ -647,10 +647,7 @@ TODO - planned new tree of commands using lambda
   		[](){ useOT.msgSendAdvanced(nym_me(), arg(2), get_multiline(), arg(3), map<string>{{"cc",opt("cc")} ); } );
 
 */
-
-	std::istringstream iss(sofar_str_tmp);
-
-	vector<string> sofar { std::istream_iterator<string>{iss}, std::istream_iterator<string>{} };
+	vector<string> sofar = nUtils::SplitString(sofar_str_tmp);
 
 	if (dbg) { _dbg3("sofar.size()  "<<sofar.size());};
 
@@ -659,7 +656,7 @@ TODO - planned new tree of commands using lambda
 			//first back to Escape
 			rec = rec.replace(rec.find(newEsc),newEsc.length(),esc);
 			//second remove Escape
-			rec = cSpaceFromEscape(rec);
+			rec = SpaceFromEscape(rec);
 		}
 	}
 
@@ -767,7 +764,7 @@ TODO - planned new tree of commands using lambda
 					return vector<string>{};
 				}
 				else {
-					std::cout << "asset " << cSpaceFromEscape(cmdArgs.at(0)) << " don't exists" << endl;
+					std::cout << "asset " << SpaceFromEscape(cmdArgs.at(0)) << " don't exists" << endl;
 					return vector<string>{};
 				}
 			}

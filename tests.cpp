@@ -145,7 +145,7 @@ bool testcase_complete_1(const string &sofar) {
 	//Convert each Escape on Space
 	int i = 0;
 	for(auto rec:out)	{
-		out[i] = /* nOT::nUtils:: */ cSpaceFromEscape(rec); // CLANG error in error reporting
+		out[i] = /* nOT::nUtils:: */ SpaceFromEscape(rec); // CLANG error in error reporting
 		i++;
 	}
 	//nOT::nUtils::DisplayVector(std::cout, out); // FIXME polluting in testcase
@@ -280,7 +280,7 @@ bool testcase_account(const cTestCaseCfg &testCfg) {
 	vector<string> out = hint.AutoCompleteEntire(line);
 	int i = 0;
 	for(auto rec:out)	{
-		out[i] = cSpaceFromEscape(rec);
+		out[i] = SpaceFromEscape(rec);
 		i++;
 	}
 	nOT::nUtils::DisplayVectorEndl(std::cout, out);
@@ -297,17 +297,17 @@ bool testcase_account(const cTestCaseCfg &testCfg) {
 	return ok;
 }
 
-bool testcase_run_cEscapeString(const cTestCaseCfg &testCfg) {
+bool testcase_run_EscapeString(const cTestCaseCfg &testCfg) {
 	bool ok=true;
 	std::string test = "TestTest";
 	std::string shouldBe = "T\\3stTe\\3t";
 	test[1] = 3;
 	test[6] = 3;
-	std::string out = cEscapeString(test);
+	std::string out = EscapeString(test);
 	if(out!=shouldBe) {
 		ok = false;
 		if (testCfg.debug)
-		testCfg.ossErr<<"Bad Test cEscapeString: test string "<<test << " out " << out << " should be " <<shouldBe <<endl;
+		testCfg.ossErr<<"Bad Test EscapeString: test string "<<test << " out " << out << " should be " <<shouldBe <<endl;
 	}
 	return ok;
 }
@@ -342,7 +342,7 @@ bool testcase_run_all_tests() { // Can only run bool(*)(void) functions (to run 
 	AddFunction(testcase_namespace_pollution);
 	AddFunction(testcase_cxx11_memory);
 	AddFunction(testcase_run_main_args);
-	AddFunction(testcase_run_cEscapeString);
+	AddFunction(testcase_run_EscapeString);
 	//AddFunction(testcase_account);
 
 	AddFunctionMustFail(testcase_fail1); // only for testing of this test code

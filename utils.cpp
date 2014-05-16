@@ -94,7 +94,7 @@ void DisplayStringEndl(std::ostream & out, const std::string text) {
 	out << std::endl;
 }
 
-std::string cSpaceFromEscape(const std::string &s) {
+std::string SpaceFromEscape(const std::string &s) {
 	std::ostringstream  newStr;
 		for(int i = 0; i < s.length();i++) {
 			if(s[i] == '\\' && s[i+1] ==32)
@@ -105,18 +105,7 @@ std::string cSpaceFromEscape(const std::string &s) {
 	return newStr.str();
 }
 
-
-bool CheckIfBegins(const std::string & beggining, const std::string & all) {
-	if (all.compare(0, beggining.length(), beggining) == 0) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
-}
-
-
-std::string cEscapeFromSpace(const std::string &s) { // TODO rename
+std::string EscapeFromSpace(const std::string &s) {
 	std::ostringstream  newStr;
 	for(int i = 0; i < s.length();i++) {
 		if(s[i] == 32)
@@ -127,11 +116,33 @@ std::string cEscapeFromSpace(const std::string &s) { // TODO rename
 	return newStr.str();
 }
 
+
+std::string EscapeString(const std::string &s) {
+	std::ostringstream  newStr;
+		for(int i = 0; i < s.length();i++) {
+			if(s[i] >=32 && s[i] <= 126)
+				newStr<<s[i];
+			else
+				newStr<<"\\"<< (int) s[i];
+			}
+
+	return newStr.str();
+}
+
+bool CheckIfBegins(const std::string & beggining, const std::string & all) {
+	if (all.compare(0, beggining.length(), beggining) == 0) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 vector<string> WordsThatMatch(const std::string & sofar, const vector<string> & possib) {
 	vector<string> ret;
 	for ( auto rec : possib) { // check of possibilities
 		if (CheckIfBegins(sofar,rec)) {
-			rec = cEscapeFromSpace(rec);
+			rec = EscapeFromSpace(rec);
 			ret.push_back(rec); // this record matches
 		}
 	}
@@ -148,18 +159,6 @@ std::string GetLastCharIf(const std::string & str) { // TODO unicode?
 	auto s = str.length();
 	if (s==0) return ""; // empty string signalizes ther is nothing to be returned
 	return std::string( 1 , str.at( s - 1) );
-}
-
-std::string cEscapeString(const std::string &s) { // TODO rename
-	std::ostringstream  newStr;
-		for(int i = 0; i < s.length();i++) {
-			if(s[i] >=32 && s[i] <= 126)
-				newStr<<s[i];
-			else
-				newStr<<"\\"<< (int) s[i];
-			}
-
-	return newStr.str();
 }
 
 // ====================================================================
@@ -205,6 +204,11 @@ const std::string GetMultiline(string endLine) {
 	return result;
 }
 
+vector<string> SplitString(const string & str){
+		std::istringstream iss(str);
+		vector<string> vec { std::istream_iterator<string>{iss}, std::istream_iterator<string>{} };
+		return vec;
+}
 
 }; // namespace nUtil
 
