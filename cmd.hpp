@@ -96,6 +96,10 @@ class cParamInfo {
 };
 
 
+void cmd_test();
+
+
+
 
 }; // namespace nNewcli
 }; // namespace nOT

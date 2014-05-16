@@ -33,6 +33,9 @@ cParamInfo::cParamInfo(tFuncValid valid, tFuncHint hint)
 { }
 
 
+void cmd_test() {
+}
+
 }; // namespace nNewcli
 }; // namespace OT
 

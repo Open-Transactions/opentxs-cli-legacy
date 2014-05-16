@@ -1,6 +1,7 @@
 
 Project otcli for Open-Transactions: main documentation.
 
+
 ========================================================================
 START
 ------------------------------------------------------------------------
@@ -15,6 +16,9 @@ on same computer/user with data in ~/.ot/ later full networking with external se
 ------------------------------------------------------------------------
 * do "make" or possibly first "cmake ." or see BUILDING
 * do "make run" or ./othint will run program - or see USING
+
+After program is built, execute
+
 ========================================================================
 
 Relation with Open-Transactions (in run-time)
@@ -40,7 +44,6 @@ newcli (Open Transactions NEW Command-Line Interface)
 here you execute OT commands, and auto-completion (tab key) works!
 
 The otcli part is not currently delivered as separate program, use othint instead.
-
 ========================================================================
 
 ========================================================================

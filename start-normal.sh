@@ -1,3 +1,3 @@
 #!/bin/sh
-./othint --complete-shell
+./othint +normal --complete-shell
 
