@@ -26,18 +26,25 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 	for(auto arg: args) {
 		if (arg=="--complete-shell") {
 			nOT::nOTHint::cInteractiveShell shell;
-			//shell.runEditline();
 
+			switch (gRunOptions.mRunMode){
+				case gRunOptions.eRunModeNormal :
+					shell.runEditline();
+					break;
+				case gRunOptions.eRunModeDemo :
+					shell.runEditline();
+					break;
+				case gRunOptions.eRunModeCurrent :
+					using namespace nOT::nNewcli;
 
-			using namespace nOT::nNewcli;
+					string input = "msg sendfrom rafal";
 
-			string input = "msg sendfrom rafal";
-
-			shared_ptr<cCmdParser> newcli(new cCmdParser);
-			newcli->Test();
-			newcli->StartProcessing(input);
-			//cCmdProcessing proc = newcli.StartProcessing(input);
-
+					shared_ptr<cCmdParser> newcli(new cCmdParser);
+					newcli->Test();
+					newcli->StartProcessing(input);
+					//cCmdProcessing proc = newcli.StartProcessing(input);
+					break;
+			}
 		}
 		else if (arg=="--complete-one") { // otcli "--complete-one" "ot msg sendfr"
 			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
