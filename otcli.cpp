@@ -15,7 +15,7 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 int cOTCli::Run(const vector<string> args_without_programname) { 
 	LoadScript("autostart-dev.local", "autostart script"); // todo depending on execution mode? +devel ?
 
-	if (nOT::gRunOptions.getDoRunDebugshow() || 0) {
+	if (nOT::gRunOptions.getDoRunDebugshow()) {
 		_note("Running test Debugshow:");
 		string msg="Testing debug system.";
 		_erro(msg);

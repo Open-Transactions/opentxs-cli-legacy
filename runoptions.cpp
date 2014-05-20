@@ -17,7 +17,7 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
 cRunOptions::cRunOptions()
 	: mRunMode(eRunModeCurrent), mDebug(false), mDebugSendToFile(false), mDebugSendToCerr(false)
-	,mDoRunDebugshow(true)
+	,mDoRunDebugshow(false)
 { }
 
 vector<string> cRunOptions::ExecuteRunoptionsAndRemoveThem(const vector<string> & args) {
@@ -40,7 +40,6 @@ vector<string> cRunOptions::ExecuteRunoptionsAndRemoveThem(const vector<string> 
 }
 
 void cRunOptions::Exec(const string & runoption) { // eg: Exec("+debug");
-cerr << runoption << endl; // XXX DEBUG
 	if (runoption == "+nodebug") { mDebug=false; }
 	else if (runoption == "+debug") { mDebug=true; }
 	else if (runoption == "+debugcerr") { mDebug=true;  mDebugSendToCerr=true; }
