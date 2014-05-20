@@ -71,7 +71,7 @@ void cLogger::setOutStream() {
 	if ( gRunOptions.mDebug ) {
 		if (gRunOptions.mDebugSendToFile) {
 			cerr << "file" << endl;
-			outfile =  make_unique<std::ofstream> ("log.txt");
+			outfile =  make_unique<std::ofstream> ("debuglog.txt");
 			mStream = & (*outfile);
 		}
 		else if (gRunOptions.mDebugSendToCerr) {
