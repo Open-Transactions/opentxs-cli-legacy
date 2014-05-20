@@ -26,6 +26,7 @@ int main(int argc, const char **argv) {
 
 		nOT::nUtils::current_logger.setOutStream();
 		_dbg1("Running the program with arguments: " + nOT::nUtils::vectorToStr(args_clear));
+
 		ret = application.Run(args_clear);
 	}
 	catch (const std::exception &e) {

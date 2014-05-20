@@ -17,6 +17,7 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
 cRunOptions::cRunOptions()
 	: mRunMode(eRunModeCurrent), mDebug(false), mDebugSendToFile(false), mDebugSendToCerr(false)
+	,mDoRunDebugshow(true)
 { }
 
 vector<string> cRunOptions::ExecuteRunoptionsAndRemoveThem(const vector<string> & args) {
@@ -47,6 +48,7 @@ cerr << runoption << endl; // XXX DEBUG
 	else if (runoption == "+demo") { mRunMode=eRunModeDemo; }
 	else if (runoption == "+normal") { mRunMode=eRunModeNormal; }
 	else if (runoption == "+current") { mRunMode=eRunModeCurrent; }
+	else if (runoption == "+debugshow") { mDoRunDebugshow=true; }
 	else {
 		cerr << "Unknown runoption in Exec: '" << runoption << "'" << endl;
 		throw std::runtime_error("Unknown runoption");

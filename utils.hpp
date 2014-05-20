@@ -46,6 +46,7 @@ extern cNullstream g_nullstream; // a stream that does nothing (eats/discards da
 #define _dbg1(X) do { nOT::nUtils::current_logger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // details
 #define _info(X) do { nOT::nUtils::current_logger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // more boring info
 #define _note(X) do { nOT::nUtils::current_logger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // interesting event
+#define _mark(X) do { nOT::nUtils::current_logger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // interesting event
 #define _warn(X) do { nOT::nUtils::current_logger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // some problem
 #define _erro(X) do { nOT::nUtils::current_logger.write_stream(100) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // error - report
 

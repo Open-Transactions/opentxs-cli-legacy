@@ -103,13 +103,14 @@ std::string cLogger::icon(int level) const {
 
 	using namespace zkr;
 
-	if (level >= 100) return cc::fore::red    + ToStr("ERROR ");
-	if (level >=  90) return cc::fore::red    + ToStr("Warn  ");
-	if (level >=  70) return cc::fore::cyan   + ToStr("Note ");
-	if (level >=  50) return cc::fore::green  + ToStr("info ");
-	if (level >=  40) return cc::fore::blue   + ToStr("dbg  ");
-	if (level >=  30) return cc::fore::blue   + ToStr("dbg  ");
-	if (level >=  30) return cc::fore::blue   + ToStr("dbg  ");
+	if (level >= 100) return cc::fore::red     + ToStr("ERROR ");
+	if (level >=  90) return cc::fore::yellow  + ToStr("Warn  ");
+	if (level >=  80) return cc::fore::magenta + ToStr("MARK  ");
+	if (level >=  70) return cc::fore::cyan    + ToStr("Note  ");
+	if (level >=  50) return cc::fore::green   + ToStr("info  ");
+	if (level >=  40) return cc::fore::lightwhite    + ToStr("dbg   ");
+	if (level >=  30) return cc::fore::lightblue   + ToStr("dbg   ");
+	if (level >=  20) return cc::fore::blue    + ToStr("dbg   ");
 
 	return "  ";
 }

@@ -29,12 +29,15 @@ class cRunOptions {
 		bool mDebugSendToFile; // send to file, Eg: for +debugfile ; also turns on debug
 		bool mDebugSendToCerr; // send to cerr, Eg: for +debugcerr ; also turns on debug
 		// if debug is set but not any other DebugSend* then we will default to sending to debugcerr
+		
+		bool mDoRunDebugshow;
 
 	public:
 		const tRunMode getTRunMode() { return mRunMode; }
 		const bool getDebug() { return mDebug; }
-		const bool getDebugSendToFile () { return mDebugSendToFile; }
-		const bool getDebugSendToCerr () { return mDebugSendToCerr; }
+		const bool getDebugSendToFile() { return mDebugSendToFile; }
+		const bool getDebugSendToCerr() { return mDebugSendToCerr; }
+		const bool getDoRunDebugshow() { return mDoRunDebugshow; }
 
 		cRunOptions();
 
