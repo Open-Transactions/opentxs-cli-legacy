@@ -22,7 +22,7 @@ class cRunOptions {
 			eRunModeNormal, ///< do the normal things that the program should do 
 		};
 
-	public: // TODO private and set/get later
+	private:
 		tRunMode mRunMode; ///< selected run mode
 
 		bool mDebug; // turn debug on, Eg: +debug without it probably nothing will be written to debug (maybe just error etc)
@@ -31,6 +31,11 @@ class cRunOptions {
 		// if debug is set but not any other DebugSend* then we will default to sending to debugcerr
 
 	public:
+		const tRunMode getTRunMode() { return mRunMode; }
+		const bool getDebug() { return mDebug; }
+		const bool getDebugSendToFile () { return mDebugSendToFile; }
+		const bool getDebugSendToCerr () { return mDebugSendToCerr; }
+
 		cRunOptions();
 
 		vector<string> ExecuteRunoptionsAndRemoveThem(const vector<string> & args);

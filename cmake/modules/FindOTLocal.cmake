@@ -5,13 +5,18 @@ find_path(OTLocal_INCLUDE_DIR
 	PATHS "$ENV{HOME}/.local/include/opentxs"
 	)
 
-find_library(OTLocal_LIBRARY
+find_library(OTLocal_ot
+	NAMES ot
+	PATHS "$ENV{HOME}/.local/lib"
+	)
+	
+find_library(OTLocal_otapi
 	NAMES otapi
 	PATHS "$ENV{HOME}/.local/lib"
 	)
 
-if (OTLocal_LIBRARY AND OTLocal_INCLUDE_DIR )
-	set(OTLocal_LIBRARIES ${OTLocal_LIBRARY})
+if (OTLocal_ot AND OTLocal_otapi AND OTLocal_INCLUDE_DIR )
+	set( OTLocal_LIBRARIES ${OTLocal_ot} ${OTLocal_otapi} )
 	set(OTLocal_FOUND "YES")
 else ()
 	set(OTLocal_FOUND "NO")

@@ -27,7 +27,7 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 		if (arg=="--complete-shell") {
 			nOT::nOTHint::cInteractiveShell shell;
 
-			switch (gRunOptions.mRunMode){
+			switch ( gRunOptions.getTRunMode() ){
 				case gRunOptions.eRunModeNormal :
 					shell.runEditline();
 					break;

@@ -67,14 +67,14 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 
 void cLogger::setOutStream() {
 	cerr<<__FUNCTION__<<endl; // XXX
-	cerr<<"mDebug="<<gRunOptions.mDebug<<endl; // XXX
-	if ( gRunOptions.mDebug ) {
-		if (gRunOptions.mDebugSendToFile) {
+	cerr<<"mDebug="<<gRunOptions.getDebug()<<endl; // XXX
+	if ( gRunOptions.getDebug() ) {
+		if ( gRunOptions.getDebugSendToFile() ) {
 			cerr << "file" << endl;
 			outfile =  make_unique<std::ofstream> ("debuglog.txt");
 			mStream = & (*outfile);
 		}
-		else if (gRunOptions.mDebugSendToCerr) {
+		else if ( gRunOptions.getDebugSendToCerr() ) {
 			cerr << "cerr" << endl;
 			mStream = & std::cerr;
 		}
