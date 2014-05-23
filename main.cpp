@@ -28,6 +28,7 @@ int main(int argc, const char **argv) {
 		_dbg1("Running the program with arguments: " + nOT::nUtils::vectorToStr(args_clear));
 
 		ret = application.Run(args_clear);
+		_dbg1("Main after application with ret="<<ret);
 	}
 	catch (const std::exception &e) {
   	_erro("\n*** Captured exception:" << e.what());
@@ -39,6 +40,7 @@ int main(int argc, const char **argv) {
 	// nOT::nTests::exampleOfOT(); // TODO from script
 	// nOT::nTests::testcase_run_all_tests(); // TODO from script
 
+	_dbg2("The main will now return with ret="<<ret);
 	return ret;
 }
 

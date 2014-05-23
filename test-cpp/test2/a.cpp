@@ -7,7 +7,16 @@
 
 using namespace std;
 
-int main() { 
+int mmm() { 
 
+	int *x;
+	*x = 42;
+
+	return 1;
+}
+
+int main() {
+	cout << "test" << endl;
+	mmm();
 }
 

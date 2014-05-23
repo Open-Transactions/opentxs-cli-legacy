@@ -249,29 +249,40 @@ vector<string> SplitString(const string & str){
 // operation on files
 
 bool ConfigManager::Load(const string & fileName, map<string, string> & configMap){
-	_dbg3("Loading defaults.");
+	_dbg1("Loading defaults.");
 	std::ifstream inFile(fileName.c_str());
 	if( inFile.good() ) {
 		string line;
 		while( std::getline (inFile, line) ) {
+			_dbg2("Line: ["<<line<<"]");
 			vector<string> vec = SplitString(line);
-			if (vec.size() == 2)
+			if (vec.size() == 2) {
+			_dbg3("config2:"<<vec.at(0)<<","<<vec.at(1));
 				configMap.insert ( std::pair<string, string>( vec.at(0), vec.at(1) ) );
-			else
+			}
+			else {
+			_dbg3("config1:"<<vec.at(0));
 				configMap.insert ( std::pair<string, string>( vec.at(0), "-" ) );
+			}
 		}
+		_dbg1("Finished loading");
 		return true;
 	}
+	_dbg1("Unable to load");
 	return false;
 }
 
 void ConfigManager::Save(const string & fileName, const map<string, string> & configMap){
+	_dbg1("Will save config");
 	std::ofstream outFile(fileName.c_str());
 	for (auto pair : configMap) {
+		_dbg2("Got: "<<pair.first<<","<<pair.second);
 		outFile << pair.first << " ";
 		outFile << pair.second;
 		outFile << endl;
+		_dbg3("line saved");
 	}
+	_dbg1("All saved");
 }
 
 ConfigManager configManager;
