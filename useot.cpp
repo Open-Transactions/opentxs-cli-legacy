@@ -27,7 +27,9 @@ cUseOT::~cUseOT() {
 	if (OTAPI_loaded) OTAPI_Wrap::AppCleanup(); // UnInit OTAPI
 }
 
-void cUseOT::LoadDefaults() { // TODO What if there is, for example no accounts?
+void cUseOT::LoadDefaults() {
+	// TODO What if there is, for example no accounts?
+	// TODO Check if defaults are correct.
 	if ( !configManager.Load(mDefaultIDsFile, mDefaultIDs) ) {
 		_dbg1("Cannot open" + mDefaultIDsFile + " file, setting IDs with ID 0 as default");
 		mDefaultIDs["AccountID"] = OTAPI_Wrap::GetAccountWallet_ID(0);

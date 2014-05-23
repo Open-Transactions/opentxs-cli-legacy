@@ -267,7 +267,8 @@ void ConfigManager::Save(const string & fileName, const map<string, string> & co
 	std::ofstream outFile(fileName.c_str());
 	for (auto pair : configMap) {
 		outFile << pair.first << " ";
-		outFile << pair.second << endl;
+		outFile << pair.second;
+		outFile << endl;
 	}
 }
 
