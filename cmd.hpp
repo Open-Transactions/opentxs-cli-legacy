@@ -23,7 +23,7 @@ class cParamInfo;
 class cParamString;
 
 /**
-The parser (can be used many times), that should contain some tree of possible commands and format/validatio/hint of each.
+The parser (can be used many times), that should contain some tree of possible commands and format/validation/hint of each.
 */
 class cCmdParser : public enable_shared_from_this<cCmdParser> {
 	protected:

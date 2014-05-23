@@ -523,6 +523,16 @@ void cUseOT::nymRegister(const string & nymName, const string & serverName) {
 	//TODO: Make work with servers aliases
 }
 
+void cUseOT::nymRemove(const string & nymName) {
+	if(!Init())
+	return ;
+	string nymID = nymGetId(nymName);
+	if ( OTAPI_Wrap::Wallet_CanRemoveNym(nymID) ) {
+		if ( OTAPI_Wrap::Wallet_RemoveNym(nymID) )
+			_info ("Nym was deleted successfully");
+	}
+}
+
 void cUseOT::nymSetDefault(const string & nymName) {
 	if(!Init())
 		return ;

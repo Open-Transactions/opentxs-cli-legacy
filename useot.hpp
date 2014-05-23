@@ -77,6 +77,7 @@ namespace nUse {
 		void nymRefresh();
 		void nymRegister(const string & nymName);
 		void nymRegister(const string & nymName, const string & serverName);
+		void nymRemove(const string & nymName);
 		void nymSetDefault(const string & nymName);
 		const vector<string> nymsGetMy();
 
