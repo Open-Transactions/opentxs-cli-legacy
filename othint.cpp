@@ -1247,7 +1247,8 @@ char ** completion(const char* text, int start, int end __attribute__((__unused_
 }
 
 void cInteractiveShell::runEditline() {
-	nOT::nUse::useOT.Init(); // Init OT on the beginning
+	// nOT::nUse::useOT.Init(); // Init OT on the beginning // disabled to avoid some problems and delay (and valgrid complain)
+
 	char *buf = NULL;
 	my_rl_wrapper_debug = dbg;
 	rl_attempted_completion_function = completion;
