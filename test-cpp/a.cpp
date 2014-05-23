@@ -64,6 +64,8 @@ class cParser {
 
 int main() {	
 
+	// int *xxx;	*xxx = 42;
+
 
 	auto x = [] { cout<<"Lambda!"<<endl; };
 	x();
