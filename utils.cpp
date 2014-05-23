@@ -245,6 +245,25 @@ vector<string> SplitString(const string & str){
 		return vec;
 }
 
+// ====================================================================
+// operation on files
+
+map<string, string> ConfigManager::Load(const string & fileName){
+	std::ifstream inFile(fileName.c_str());
+
+	map<string, string> configMap;
+
+	while(inFile) {
+		string name, value;
+		inFile >> name;
+		inFile >> value;
+		configMap.insert ( std::pair<string, string>(name,value) ); // key: filename, value: sha256sum
+	}
+	return configMap;
+}
+
+ConfigManager configManager;
+
 }; // namespace nUtil
 
 
@@ -253,4 +272,6 @@ vector<string> SplitString(const string & str){
 
 std::string GetObjectName() {	return GetObjectName_global_string; }
 std::string GetObjectName_global_string="(global)"; // extern definition/initialization
+
+
 

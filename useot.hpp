@@ -16,10 +16,7 @@ namespace nUse {
 
 	class cUseOT {
 
-		string mServerID;
-		string mUserID;
-		string mAccountID;
-		string mPurseID;
+		map<string, string> defaultIDs;
 
 		public:
 

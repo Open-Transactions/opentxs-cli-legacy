@@ -142,7 +142,16 @@ const std::string GetMultiline(string endLine = "~");
 vector<string> SplitString(const string & str);
 
 // ====================================================================
+// operation on files
 
+class ConfigManager{
+public:
+	map<string, string> Load(const string & fileName);
+};
+
+extern ConfigManager configManager;
+
+// ====================================================================
 
 namespace nOper { // nOT::nUtils::nOper
 // cool shortcut operators, like vector + vecotr operator working same as string (appending)
