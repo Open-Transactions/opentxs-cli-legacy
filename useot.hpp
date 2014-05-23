@@ -16,8 +16,9 @@ namespace nUse {
 
 	class cUseOT {
 
-		map<string, string> defaultIDs;
-
+		map<string, string> mDefaultIDs;
+		const string mDataFolder;
+		const string mDefaultIDsFile;
 		public:
 
 		// vector<nOT::nNewcli::cNyminfo> mNymsMy; // FIXME Not used class cNyminfo (look: othint.cpp)

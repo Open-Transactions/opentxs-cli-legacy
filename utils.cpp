@@ -248,7 +248,7 @@ vector<string> SplitString(const string & str){
 // ====================================================================
 // operation on files
 
-map<string, string> ConfigManager::Load(const string & fileName){
+const map<string, string> ConfigManager::Load(const string & fileName){
 	std::ifstream inFile(fileName.c_str());
 
 	map<string, string> configMap;
@@ -260,6 +260,14 @@ map<string, string> ConfigManager::Load(const string & fileName){
 		configMap.insert ( std::pair<string, string>(name,value) ); // key: filename, value: sha256sum
 	}
 	return configMap;
+}
+
+void ConfigManager::Save(const string & fileName, const map<string, string> configMap){
+	std::ofstream outFile(fileName.c_str());
+	for (auto pair : configMap) {
+		outFile << pair.first << " ";
+		outFile << pair.second << endl;
+	}
 }
 
 ConfigManager configManager;

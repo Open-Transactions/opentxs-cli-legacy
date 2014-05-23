@@ -16,8 +16,10 @@ cUseOT::cUseOT()
 : mNymsMy_loaded(false)
 , OTAPI_loaded(false)
 , OTAPI_error(false)
+, mDataFolder( OTPaths::AppDataFolder().Get() )
+, mDefaultIDsFile( mDataFolder + "/defaults.opt" )
 {
-	defaultIDs = configManager.Load("defaults.opt");
+	mDefaultIDs = configManager.Load(mDefaultIDsFile);
 }
 
 cUseOT::~cUseOT() {
@@ -88,7 +90,7 @@ const string cUseOT::accountGetId(const string & accountName) {
 const string cUseOT::accountGetDefault() {
 	if(!Init())
 		return "";
-	return defaultIDs.at("AccountID");
+	return mDefaultIDs.at("AccountID");
 }
 
 const string cUseOT::accountGetName(const string & accountID) {
@@ -104,11 +106,11 @@ string cUseOT::accountDelete(const string & accountName) { ///<
 	if(!OTAPI_Wrap::Wallet_CanRemoveAccount (accountGetId(accountName))) {
 		// inBox and OutBox must be get from server because without it account not work properly
 		// example if you can't delete account without inbox and outbox
-		int32_t  inBoxInt = OTAPI_Wrap::getInbox 	(defaultIDs.at("ServerID"),defaultIDs.at("UserID"),accountGetId(accountName));
-		int32_t outBoxInt = OTAPI_Wrap::getOutbox 	(defaultIDs.at("ServerID"),defaultIDs.at("UserID"),accountGetId(accountName));
+		int32_t  inBoxInt = OTAPI_Wrap::getInbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),accountGetId(accountName));
+		int32_t outBoxInt = OTAPI_Wrap::getOutbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),accountGetId(accountName));
 	}
 
-	if(OTAPI_Wrap::deleteAssetAccount(defaultIDs.at("ServerID"), defaultIDs.at("UserID"), accountGetId(accountName))==-1)
+	if(OTAPI_Wrap::deleteAssetAccount(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), accountGetId(accountName))==-1)
 		return "Error while deleting account";
 	else
 		return "";
@@ -169,7 +171,7 @@ const string cUseOT::accountSetName(const string & accountID, const string & New
 	if(!Init())
 	return "";
 
-		OTAPI_Wrap::SetAccountWallet_Name (accountID, defaultIDs.at("UserID"), NewAccountName);
+		OTAPI_Wrap::SetAccountWallet_Name (accountID, mDefaultIDs.at("UserID"), NewAccountName);
 	return "";
 }
 
@@ -179,7 +181,7 @@ void cUseOT::accountCreate(const string & assetName, const string & newAccountNa
 
 	OT_ME madeEasy;
 	string strResponse;
-	strResponse = madeEasy.create_asset_acct(defaultIDs.at("ServerID"), defaultIDs.at("UserID"), assetGetId(assetName));
+	strResponse = madeEasy.create_asset_acct(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), assetGetId(assetName));
 
 	// -1 error, 0 failure, 1 success.
 	if (1 != madeEasy.VerifyMessageSuccess(strResponse))
@@ -203,7 +205,8 @@ void cUseOT::accountCreate(const string & assetName, const string & newAccountNa
 void cUseOT::accountSetDefault(const string & accountName) {
 	if(!Init())
 		return ;
-	defaultIDs.at("AccountID") = accountGetId(accountName);
+	mDefaultIDs.at("AccountID") = accountGetId(accountName);
+	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const vector<string> cUseOT::accountsGet() {
@@ -278,13 +281,14 @@ const string cUseOT::assetGetContract(const std::string & assetID){
 }
 
 const string cUseOT::assetGetDefault(){
-	return defaultIDs.at("PurseID");
+	return mDefaultIDs.at("PurseID");
 }
 
 void cUseOT::assetSetDefault(const std::string & assetName){
 	if(!Init())
 		return ;
-	defaultIDs.at("PurseID") = assetGetId(assetName);
+	mDefaultIDs.at("PurseID") = assetGetId(assetName);
+	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const string cUseOT::contractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
@@ -333,7 +337,7 @@ void cUseOT::msgSend(const string & nymSender, const string & nymRecipient, cons
 	_dbg1(sender);
 	_dbg1(recipient);
 
-	string strResponse = madeEasy.send_user_msg ( defaultIDs.at("ServerID"), sender, recipient, msg);
+	string strResponse = madeEasy.send_user_msg ( mDefaultIDs.at("ServerID"), sender, recipient, msg);
 
 	// -1 error, 0 failure, 1 success.
 	if (1 != madeEasy.VerifyMessageSuccess(strResponse))
@@ -356,7 +360,7 @@ void cUseOT::nymCheck(const string & hisNymID) { // wip
 		return;
 
 	OT_ME madeEasy;
-	string strResponse = madeEasy.check_user( defaultIDs.at("ServerID"), defaultIDs.at("UserID"), hisNymID );
+	string strResponse = madeEasy.check_user( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), hisNymID );
 	// -1 error, 0 failure, 1 success.
 	if (1 != madeEasy.VerifyMessageSuccess(strResponse))
 	{
@@ -398,7 +402,7 @@ void cUseOT::nymCreate(const string & nymName) {
 const string cUseOT::nymGetDefault() {
 	if(!Init())
 		return "";
-	return defaultIDs.at("UserID");
+	return mDefaultIDs.at("UserID");
 }
 
 const string cUseOT::nymGetId(const string & nymName) { // Gets nym aliases and IDs begins with '^'
@@ -483,11 +487,11 @@ void cUseOT::nymRegister(const string & nymName) {
 
 	string nymID = nymGetId(nymName);
 
-	bool isReg = OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, defaultIDs.at("ServerID"));
+	bool isReg = OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, mDefaultIDs.at("ServerID"));
 
 	if (!isReg)
 	{
-		string response = madeEasy.register_nym(defaultIDs.at("ServerID"), nymID);
+		string response = madeEasy.register_nym(mDefaultIDs.at("ServerID"), nymID);
 		nOT::nUtils::DisplayStringEndl(cout, response);
 		nOT::nUtils::DisplayStringEndl(cout, "Nym " + ToStr(nymName) + "(" + ToStr(nymID) + ")" + " was registered successfully");
 	}
@@ -504,7 +508,8 @@ void cUseOT::nymRegister(const string & nymName, const string & serverName) {
 void cUseOT::nymSetDefault(const string & nymName) {
 	if(!Init())
 		return ;
-	defaultIDs.at("UserID") = nymGetId(nymName);
+	mDefaultIDs.at("UserID") = nymGetId(nymName);
+	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const vector<string> cUseOT::nymsGetMy() {
@@ -539,7 +544,7 @@ void cUseOT::serverCheck() { // Use it to ping server
 	if(!Init())
 			return ;
 
-	if( !OTAPI_Wrap::checkServerID( defaultIDs.at("ServerID"), defaultIDs.at("UserID") ) ){
+	if( !OTAPI_Wrap::checkServerID( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID") ) ){
 		_erro("No response from server");
 	}
 	_info("Server OK");
@@ -549,7 +554,7 @@ void cUseOT::serverCheck() { // Use it to ping server
 const string cUseOT::serverGetDefault() {
 	if(!Init())
 		return "";
-	return defaultIDs.at("ServerID");
+	return mDefaultIDs.at("ServerID");
 }
 
 const string cUseOT::serverGetId(const string & serverName) { // Gets nym aliases and IDs begins with '%'
@@ -579,8 +584,9 @@ const string cUseOT::serverGetName(const string & serverID){
 void cUseOT::serverSetDefault(const string & serverName) {
 	if(!Init())
 		return ;
-	defaultIDs.at("ServerID") = serverGetId(serverName);
-	_info("Default server: " + defaultIDs.at("ServerID"));
+	mDefaultIDs.at("ServerID") = serverGetId(serverName);
+	_info("Default server: " + mDefaultIDs.at("ServerID"));
+	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const vector<string> cUseOT::serversGet() { ///< Get all servers name
