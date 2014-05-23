@@ -19,11 +19,22 @@ cUseOT::cUseOT()
 , mDataFolder( OTPaths::AppDataFolder().Get() )
 , mDefaultIDsFile( mDataFolder + "/defaults.opt" )
 {
-	mDefaultIDs = configManager.Load(mDefaultIDsFile);
+
 }
 
 cUseOT::~cUseOT() {
+	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 	if (OTAPI_loaded) OTAPI_Wrap::AppCleanup(); // UnInit OTAPI
+}
+
+void cUseOT::LoadDefaults() { // TODO What if there is, for example no accounts?
+	if ( !configManager.Load(mDefaultIDsFile, mDefaultIDs) ) {
+		_dbg1("Cannot open" + mDefaultIDsFile + " file, setting IDs with ID 0 as default");
+		mDefaultIDs["AccountID"] = OTAPI_Wrap::GetAccountWallet_ID(0);
+		mDefaultIDs["PurseID"] = OTAPI_Wrap::GetAssetType_ID(0);
+		mDefaultIDs["ServerID"] = OTAPI_Wrap::GetServer_ID(0);
+		mDefaultIDs["UserID"] = OTAPI_Wrap::GetNym_ID(0);
+	}
 }
 
 bool cUseOT::Init() {
@@ -47,6 +58,7 @@ bool cUseOT::Init() {
 		if (OTAPI_Wrap::LoadWallet()) {
 			_info("wallet was loaded.");
 			OTAPI_loaded = true;
+			LoadDefaults();
 		}	else _erro("Error while loading wallet.");
 	}
 	catch(const std::exception &e) {
@@ -58,6 +70,7 @@ bool cUseOT::Init() {
 		OTAPI_error = true;
 		return false;
 	}
+
 	return OTAPI_loaded;
 }
 
@@ -206,7 +219,6 @@ void cUseOT::accountSetDefault(const string & accountName) {
 	if(!Init())
 		return ;
 	mDefaultIDs.at("AccountID") = accountGetId(accountName);
-	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const vector<string> cUseOT::accountsGet() {
@@ -288,7 +300,6 @@ void cUseOT::assetSetDefault(const std::string & assetName){
 	if(!Init())
 		return ;
 	mDefaultIDs.at("PurseID") = assetGetId(assetName);
-	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const string cUseOT::contractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
@@ -509,7 +520,6 @@ void cUseOT::nymSetDefault(const string & nymName) {
 	if(!Init())
 		return ;
 	mDefaultIDs.at("UserID") = nymGetId(nymName);
-	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const vector<string> cUseOT::nymsGetMy() {
@@ -586,7 +596,6 @@ void cUseOT::serverSetDefault(const string & serverName) {
 		return ;
 	mDefaultIDs.at("ServerID") = serverGetId(serverName);
 	_info("Default server: " + mDefaultIDs.at("ServerID"));
-	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 }
 
 const vector<string> cUseOT::serversGet() { ///< Get all servers name

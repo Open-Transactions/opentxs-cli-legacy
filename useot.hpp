@@ -19,6 +19,9 @@ namespace nUse {
 		map<string, string> mDefaultIDs;
 		const string mDataFolder;
 		const string mDefaultIDsFile;
+
+		void LoadDefaults();
+
 		public:
 
 		// vector<nOT::nNewcli::cNyminfo> mNymsMy; // FIXME Not used class cNyminfo (look: othint.cpp)

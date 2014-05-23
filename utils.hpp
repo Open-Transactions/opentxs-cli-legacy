@@ -146,8 +146,8 @@ vector<string> SplitString(const string & str);
 
 class ConfigManager{
 public:
-	const map<string, string> Load(const string & fileName);
-	void Save(const string & fileName, const map<string, string> configMap);
+	bool Load(const string & fileName, map<string, string> & configMap);
+	void Save(const string & fileName, const map<string, string> & configMap);
 };
 
 extern ConfigManager configManager;
