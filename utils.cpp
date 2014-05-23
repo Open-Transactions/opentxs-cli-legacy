@@ -252,11 +252,13 @@ bool ConfigManager::Load(const string & fileName, map<string, string> & configMa
 	_dbg3("Loading defaults.");
 	std::ifstream inFile(fileName.c_str());
 	if( inFile.good() ) {
-		while(inFile) {
-			string name, value;
-			inFile >> name;
-			inFile >> value;
-			configMap.insert ( std::pair<string, string>(name,value) );
+		string line;
+		while( std::getline (inFile, line) ) {
+			vector<string> vec = SplitString(line);
+			if (vec.size() == 2)
+				configMap.insert ( std::pair<string, string>( vec.at(0), vec.at(1) ) );
+			else
+				configMap.insert ( std::pair<string, string>( vec.at(0), "-" ) );
 		}
 		return true;
 	}
