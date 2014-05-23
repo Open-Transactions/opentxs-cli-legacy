@@ -17,7 +17,7 @@ cUseOT::cUseOT()
 , OTAPI_loaded(false)
 , OTAPI_error(false)
 , mDataFolder( OTPaths::AppDataFolder().Get() )
-, mDefaultIDsFile( mDataFolder + "/defaults.opt" )
+, mDefaultIDsFile( mDataFolder + "defaults.opt" )
 {
 
 }

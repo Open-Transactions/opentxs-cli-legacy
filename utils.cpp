@@ -251,7 +251,7 @@ vector<string> SplitString(const string & str){
 bool ConfigManager::Load(const string & fileName, map<string, string> & configMap){
 	_dbg1("Loading defaults.");
 	std::ifstream inFile(fileName.c_str());
-	if( inFile.good() ) {
+	if( inFile.good() && !(inFile.peek() == std::ifstream::traits_type::eof()) ) {
 		string line;
 		while( std::getline (inFile, line) ) {
 			_dbg2("Line: ["<<line<<"]");
