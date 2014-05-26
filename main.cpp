@@ -9,6 +9,12 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1
 
 nOT::nUtils::cLogger gCurrentLogger;
 
+void exit1 (void){
+	_dbg1("atexit function");
+
+}
+
+
 int main(int argc, const char **argv) {
 	int ret=0;
 
@@ -43,6 +49,9 @@ int main(int argc, const char **argv) {
 	// nOT::nTests::testcase_run_all_tests(); // TODO from script
 
 	_dbg2("The main will now return with ret="<<ret);
+
+	std::atexit(exit1);
+
 	return ret;
 }
 
