@@ -41,14 +41,14 @@ extern cNullstream g_nullstream; // a stream that does nothing (eats/discards da
 
 // ========== debug ==========
 
-#define _dbg3(X) do { nOT::nUtils::current_logger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0)
-#define _dbg2(X) do { nOT::nUtils::current_logger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0)
-#define _dbg1(X) do { nOT::nUtils::current_logger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // details
-#define _info(X) do { nOT::nUtils::current_logger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // more boring info
-#define _note(X) do { nOT::nUtils::current_logger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // interesting event
-#define _mark(X) do { nOT::nUtils::current_logger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // interesting event
-#define _warn(X) do { nOT::nUtils::current_logger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // some problem
-#define _erro(X) do { nOT::nUtils::current_logger.write_stream(100) << OT_CODE_STAMP << ' ' << X << nOT::nUtils::current_logger.endline(); } while(0) // error - report
+#define _dbg3(X) do { gCurrentLogger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
+#define _dbg2(X) do { gCurrentLogger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
+#define _dbg1(X) do { gCurrentLogger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // details
+#define _info(X) do { gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // more boring info
+#define _note(X) do { gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
+#define _mark(X) do { gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
+#define _warn(X) do { gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // some problem
+#define _erro(X) do { gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // error - report
 
 const char* DbgShortenCodeFileName(const char *s);
 
@@ -59,6 +59,7 @@ std::string cSpaceFromEscape(const std::string &s);
 class cLogger {
 	public:
 		cLogger();
+		~cLogger(){ cout << "Logger destructor" << endl; }
 		std::ostream & write_stream(int level);
 		void setOutStream();
 		std::string icon(int level) const;
@@ -70,8 +71,6 @@ class cLogger {
 		int mLevel;
 };
 
-
-extern cLogger current_logger;
 
 
 // ====================================================================
@@ -183,11 +182,11 @@ vector<T> & operator+=(vector<T> &a, const vector<T> &b) {
 
 
 // global namespace
-
+extern nOT::nUtils::cLogger gCurrentLogger;
 extern std::string GetObjectName_global_string; // extern to h
 std::string GetObjectName(); 
 
-#define OT_CODE_STAMP ( nOT::nUtils::ToStr("[") + nOT::nUtils::DbgShortenCodeFileName(__FILE__) + nOT::nUtils::ToStr("+") + nOT::nUtils::ToStr(__LINE__) + nOT::nUtils::ToStr(" ") + nOT::nUtils::ToStr(GetObjectName()) + nOT::nUtils::ToStr("::") + nOT::nUtils::ToStr(__FUNCTION__) + nOT::nUtils::ToStr("]"))
+#define OT_CODE_STAMP ( nOT::nUtils::ToStr("[") + nOT::nUtils::DbgShortenCodeFileName(__FILE__) + nOT::nUtils::ToStr("+") + nOT::nUtils::ToStr(__LINE__) + nOT::nUtils::ToStr(" ") + /*nOT::nUtils::ToStr(GetObjectName()) +*/ nOT::nUtils::ToStr("::") + nOT::nUtils::ToStr(__FUNCTION__) + nOT::nUtils::ToStr("]"))
 
 
 

@@ -119,7 +119,7 @@ std::string cLogger::endline() const {
 	return ToStr("\n") + zkr::cc::console; // TODO replan to avoid needles converting back and forth char*, string etc
 }
 
-cLogger current_logger; // extern TODO gCurrentLogger
+
 
 // ====================================================================
 // vector debug
@@ -274,13 +274,13 @@ bool ConfigManager::Load(const string & fileName, map<string, string> & configMa
 
 void ConfigManager::Save(const string & fileName, const map<string, string> & configMap){
 	_dbg1("Will save config");
-	std::ofstream outFile(fileName.c_str());
+	//std::ofstream outFile(fileName.c_str());
 	for (auto pair : configMap) {
-		_dbg2("Got: "<<pair.first<<","<<pair.second);
-		outFile << pair.first << " ";
-		outFile << pair.second;
-		outFile << endl;
-		_dbg3("line saved");
+		//_dbg2("Got: "<<pair.first<<","<<pair.second);
+		//outFile << pair.first << " ";
+		//outFile << pair.second;
+		//outFile << endl;
+		//_dbg3("line saved");
 	}
 	_dbg1("All saved");
 }

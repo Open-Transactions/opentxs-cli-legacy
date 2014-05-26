@@ -58,6 +58,7 @@ namespace nUse {
 		const string assetNew(const std::string & nymID, const std::string & xmlContents);
 		const string assetGetContract(const std::string & assetID);
 		const string assetGetDefault(); // Also known as purse
+		void assetRemove(const string & assetName);
 		void assetSetDefault(const std::string & assetName); // Also known as purse
 
 		const string contractSign(const std::string & nymID, const std::string & contract);
@@ -86,6 +87,7 @@ namespace nUse {
 		const string serverGetDefault();
 		const string serverGetId(const string & serverName);
 		const string serverGetName(const string & serverID);
+		void serverRemove(const string & serverName);
 		void serverSetDefault(const string & serverName);
 		const vector<string> serversGet();
 

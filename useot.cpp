@@ -303,6 +303,18 @@ const string cUseOT::assetGetDefault(){
 	return mDefaultIDs.at("PurseID");
 }
 
+void cUseOT::assetRemove(const string & assetName) {
+	if(!Init())
+		return ;
+	string nymID = assetGetId(assetName);
+	if ( OTAPI_Wrap::Wallet_CanRemoveAssetType(assetName) ) {
+		if ( OTAPI_Wrap::Wallet_RemoveAssetType(assetName) )
+			_info("Asset was deleted successfully");
+		else
+			_warn("Asset cannot be removed");
+	}
+}
+
 void cUseOT::assetSetDefault(const std::string & assetName){
 	if(!Init())
 		return ;
@@ -529,7 +541,9 @@ void cUseOT::nymRemove(const string & nymName) {
 	string nymID = nymGetId(nymName);
 	if ( OTAPI_Wrap::Wallet_CanRemoveNym(nymID) ) {
 		if ( OTAPI_Wrap::Wallet_RemoveNym(nymID) )
-			_info ("Nym was deleted successfully");
+			_info("Nym was deleted successfully");
+		else
+			_warn("Nym cannot be removed");
 	}
 }
 
@@ -607,6 +621,19 @@ const string cUseOT::serverGetName(const string & serverID){
 		return "";
 	return OTAPI_Wrap::GetServer_Name(serverID);
 }
+
+void cUseOT::serverRemove(const string & serverName) {
+	if(!Init())
+		return ;
+	string nymID = serverGetId(serverName);
+	if ( OTAPI_Wrap::Wallet_CanRemoveServer(serverName) ) {
+		if ( OTAPI_Wrap::Wallet_RemoveServer(serverName) )
+			_info("Server was deleted successfully");
+		else
+			_warn("Server cannot be removed");
+	}
+}
+
 
 void cUseOT::serverSetDefault(const string & serverName) {
 	if(!Init())

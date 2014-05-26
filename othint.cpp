@@ -1180,7 +1180,7 @@ cInteractiveShell::cInteractiveShell()
 { }
 
 void cInteractiveShell::runOnce(const string line) { // used with bash autocompletion
-	nOT::nUtils::current_logger.setDebugLevel(100);
+	gCurrentLogger.setDebugLevel(100);
 	nOT::nOTHint::cHintManager hint;
 	vector<string> out = hint.AutoCompleteEntire(line);
 	nOT::nUtils::DisplayVectorEndl(std::cout, out);

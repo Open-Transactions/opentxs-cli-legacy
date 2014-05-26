@@ -7,6 +7,8 @@
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1
 
+nOT::nUtils::cLogger gCurrentLogger;
+
 int main(int argc, const char **argv) {
 	int ret=0;
 
@@ -24,7 +26,7 @@ int main(int argc, const char **argv) {
 		// eg: args_clear: ot msg sendfrom rafal piotr +thisisplussign 
 		// +debug +debugfile <-- this will be Executed by gRunOptions
 
-		nOT::nUtils::current_logger.setOutStream();
+		gCurrentLogger.setOutStream();
 		_dbg1("Running the program with arguments: " + nOT::nUtils::vectorToStr(args_clear));
 
 		ret = application.Run(args_clear);
