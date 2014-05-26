@@ -293,24 +293,14 @@ ConfigManager configManager;
 }; // namespace OT
 
 
-std::string * GetObjectName_name_delete; // pointer just points what should be delete, if the function GetObjectName_exit() is registered atexit; if not then it has garbage but
-// this does not matter
+const std::string * GetObjectName() {	
+	static std::string * name=nullptr;
+	if (!name) name = new std::string("(global)");
+	return name;
+}
 
-void GetObjectName_exit(void) {
-	std::cout << __FUNCTION__ << std::endl;
-	delete GetObjectName_name_delete; 
-	GetObjectName_name_delete=nullptr;
-	std::cout << __FUNCTION__ << " - done" << std::endl;
-}
-std::string GetObjectName() {	
-	static std::string * GetObjectName_name = nullptr;
-	if (! GetObjectName_name ) { // create the variable with name
-		// must happen atomicaly: register destruction of this static-pointed variable
-		GetObjectName_name = GetObjectName_name_delete = new std::string("(global)");
-		std::atexit_( GetObjectName_exit ); 
-	}
-	return * GetObjectName_name; // TODO optimize this and all this debug code (copy here)
-}
+
+
 
 
 
