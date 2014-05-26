@@ -7,25 +7,8 @@
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1
 
-void bar() {
-	while (1) { }
-}
-
-void foo() {
-	bar();
-}
-
-void breakme() {
-	printf("breakpoint is here.\n");
-}
-
 int main(int argc, const char **argv) {
-
 	int ret=0;
-
-/*
-//	foo();
-
 
 	try {
 		ret=1; // if aborted then this indicated error
@@ -58,9 +41,6 @@ int main(int argc, const char **argv) {
 	// nOT::nTests::testcase_run_all_tests(); // TODO from script
 
 	_dbg2("The main will now return with ret="<<ret);
-*/
-	breakme();
-
 	return ret;
 }
 

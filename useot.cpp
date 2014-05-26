@@ -23,8 +23,6 @@ cUseOT::cUseOT()
 }
 
 cUseOT::~cUseOT() {
-printf("Skipping over disabled destructor here\n");
-/* XXX
 	_dbg2("Will save defaults");
 	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 	_dbg3("Will save defaults - DONE");
@@ -32,7 +30,6 @@ printf("Skipping over disabled destructor here\n");
 	_dbg2("Will cleanup OTAPI");
 	if (OTAPI_loaded) OTAPI_Wrap::AppCleanup(); // UnInit OTAPI
 	_dbg3("Will cleanup OTAPI - DONE");
-	*/
 }
 
 void cUseOT::LoadDefaults() {
