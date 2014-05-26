@@ -94,6 +94,9 @@ Dependencies installation (Debian):
 	* Download OpenTransactions and build it, using instructions from  ../../docs/INSTALL-linux-modern.txt or other suitable
 	* Get, build and install latest editline locally (editline in debian 7 has bugs)
 		wget http://thrysoee.dk/editline/libedit-20130712-3.1.tar.gz
+         	sha256sum libedit-20130712-3.1.tar.gz 
+		echo "THE CHECKSUM ABOVE SHOULD BE: 5d9b1a9dd66f1fe28bbd98e4d8ed1a22d8da0d08d902407dcc4a0702c8d88a37  press enter if ok. "
+		read ok
 		tar -xzf libedit-20130712-3.1.tar.gz
 		cd libedit-20130712-3.1
 		./configure --prefix=$HOME/.local
