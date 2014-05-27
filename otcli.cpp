@@ -49,13 +49,7 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 					break;
 				case gRunOptions.eRunModeCurrent :
 					using namespace nOT::nNewcli;
-
-					string input = "msg sendfrom rafal";
-
-					shared_ptr<cCmdParser> newcli(new cCmdParser);
-					newcli->Test();
-					newcli->StartProcessing(input);
-					//cCmdProcessing proc = newcli.StartProcessing(input);
+					nNewcli::cmd_test();
 					break;
 			}
 		}
