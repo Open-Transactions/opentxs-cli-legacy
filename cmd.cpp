@@ -35,6 +35,11 @@ cParamInfo::cParamInfo(tFuncValid valid, tFuncHint hint)
 
 void cmd_test() {
 	_note("TEST TREE");
+
+	cCmdParser parser;
+	auto processing = parser.StartProcessing("ot msg ls");
+
+
 }
 
 }; // namespace nNewcli
