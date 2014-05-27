@@ -22,18 +22,21 @@ class cCmdName;
 class cParamInfo;
 class cParamString;
 
+class cCmdParser_pimpl;
+
 /**
 The parser (can be used many times), that should contain some tree of possible commands and format/validation/hint of each.
 */
 class cCmdParser : public enable_shared_from_this<cCmdParser> {
 	protected:
-		map< cCmdName , cCmdFormat > tree;
+		unique_ptr< cCmdParser_pimpl > mI;
 	public:
 		cCmdParser()=default;
 
 		cCmdProcessing StartProcessing(const vector<string> &words);
 		cCmdProcessing StartProcessing(const string &words);
 
+		void Init();
 		void Test();
 };
 
@@ -58,7 +61,9 @@ class cCmdFormat {
 		vector<cParamInfo> varExt;
 		vector<cParamInfo> option;
 		vector<cParamInfo> optionExt;
+
 	public:
+		
 };
 
 /**
