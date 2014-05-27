@@ -140,6 +140,7 @@ void Assert(bool result, const std::string &stamp);
 const std::string GetMultiline(string endLine = "~");
 vector<string> SplitString(const string & str);
 
+const bool checkPrefix(const string & str, char prefix = '^');
 // ====================================================================
 // operation on files
 
@@ -187,7 +188,6 @@ extern nOT::nUtils::cLogger gCurrentLogger;
 const std::string * GetObjectName();
 
 #define OT_CODE_STAMP ( nOT::nUtils::ToStr("[") + nOT::nUtils::DbgShortenCodeFileName(__FILE__) + nOT::nUtils::ToStr("+") + nOT::nUtils::ToStr(__LINE__) + nOT::nUtils::ToStr(" ") + nOT::nUtils::ToStr(*GetObjectName()) + nOT::nUtils::ToStr("::") + nOT::nUtils::ToStr(__FUNCTION__) + nOT::nUtils::ToStr("]"))
-
 
 
 #endif

@@ -245,6 +245,11 @@ vector<string> SplitString(const string & str){
 		return vec;
 }
 
+const bool checkPrefix(const string & str, char prefix){
+	if (str.at(0) == prefix)
+		return true;
+	return false;
+}
 // ====================================================================
 // operation on files
 
@@ -274,13 +279,13 @@ bool ConfigManager::Load(const string & fileName, map<string, string> & configMa
 
 void ConfigManager::Save(const string & fileName, const map<string, string> & configMap){
 	_dbg1("Will save config");
-	//std::ofstream outFile(fileName.c_str());
+	std::ofstream outFile(fileName.c_str());
 	for (auto pair : configMap) {
-		//_dbg2("Got: "<<pair.first<<","<<pair.second);
-		//outFile << pair.first << " ";
-		//outFile << pair.second;
-		//outFile << endl;
-		//_dbg3("line saved");
+		_dbg2("Got: "<<pair.first<<","<<pair.second);
+		outFile << pair.first << " ";
+		outFile << pair.second;
+		outFile << endl;
+		_dbg3("line saved");
 	}
 	_dbg1("All saved");
 }
@@ -292,15 +297,9 @@ ConfigManager configManager;
 
 }; // namespace OT
 
-
 const std::string * GetObjectName() {	
 	static std::string * name=nullptr;
 	if (!name) name = new std::string("(global)");
 	return name;
 }
-
-
-
-
-
 

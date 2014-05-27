@@ -98,11 +98,14 @@ const int64_t cUseOT::accountGetBalance(const string & accountName) {
 
 const string cUseOT::accountGetId(const string & accountName) {
 	if(!Init())
-	return "";
-
-	for(int i = 0 ; i < OTAPI_Wrap::GetAccountCount ();i++) {
-		if(OTAPI_Wrap::GetAccountWallet_Name ( OTAPI_Wrap::GetAccountWallet_ID (i))==accountName)
-		return OTAPI_Wrap::GetAccountWallet_ID (i);
+		return "";
+	if ( nUtils::checkPrefix(accountName) )
+		return accountName.substr(1);
+	else {
+		for(int i = 0 ; i < OTAPI_Wrap::GetAccountCount ();i++) {
+			if(OTAPI_Wrap::GetAccountWallet_Name ( OTAPI_Wrap::GetAccountWallet_ID (i))==accountName)
+			return OTAPI_Wrap::GetAccountWallet_ID (i);
+		}
 	}
 	return "";
 }
@@ -249,11 +252,14 @@ bool cUseOT::assetCheckIfExists(const string & assetName) {
 
 const string cUseOT::assetGetId(const string & assetName) {
 	if(!Init())
-	return "";
-
-	for(int i = 0 ; i < OTAPI_Wrap::GetAssetTypeCount ();i++) {
-		if(OTAPI_Wrap::GetAssetType_Name ( OTAPI_Wrap::GetAssetType_ID (i))==assetName)
-			return OTAPI_Wrap::GetAssetType_ID (i);
+		return "";
+	if ( nUtils::checkPrefix(assetName) )
+		return assetName.substr(1);
+	else {
+		for(int i = 0 ; i < OTAPI_Wrap::GetAssetTypeCount ();i++) {
+			if(OTAPI_Wrap::GetAssetType_Name ( OTAPI_Wrap::GetAssetType_ID (i))==assetName)
+				return OTAPI_Wrap::GetAssetType_ID (i);
+		}
 	}
 	return "";
 }
@@ -332,7 +338,7 @@ const vector<string> cUseOT::msgGetAll() { ///< Get all messages from all Nyms.
 	return vector<string> {};
 
 	for(int i = 0 ; i < OTAPI_Wrap::GetNymCount ();i++) {
-		msgGetForNym( "^" + OTAPI_Wrap::GetNym_ID(i) );
+		msgGetForNym( nymGetName( OTAPI_Wrap::GetNym_ID(i) ) );
 	}
 	return vector<string> {};
 }
@@ -437,11 +443,9 @@ const string cUseOT::nymGetDefault() {
 
 const string cUseOT::nymGetId(const string & nymName) { // Gets nym aliases and IDs begins with '^'
 	if(!Init())
-	return "";
-	const char prefix = '^';
-	if (nymName.at(0) == prefix) { // nym ID
+		return "";
+	if ( nUtils::checkPrefix(nymName) )
 		return nymName.substr(1);
-	}
 	else { // nym Name
 		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount ();i++) {
 			string nymID = OTAPI_Wrap::GetNym_ID (i);
@@ -600,12 +604,11 @@ const string cUseOT::serverGetDefault() {
 
 const string cUseOT::serverGetId(const string & serverName) { // Gets nym aliases and IDs begins with '%'
 	if(!Init())
-	return "";
+		return "";
 
-	if (serverName.at(0) == '%') { // nym ID
+	if ( nUtils::checkPrefix(serverName) )
 		return serverName.substr(1);
-	}
-	else { // nym Name
+	else {
 		for(int i = 0 ; i < OTAPI_Wrap::GetServerCount(); i++) {
 			string serverID = OTAPI_Wrap::GetServer_ID(i);
 			string serverName_ = OTAPI_Wrap::GetServer_Name(serverID);
