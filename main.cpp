@@ -29,6 +29,19 @@ int main(int argc, const char **argv) {
 		gCurrentLogger.setOutStream();
 		_dbg1("Running the program with arguments: " + nOT::nUtils::vectorToStr(args_clear));
 
+		#define COMPILER_VERSION "(unknown)"
+		#ifdef __GNUC__
+			#undef COMPILER_VERSION
+			#define COMPILER_VERSION __VERSION__ 
+		#endif
+		#ifdef __CLANG__
+			#undef COMPILER_VERSION
+			#define COMPILER_VERSION __clang_version__
+		#endif
+
+		const string compiler_version = nOT::nUtils::ToStr( COMPILER_VERSION );
+		_info("Program compiled with " + compiler_version);
+
 		ret = application.Run(args_clear);
 		_dbg1("Main after application with ret="<<ret);
 	}

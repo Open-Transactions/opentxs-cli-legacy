@@ -8,6 +8,8 @@ Template for new files, replace word "template" and later delete this line here.
 
 #include "lib_common1.hpp"
 
+#include "useot.hpp"
+
 namespace nOT {
 namespace nNewcli {
 
@@ -30,8 +32,10 @@ The parser (can be used many times), that should contain some tree of possible c
 class cCmdParser : public enable_shared_from_this<cCmdParser> {
 	protected:
 		unique_ptr< cCmdParser_pimpl > mI;
+		void AddFormat( const cCmdName &name, const cCmdFormat &format );
+
 	public:
-		cCmdParser()=default;
+		cCmdParser();
 
 		cCmdProcessing StartProcessing(const vector<string> &words);
 		cCmdProcessing StartProcessing(const string &words);
@@ -50,20 +54,41 @@ class cCmdProcessing {
 		vector<string> commandLine;
 	public:
 		cCmdProcessing(shared_ptr<cCmdParser> _parser, vector<string> _commandLine);
+
+		void Parse();
+
+		vector<string> UseComplete( nUse::cUseOT &use );
+		void UseExecute( nUse::cUseOT &use );
+};
+
+/** 
+A function to be executed that will do some actuall OT call
+*/
+class cCmdExecutable {  
+	public:
+		typedef std::function< void (void) > tFunc;
+	private:
+		tFunc mFunc;
+	public:
+		cCmdExecutable( tFunc func );
 };
 
 /**
 Describes template how given command arguments should look like (validation, hint)
 */
 class cCmdFormat {
+	public:
+		typedef vector<cParamInfo> tVar;
+		typedef map<string, cParamInfo> tOption;
+		
 	protected:
-		vector<cParamInfo> var;
-		vector<cParamInfo> varExt;
-		vector<cParamInfo> option;
-		vector<cParamInfo> optionExt;
+		tVar mVar, mVarExt;
+		tOption mOption, mOptionExt;
+
+		cCmdExecutable mExec;
 
 	public:
-		
+		cCmdFormat(cCmdExecutable exec, tVar var);
 };
 
 /**
@@ -79,7 +104,12 @@ class cCmdData {
 Name of command like "msg sendfrom"
 */
 class cCmdName {
+	protected:
+		string mName;
 	public:
+		cCmdName(const string &name);
+		
+		bool operator<(const cCmdName &other) const;
 };
 
 
