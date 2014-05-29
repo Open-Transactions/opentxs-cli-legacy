@@ -35,6 +35,8 @@ namespace nUse {
 		~cUseOT();
 
 		bool Init();
+		void Done();
+		void CloseApi();
 
 		bool accountCheckIfExists(const string & accountName);
 		const int64_t accountGetBalance(const string & accountName);

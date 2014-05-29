@@ -52,7 +52,7 @@ void cRunOptions::Exec(const string & runoption) { // eg: Exec("+debug");
 		cerr << "Unknown runoption in Exec: '" << runoption << "'" << endl;
 		throw std::runtime_error("Unknown runoption");
 	}
-	cerr<<"debug="<<mDebug<<endl;
+	// cerr<<"debug="<<mDebug<<endl;
 }
 
 void cRunOptions::Normalize() {

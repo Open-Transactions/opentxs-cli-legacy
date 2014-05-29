@@ -144,7 +144,7 @@ const bool checkPrefix(const string & str, char prefix = '^');
 // ====================================================================
 // operation on files
 
-class ConfigManager{
+class ConfigManager {
 public:
 	bool Load(const string & fileName, map<string, string> & configMap);
 	void Save(const string & fileName, const map<string, string> & configMap);

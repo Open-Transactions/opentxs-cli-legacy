@@ -44,9 +44,12 @@ cNullstream g_nullstream; // extern a stream that does nothing (eats/discards da
 const char* DbgShortenCodeFileName(const char *s) {
 	const char *p = s;
 	const char *a = s;
+
+	bool inc=1;
 	while (*p) {
 		++p;
-		if ((*p)=='/') a=p;
+		if (inc && ('\0' != * p)) { a=p; inc=false; } // point to the current character (if valid) becasue previous one was slash
+		if ((*p)=='/') { a=p; inc=true; } // point at current slash (but set inc to try to point to next character)
 	}
 	return a;
 }
@@ -66,25 +69,19 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 }
 
 void cLogger::setOutStream() {
-	// cerr<<__FUNCTION__<<endl; // XXX
-	// cerr<<"mDebug="<<gRunOptions.getDebug()<<endl; // XXX
 	if ( gRunOptions.getDebug() ) {
 		if ( gRunOptions.getDebugSendToFile() ) {
-			cerr << "file" << endl;
 			outfile =  make_unique<std::ofstream> ("debuglog.txt");
 			mStream = & (*outfile);
 		}
 		else if ( gRunOptions.getDebugSendToCerr() ) {
-			cerr << "cerr" << endl;
 			mStream = & std::cerr;
 		}
 		else {
-			cerr << "null" << endl;
 			mStream = & g_nullstream;
 		}
 	}
 	else {
-		cerr << "no debug" << endl;
 		mStream = & g_nullstream;
 	}
 }
@@ -277,7 +274,7 @@ bool ConfigManager::Load(const string & fileName, map<string, string> & configMa
 	return false;
 }
 
-void ConfigManager::Save(const string & fileName, const map<string, string> & configMap){
+void ConfigManager::Save(const string & fileName, const map<string, string> & configMap) {
 	_dbg1("Will save config");
 	std::ofstream outFile(fileName.c_str());
 	for (auto pair : configMap) {

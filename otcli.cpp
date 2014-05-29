@@ -5,7 +5,8 @@
 #include "othint.hpp"
 #include "cmd.hpp"
 
-#include "lib_common1.hpp"
+#include "lib_common2.hpp"
+#include "useot.hpp"
 
 namespace nOT {
 namespace nNewcli {
@@ -66,6 +67,9 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 		}
 		++nr;
 	}
+	_note("Finished main run of application, will clean up now");
+
+	nOT::nUse::useOT.Done();
 
 	_note("Exiting application with status="<<status);
 	return status;

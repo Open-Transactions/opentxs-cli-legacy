@@ -18,7 +18,8 @@ class cCmdParser_pimpl {
 // ========================================================================================================================
 
 void cCmdParser::Init() {
-	mI->tree[ cCmdName("msg send") ] = cCmdFormat( 
+	_mark("Init tree");
+/*	mI->tree[ cCmdName("msg send") ] = cCmdFormat( 
 			vector<cParamInfo>{ ARG_STR, ARG_STR, ARG_STR }, map<string,cParamInfo>{{"subject",ARG_STR}}, map<string,cParamInfo>{{"cc",ARG_STR}} ,
 	 		[]( nUse::cUseOT &useOt , cCmdData &data ) { 
 				string msg=data.arg(3,""); if (0==msg.length()) msg=nUtils::GetMultiline(); 
@@ -31,7 +32,7 @@ void cCmdParser::Init() {
 
 	mI->tree[ cCmdName("msg send") ] = cCmdFormat( useOt::msgList, 
 		vpar{ ARG_STR, ARG_STR, ARG_STR },  vpar{},  vopt{{"subject",ARG_STR}},  mopt{{"cc",ARG_STR}, {"bcc",ARG_STR}} );
-
+*/
 }
 
 cCmdProcessing cCmdParser::StartProcessing(const vector<string> &words) {
@@ -57,11 +58,11 @@ cParamInfo::cParamInfo(tFuncValid valid, tFuncHint hint)
 
 
 void cmd_test() {
-	_note("TEST TREE");
+	_mark("TEST TREE");
 
-	cCmdParser parser;
-	parser.Prepare();
-	auto processing = parser.StartProcessing("ot msg ls");
+	shared_ptr<cCmdParser> parser(new cCmdParser);
+	parser->Init();
+	auto processing = parser->StartProcessing("ot msg ls");
 
 }
 

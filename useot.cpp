@@ -22,14 +22,23 @@ cUseOT::cUseOT()
 
 }
 
-cUseOT::~cUseOT() {
+void cUseOT::CloseApi() {
+	if (OTAPI_loaded) {
+		_dbg1("Will cleanup OTAPI");
+		OTAPI_Wrap::AppCleanup(); // UnInit OTAPI
+		_dbg2("Will cleanup OTAPI - DONE");
+	} else _dbg3("Will cleanup OTAPI ... was already not loaded");
+}
+
+void cUseOT::Done() {
 	_dbg2("Will save defaults");
 	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 	_dbg3("Will save defaults - DONE");
+	CloseApi();
+}
 
-	_dbg2("Will cleanup OTAPI");
-	if (OTAPI_loaded) OTAPI_Wrap::AppCleanup(); // UnInit OTAPI
-	_dbg3("Will cleanup OTAPI - DONE");
+cUseOT::~cUseOT() {
+	CloseApi();
 }
 
 void cUseOT::LoadDefaults() {

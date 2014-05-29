@@ -578,17 +578,7 @@ cHintManager::cHintManager()
 
 void cHintManager::TestNewFunction_Tree() { // testing new code [wip]
 	_info("Working on this="<<(void*)this);
-/*
-
-ot msg send
-ot msg ls
-ot msg new
-
-ot nym ls
-ot nym new
-ot [front] nym del $mynym [--a] [--b] [--c]
-
-*/
+	// XXX deprecated - moving to cmd.*
 }
 
 vector<string> cHintManager::AutoCompleteEntire(const string &sofar_str) const {
