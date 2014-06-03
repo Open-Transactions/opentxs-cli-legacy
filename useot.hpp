@@ -68,7 +68,9 @@ namespace nUse {
 		const vector<string> msgGetAll();
 		const vector<string> msgGetForNym(const string & nymName);
 		void msgSend(const string & nymSender, const string & nymRecipient, const string & msg);
-		void msgRemoveByIndex(const string & nymName, const int32_t & nIndex);
+		void msgSend(const string & nymRecipient, const string & msg);
+		void msgInRemoveByIndex(const string & nymName, const int32_t & nIndex);
+		void msgOutRemoveByIndex(const string & nymName, const int32_t & nIndex);
 
 		void nymCheck(const string & hisNymID);
 		bool nymCheckByName(const string & nymName);

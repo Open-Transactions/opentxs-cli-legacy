@@ -308,6 +308,7 @@ msg mv			# move message to different directory in your mail box
 msg rm <index>		# remove message with <index> number for current nym
 msg rm --all		# remove all messages from mail box for current nym
 *msg rm <nymName> <index> # remove <index> message from mail inbox for <nymName>
+msg rm-out <nymName> <index> # proposition for command removing msg from mail outbox
 ------------------------------
 *nym 			# can display active (default) nym
 *nym ls			# list of all nyms
@@ -963,7 +964,7 @@ TODO - planned new tree of commands using lambda
 			}
 			if (action=="rm") { // nym
 				if (nOT::nUse::useOT.nymCheckByName(cmdArgs.at(0))) {
-					nOT::nUse::useOT.msgRemoveByIndex( cmdArgs.at(0), std::stoi(cmdArgs.at(1)) );
+					nOT::nUse::useOT.msgInRemoveByIndex( cmdArgs.at(0), std::stoi(cmdArgs.at(1)) );
 				}
 				else {
 					std::cerr << "Can't find that nym: " << cmdArgs.at(0);

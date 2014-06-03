@@ -394,9 +394,36 @@ void cUseOT::msgSend(const string & nymSender, const string & nymRecipient, cons
 	_info("Message was sent successfully.");
 }
 
-void cUseOT::msgRemoveByIndex(const string & nymName, const int32_t & nIndex) {
+void cUseOT::msgSend(const string & nymRecipient, const string & msg) { ///< Send message from default Nym to Nym2
+	if(!Init())
+		return;
+
+	OT_ME madeEasy;
+	string recipient = nymGetId(nymRecipient);
+
+	_dbg1(recipient);
+
+	string strResponse = madeEasy.send_user_msg ( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), recipient, msg);
+
+	// -1 error, 0 failure, 1 success.
+	if (1 != madeEasy.VerifyMessageSuccess(strResponse))
+	{
+		_erro("Failed trying to send the message");
+		return;
+	}
+	_info("Message was sent successfully.");
+}
+
+
+void cUseOT::msgInRemoveByIndex(const string & nymName, const int32_t & nIndex) {
 	if(OTAPI_Wrap::Nym_RemoveMailByIndex (nymGetId(nymName), nIndex)){
-		_info("Message removed successfully");
+		_info("Message removed successfully from inbox");
+	}
+}
+
+void cUseOT::msgOutRemoveByIndex(const string & nymName, const int32_t & nIndex) {
+	if( OTAPI_Wrap::Nym_RemoveOutmailByIndex(nymGetId(nymName), nIndex) ){
+		_info("Message removed successfully from outbox");
 	}
 }
 
