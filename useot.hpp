@@ -24,7 +24,6 @@ namespace nUse {
 
 		public:
 
-		// vector<nOT::nNewcli::cNyminfo> mNymsMy; // FIXME Not used class cNyminfo (look: othint.cpp)
 		vector<string> mNymsMy_str; // TODO optimize/share memory? or convert on usage
 
 		bool mNymsMy_loaded;

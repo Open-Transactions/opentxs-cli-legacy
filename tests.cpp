@@ -49,10 +49,7 @@ void exampleOfOT(); // TODO implementation ehre
 
 bool testcase_complete_1(const string &sofar) {
 	map<string , vector<string> > const cases {
-		 { "m", { "msg", "msguard" } }
-		,{ "ms", { "msg", "msguard" } }
-		,{ "msg", { "msg", "msguard" } }
-		,{ "msg ", { "send", "ls", "mv", "rm" } }
+		 { "msg ", { "send", "ls", "mv", "rm" } }
 		,{ "msg s", { "send" } }
 		,{ "msg se", { "send" } }
 		,{ "msg sen", { "send" } }
@@ -105,22 +102,6 @@ bool testcase_complete_1(const string &sofar) {
 		,{ "msg rm msgid", { "msgid1", "msgid2" } }
 		,{ "msg rm msgid1", { "msgid1" } }
 		,{ "msg rm msgid2", { "msgid2" } }
-		,{ "msgu", { "msguard" } }
-		,{ "msgua", { "msguard" } }
-		,{ "msguar", { "msguard" } }
-		,{ "msguard", { "msguard" } }
-		,{ "msguard ", { "info", "start", "stop" } }
-		,{ "msguard i", { "info" } }
-		,{ "msguard in", { "info" } }
-		,{ "msguard inf", { "info" } }
-		,{ "msguard info", { "info" } }
-		,{ "msguard s", { "start", "stop" } }
-		,{ "msguard st", { "start", "stop" } }
-		,{ "msguard sta", { "start" } }
-		,{ "msguard star", { "start" } }
-		,{ "msguard start", { "start" } }
-		,{ "msguard sto", { "stop" } }
-		,{ "msguard stop", { "stop" } }
 		,{ "n" , { "nym"} }
 		,{ "ny" , { "nym"} }
 		,{ "nym" , { "nym"} }
@@ -148,8 +129,6 @@ bool testcase_complete_1(const string &sofar) {
 		out[i] = /* nOT::nUtils:: */ SpaceFromEscape(rec); // CLANG error in error reporting
 		i++;
 	}
-	//nOT::nUtils::DisplayVector(std::cout, out); // FIXME polluting in testcase
-
 
 	bool ok = 1;
 

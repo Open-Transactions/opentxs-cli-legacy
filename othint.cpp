@@ -1193,9 +1193,9 @@ bool my_rl_wrapper_debug; // external
 
 
 // When readline will call us to complete "ot m" then our function will be called with number=0,
-// then it should cache possibilities of endings "msg" "mint" "msguard", and return 0th (first) one.
+// then it should cache possibilities of endings "msg" "mint", and return 0th (first) one.
 // Next it will be called with other number (probably 1,2,3..) and return N-th possibility.
-// Function is non-reentrant also in the meaing that it can not be called in interlace, e.g.
+// Function is non-reentrant also in the meaning that it can not be called in interlace, e.g.
 // ("ot m",0) then ("ot m",1) then ("ot x",0) and suddenly back to ("ot x",2) without reinitialization
 // (done with number=0) is an error (at least currently, in future we might cache various completion
 // arrays, or recalculate on change)
