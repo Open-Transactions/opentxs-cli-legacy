@@ -90,22 +90,22 @@ bool cUseOT::Init() {
 	return OTAPI_loaded;
 }
 
-bool cUseOT::accountCheckIfExists(const string & accountName) {
-	vector<string> v = accountsGet();
+bool cUseOT::AccountCheckIfExists(const string & accountName) {
+	vector<string> v = AccountsGet();
 	if (std::find(v.begin(), v.end(), accountName) != v.end())
 		return true;
 	return false;
 }
 
-const int64_t cUseOT::accountGetBalance(const string & accountName) {
+const int64_t cUseOT::AccountGetBalance(const string & accountName) {
 	if(!Init())
 		return 0; //FIXME
 
-	int64_t balance = OTAPI_Wrap::GetAccountWallet_Balance	( accountGetId(accountName) );
+	int64_t balance = OTAPI_Wrap::GetAccountWallet_Balance	( AccountGetId(accountName) );
 	return balance;
 }
 
-const string cUseOT::accountGetId(const string & accountName) {
+const string cUseOT::AccountGetId(const string & accountName) {
 	if(!Init())
 		return "";
 	if ( nUtils::checkPrefix(accountName) )
@@ -119,36 +119,36 @@ const string cUseOT::accountGetId(const string & accountName) {
 	return "";
 }
 
-const string cUseOT::accountGetDefault() {
+const string cUseOT::AccountGetDefault() {
 	if(!Init())
 		return "";
 	return mDefaultIDs.at("AccountID");
 }
 
-const string cUseOT::accountGetName(const string & accountID) {
+const string cUseOT::AccountGetName(const string & accountID) {
 	if(!Init())
 		return "";
 	return OTAPI_Wrap::GetAccountWallet_Name(accountID);
 }
 
-string cUseOT::accountDelete(const string & accountName) { ///<
+string cUseOT::AccountDelete(const string & accountName) { ///<
 	if(!Init())
 	return "";
 
-	if(!OTAPI_Wrap::Wallet_CanRemoveAccount (accountGetId(accountName))) {
+	if(!OTAPI_Wrap::Wallet_CanRemoveAccount (AccountGetId(accountName))) {
 		// inBox and OutBox must be get from server because without it account not work properly
 		// example if you can't delete account without inbox and outbox
-		int32_t  inBoxInt = OTAPI_Wrap::getInbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),accountGetId(accountName));
-		int32_t outBoxInt = OTAPI_Wrap::getOutbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),accountGetId(accountName));
+		int32_t  inBoxInt = OTAPI_Wrap::getInbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),AccountGetId(accountName));
+		int32_t outBoxInt = OTAPI_Wrap::getOutbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),AccountGetId(accountName));
 	}
 
-	if(OTAPI_Wrap::deleteAssetAccount(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), accountGetId(accountName))==-1)
+	if(OTAPI_Wrap::deleteAssetAccount(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), AccountGetId(accountName))==-1)
 		return "Error while deleting account";
 	else
 		return "";
 }
 
-const vector<string> cUseOT::accountGetIds() {
+const vector<string> cUseOT::AccountGetIds() {
 	if(!Init())
 	return vector<string> {};
 
@@ -160,7 +160,7 @@ const vector<string> cUseOT::accountGetIds() {
 	return accountsIDs;
 }
 
-void cUseOT::accountRefreshAll() {
+void cUseOT::AccountRefreshAll() {
 	if(!Init())
 		return;
 
@@ -193,13 +193,13 @@ void cUseOT::accountRefreshAll() {
 	}
 }
 
-const string cUseOT::accountRename(const string & oldAccountName, const string & newAccountName) {
+const string cUseOT::AccountRename(const string & oldAccountName, const string & newAccountName) {
 
-		accountSetName (accountGetId(oldAccountName), newAccountName);
+		AccountSetName (AccountGetId(oldAccountName), newAccountName);
 	return "";
 }
 
-const string cUseOT::accountSetName(const string & accountID, const string & NewAccountName) { //TODO: passing to function: const string & nymName, const string & signerNymName,
+const string cUseOT::AccountSetName(const string & accountID, const string & NewAccountName) { //TODO: passing to function: const string & nymName, const string & signerNymName,
 	if(!Init())
 	return "";
 
@@ -207,13 +207,13 @@ const string cUseOT::accountSetName(const string & accountID, const string & New
 	return "";
 }
 
-void cUseOT::accountCreate(const string & assetName, const string & newAccountName) {
+void cUseOT::AccountCreate(const string & assetName, const string & newAccountName) {
 	if(!Init())
 	return ;
 
 	OT_ME madeEasy;
 	string strResponse;
-	strResponse = madeEasy.create_asset_acct(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), assetGetId(assetName));
+	strResponse = madeEasy.create_asset_acct(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), AssetGetId(assetName));
 
 	// -1 error, 0 failure, 1 success.
 	if (1 != madeEasy.VerifyMessageSuccess(strResponse))
@@ -230,17 +230,17 @@ void cUseOT::accountCreate(const string & assetName, const string & newAccountNa
 	}
 
 	// Set the Name of the new account.
-	accountSetName(strID,newAccountName);
+	AccountSetName(strID,newAccountName);
 
 	cout << "Account " << newAccountName << "(" << strID << ")" << " created successfully." << endl;
 }
-void cUseOT::accountSetDefault(const string & accountName) {
+void cUseOT::AccountSetDefault(const string & accountName) {
 	if(!Init())
 		return ;
-	mDefaultIDs.at("AccountID") = accountGetId(accountName);
+	mDefaultIDs.at("AccountID") = AccountGetId(accountName);
 }
 
-const vector<string> cUseOT::accountsGet() {
+const vector<string> cUseOT::AccountsGet() {
 	if(!Init())
 	return vector<string> {};
 
@@ -252,14 +252,14 @@ const vector<string> cUseOT::accountsGet() {
 	return accounts;
 }
 
-bool cUseOT::assetCheckIfExists(const string & assetName) {
-	vector<string> v = assetsGetNames();
+bool cUseOT::AssetCheckIfExists(const string & assetName) {
+	vector<string> v = AssetsGetNames();
 	if (std::find(v.begin(), v.end(), assetName) != v.end())
 		return true;
 	return false;
 }
 
-const string cUseOT::assetGetId(const string & assetName) {
+const string cUseOT::AssetGetId(const string & assetName) {
 	if(!Init())
 		return "";
 	if ( nUtils::checkPrefix(assetName) )
@@ -273,7 +273,7 @@ const string cUseOT::assetGetId(const string & assetName) {
 	return "";
 }
 
-const vector<string> cUseOT::assetsGetNames() {
+const vector<string> cUseOT::AssetsGetNames() {
 	if(!Init())
 	return vector<string> {};
 
@@ -284,7 +284,7 @@ const vector<string> cUseOT::assetsGetNames() {
 	return assets;
 }
 
-const string cUseOT::assetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract) { // Issue new asset type
+const string cUseOT::AssetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract) { // Issue new asset type
 	if(!Init())
 	return "";
 
@@ -301,27 +301,27 @@ const string cUseOT::assetIssue(const std::string & serverID, const std::string 
 	return strResponse;
 }
 
-const string cUseOT::assetNew(const std::string & nymID, const std::string & xmlContents){
+const string cUseOT::AssetNew(const std::string & nymID, const std::string & xmlContents){
 	if(!Init())
 			return "";
 	return OTAPI_Wrap::CreateAssetContract(nymID, xmlContents);
 }
 
-const string cUseOT::assetGetContract(const std::string & assetID){
+const string cUseOT::AssetGetContract(const std::string & assetID){
 	if(!Init())
 		return "";
 	string strContract = OTAPI_Wrap::GetAssetType_Contract(assetID);
 	return strContract;
 }
 
-const string cUseOT::assetGetDefault(){
+const string cUseOT::AssetGetDefault(){
 	return mDefaultIDs.at("PurseID");
 }
 
-void cUseOT::assetRemove(const string & assetName) {
+void cUseOT::AssetRemove(const string & assetName) {
 	if(!Init())
 		return ;
-	string nymID = assetGetId(assetName);
+	string nymID = AssetGetId(assetName);
 	if ( OTAPI_Wrap::Wallet_CanRemoveAssetType(assetName) ) {
 		if ( OTAPI_Wrap::Wallet_RemoveAssetType(assetName) )
 			_info("Asset was deleted successfully");
@@ -330,32 +330,32 @@ void cUseOT::assetRemove(const string & assetName) {
 	}
 }
 
-void cUseOT::assetSetDefault(const std::string & assetName){
+void cUseOT::AssetSetDefault(const std::string & assetName){
 	if(!Init())
 		return ;
-	mDefaultIDs.at("PurseID") = assetGetId(assetName);
+	mDefaultIDs.at("PurseID") = AssetGetId(assetName);
 }
 
-const string cUseOT::contractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
+const string cUseOT::ContractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
 	if(!Init())
 		return "";
 	return OTAPI_Wrap::AddSignature(nymID, contract);
 }
 
-const vector<string> cUseOT::msgGetAll() { ///< Get all messages from all Nyms.
+const vector<string> cUseOT::MsgGetAll() { ///< Get all messages from all Nyms.
 	if(!Init())
 	return vector<string> {};
 
 	for(int i = 0 ; i < OTAPI_Wrap::GetNymCount ();i++) {
-		msgGetForNym( nymGetName( OTAPI_Wrap::GetNym_ID(i) ) );
+		MsgGetForNym( NymGetName( OTAPI_Wrap::GetNym_ID(i) ) );
 	}
 	return vector<string> {};
 }
 
-const vector<string> cUseOT::msgGetForNym(const string & nymName) { ///< Get all messages from Nym.
+const vector<string> cUseOT::MsgGetForNym(const string & nymName) { ///< Get all messages from Nym.
 	if(!Init())
 		return vector<string> {};
-	string nymID = nymGetId(nymName);
+	string nymID = NymGetId(nymName);
 	cout << "===" << nymName << "(" << nymID << ")"  << "===" << endl;
 	cout << "INBOX" << endl;
 	cout << "id\tfrom\t\tcontent:" << endl;
@@ -371,13 +371,13 @@ const vector<string> cUseOT::msgGetForNym(const string & nymName) { ///< Get all
 	return vector<string> {};
 }
 
-void cUseOT::msgSend(const string & nymSender, const string & nymRecipient, const string & msg) { ///< Send message from Nym1 to Nym2
+void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, const string & msg) { ///< Send message from Nym1 to Nym2
 	if(!Init())
 		return;
 
 	OT_ME madeEasy;
-	string sender = nymGetId(nymSender);
-	string recipient = nymGetId(nymRecipient);
+	string sender = NymGetId(nymSender);
+	string recipient = NymGetId(nymRecipient);
 
 	_dbg1(sender);
 	_dbg1(recipient);
@@ -394,12 +394,12 @@ void cUseOT::msgSend(const string & nymSender, const string & nymRecipient, cons
 	_info("Message was sent successfully.");
 }
 
-void cUseOT::msgSend(const string & nymRecipient, const string & msg) { ///< Send message from default Nym to Nym2
+void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Send message from default Nym to Nym2
 	if(!Init())
 		return;
 
 	OT_ME madeEasy;
-	string recipient = nymGetId(nymRecipient);
+	string recipient = NymGetId(nymRecipient);
 
 	_dbg1(recipient);
 
@@ -415,19 +415,19 @@ void cUseOT::msgSend(const string & nymRecipient, const string & msg) { ///< Sen
 }
 
 
-void cUseOT::msgInRemoveByIndex(const string & nymName, const int32_t & nIndex) {
-	if(OTAPI_Wrap::Nym_RemoveMailByIndex (nymGetId(nymName), nIndex)){
+void cUseOT::MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex) {
+	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){
 		_info("Message removed successfully from inbox");
 	}
 }
 
-void cUseOT::msgOutRemoveByIndex(const string & nymName, const int32_t & nIndex) {
-	if( OTAPI_Wrap::Nym_RemoveOutmailByIndex(nymGetId(nymName), nIndex) ){
+void cUseOT::MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex) {
+	if( OTAPI_Wrap::Nym_RemoveOutmailByIndex(NymGetId(nymName), nIndex) ){
 		_info("Message removed successfully from outbox");
 	}
 }
 
-void cUseOT::nymCheck(const string & hisNymID) { // wip
+void cUseOT::NymCheck(const string & hisNymID) { // wip
 	if(!Init())
 		return;
 
@@ -442,14 +442,14 @@ void cUseOT::nymCheck(const string & hisNymID) { // wip
 	_info("Successfully downloaded user public key.");
 }
 
-bool cUseOT::nymCheckByName(const string & nymName) {
-	vector<string> v = nymsGetMy();
+bool cUseOT::NymCheckByName(const string & nymName) {
+	vector<string> v = NymsGetMy();
 	if (std::find(v.begin(), v.end(), nymName) != v.end())
 		return true;
 	return false;
 }
 
-void cUseOT::nymCreate(const string & nymName) {
+void cUseOT::NymCreate(const string & nymName) {
 	if(!Init())
 	return ;
 
@@ -471,13 +471,13 @@ void cUseOT::nymCreate(const string & nymName) {
 	_info("Nym " << nymName << "(" << strID << ")" << " created successfully.");
 }
 
-const string cUseOT::nymGetDefault() {
+const string cUseOT::NymGetDefault() {
 	if(!Init())
 		return "";
 	return mDefaultIDs.at("UserID");
 }
 
-const string cUseOT::nymGetId(const string & nymName) { // Gets nym aliases and IDs begins with '^'
+const string cUseOT::NymGetId(const string & nymName) { // Gets nym aliases and IDs begins with '^'
 	if(!Init())
 		return "";
 	if ( nUtils::checkPrefix(nymName) )
@@ -493,12 +493,12 @@ const string cUseOT::nymGetId(const string & nymName) { // Gets nym aliases and 
 	return "";
 }
 
-const string cUseOT::nymGetInfo(const string & nymName) {
+const string cUseOT::NymGetInfo(const string & nymName) {
 	if(!Init())
 		return "";
 
-	if (nymCheckByName(nymName)){
-		return OTAPI_Wrap::GetNym_Stats( nymGetId(nymName) );
+	if (NymCheckByName(nymName)){
+		return OTAPI_Wrap::GetNym_Stats( NymGetId(nymName) );
 	}
 	else {
 		_erro("Nym not found");
@@ -507,13 +507,13 @@ const string cUseOT::nymGetInfo(const string & nymName) {
 	return "";
 }
 
-const string cUseOT::nymGetName(const string & nymID) {
+const string cUseOT::NymGetName(const string & nymID) {
 	if(!Init())
 		return "";
 	return OTAPI_Wrap::GetNym_Name(nymID);
 }
 
-void cUseOT::nymRefresh() {
+void cUseOT::NymRefresh() {
 	if(!Init())
 		return;
 
@@ -547,7 +547,7 @@ void cUseOT::nymRefresh() {
 
 }
 
-void cUseOT::nymRegister(const string & nymName) {
+void cUseOT::NymRegister(const string & nymName) {
 	if(!Init())
 	return ;
 
@@ -555,7 +555,7 @@ void cUseOT::nymRegister(const string & nymName) {
 
 	_warn("Checking for default server only");
 
-	string nymID = nymGetId(nymName);
+	string nymID = NymGetId(nymName);
 
 	bool isReg = OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, mDefaultIDs.at("ServerID"));
 
@@ -569,16 +569,16 @@ void cUseOT::nymRegister(const string & nymName) {
 		cout << "Nym " << nymName << "(" << nymID << ")" << " was already registered" << endl;
 }
 
-void cUseOT::nymRegister(const string & nymName, const string & serverName) {
+void cUseOT::NymRegister(const string & nymName, const string & serverName) {
 	if(!Init())
 	return ;
 	//TODO: Make work with servers aliases
 }
 
-void cUseOT::nymRemove(const string & nymName) {
+void cUseOT::NymRemove(const string & nymName) {
 	if(!Init())
 	return ;
-	string nymID = nymGetId(nymName);
+	string nymID = NymGetId(nymName);
 	if ( OTAPI_Wrap::Wallet_CanRemoveNym(nymID) ) {
 		if ( OTAPI_Wrap::Wallet_RemoveNym(nymID) )
 			_info("Nym was deleted successfully");
@@ -587,13 +587,13 @@ void cUseOT::nymRemove(const string & nymName) {
 	}
 }
 
-void cUseOT::nymSetDefault(const string & nymName) {
+void cUseOT::NymSetDefault(const string & nymName) {
 	if(!Init())
 		return ;
-	mDefaultIDs.at("UserID") = nymGetId(nymName);
+	mDefaultIDs.at("UserID") = NymGetId(nymName);
 }
 
-const vector<string> cUseOT::nymsGetMy() {
+const vector<string> cUseOT::NymsGetMy() {
 	if(!Init())	return vector<string> {};
 
 	if (!mNymsMy_loaded) {
@@ -615,13 +615,13 @@ const vector<string> cUseOT::nymsGetMy() {
 return mNymsMy_str;
 }
 
-void cUseOT::serverAdd(const std::string & contract) {
+void cUseOT::ServerAdd(const std::string & contract) {
 	if(!Init())
 			return ;
 	OTAPI_Wrap::AddServerContract( contract );
 }
 
-void cUseOT::serverCheck() { // Use it to ping server
+void cUseOT::ServerCheck() { // Use it to ping server
 	if(!Init())
 			return ;
 
@@ -632,13 +632,13 @@ void cUseOT::serverCheck() { // Use it to ping server
 }
 
 
-const string cUseOT::serverGetDefault() {
+const string cUseOT::ServerGetDefault() {
 	if(!Init())
 		return "";
 	return mDefaultIDs.at("ServerID");
 }
 
-const string cUseOT::serverGetId(const string & serverName) { // Gets nym aliases and IDs begins with '%'
+const string cUseOT::ServerGetId(const string & serverName) { // Gets nym aliases and IDs begins with '%'
 	if(!Init())
 		return "";
 
@@ -655,16 +655,16 @@ const string cUseOT::serverGetId(const string & serverName) { // Gets nym aliase
 	return "";
 }
 
-const string cUseOT::serverGetName(const string & serverID){
+const string cUseOT::ServerGetName(const string & serverID){
 	if(!Init())
 		return "";
 	return OTAPI_Wrap::GetServer_Name(serverID);
 }
 
-void cUseOT::serverRemove(const string & serverName) {
+void cUseOT::ServerRemove(const string & serverName) {
 	if(!Init())
 		return ;
-	string nymID = serverGetId(serverName);
+	string nymID = ServerGetId(serverName);
 	if ( OTAPI_Wrap::Wallet_CanRemoveServer(serverName) ) {
 		if ( OTAPI_Wrap::Wallet_RemoveServer(serverName) )
 			_info("Server was deleted successfully");
@@ -674,14 +674,14 @@ void cUseOT::serverRemove(const string & serverName) {
 }
 
 
-void cUseOT::serverSetDefault(const string & serverName) {
+void cUseOT::ServerSetDefault(const string & serverName) {
 	if(!Init())
 		return ;
-	mDefaultIDs.at("ServerID") = serverGetId(serverName);
+	mDefaultIDs.at("ServerID") = ServerGetId(serverName);
 	_info("Default server: " + mDefaultIDs.at("ServerID"));
 }
 
-const vector<string> cUseOT::serversGet() { ///< Get all servers name
+const vector<string> cUseOT::ServersGet() { ///< Get all servers name
 	if(!Init())
 	return vector<string> {};
 
@@ -693,7 +693,7 @@ const vector<string> cUseOT::serversGet() { ///< Get all servers name
 	return servers;
 }
 
-const string cUseOT::textEncode(const string & plainText) {
+const string cUseOT::TextEncode(const string & plainText) {
 	if(!Init())
 		return "";
 
@@ -703,15 +703,15 @@ const string cUseOT::textEncode(const string & plainText) {
 	return encodedText;
 }
 
-const string cUseOT::textEncrypt(const string & recipientNymName, const string & plainText) {
+const string cUseOT::TextEncrypt(const string & recipientNymName, const string & plainText) {
 	if(!Init())
 		return "";
 	string encryptedText;
-	encryptedText = OTAPI_Wrap::Encrypt(nymGetId(recipientNymName), plainText);
+	encryptedText = OTAPI_Wrap::Encrypt(NymGetId(recipientNymName), plainText);
 	return encryptedText;
 }
 
-const string cUseOT::textDecode(const string & encodedText) {
+const string cUseOT::TextDecode(const string & encodedText) {
 	if(!Init())
 		return "";
 
@@ -721,11 +721,11 @@ const string cUseOT::textDecode(const string & encodedText) {
 	return plainText;
 }
 
-const string cUseOT::textDecrypt(const string & recipientNymName, const string & encryptedText) {
+const string cUseOT::TextDecrypt(const string & recipientNymName, const string & encryptedText) {
 	if(!Init())
 		return "";
 	string plainText;
-	plainText = OTAPI_Wrap::Decrypt(nymGetId(recipientNymName), encryptedText);
+	plainText = OTAPI_Wrap::Decrypt(NymGetId(recipientNymName), encryptedText);
 	return plainText;
 }
 

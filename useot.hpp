@@ -38,67 +38,67 @@ namespace nUse {
 		void Done();
 		void CloseApi();
 
-		bool accountCheckIfExists(const string & accountName);
-		const int64_t accountGetBalance(const string & accountName);
-		const string accountGetId(const string & accountName);
-		const string accountGetDefault();
-		const string accountGetName(const string & accountID);
-		string accountDelete(const string & accountName);
-		const vector<string> accountGetIds();
-		void accountRefreshAll();
-		const string accountRename(const string & oldAccountName, const string & newAccountName);
-		void accountSetDefault(const string & accountName);
-		const string accountSetName(const string & accountID, const string & NewAccountName);
-		void accountCreate(const string & assetName, const string & newAccountName);
-		const vector<string> accountsGet();
+		bool AccountCheckIfExists(const string & accountName);
+		const int64_t AccountGetBalance(const string & accountName);
+		const string AccountGetId(const string & accountName);
+		const string AccountGetDefault();
+		const string AccountGetName(const string & accountID);
+		string AccountDelete(const string & accountName);
+		const vector<string> AccountGetIds();
+		void AccountRefreshAll();
+		const string AccountRename(const string & oldAccountName, const string & newAccountName);
+		void AccountSetDefault(const string & accountName);
+		const string AccountSetName(const string & accountID, const string & NewAccountName);
+		void AccountCreate(const string & MsgName, const string & newAccountName);
+		const vector<string> AccountsGet();
 
 
-		bool assetCheckIfExists(const string & assetName);
-		const string assetGetId(const string & assetName);
-		const vector<string> assetsGetNames();
-		const string assetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract);
-		const string assetNew(const std::string & nymID, const std::string & xmlContents);
-		const string assetGetContract(const std::string & assetID);
-		const string assetGetDefault(); // Also known as purse
-		void assetRemove(const string & assetName);
-		void assetSetDefault(const std::string & assetName); // Also known as purse
+		bool AssetCheckIfExists(const string & assetName);
+		const string AssetGetId(const string & assetName);
+		const vector<string> AssetsGetNames();
+		const string AssetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract);
+		const string AssetNew(const std::string & nymID, const std::string & xmlContents);
+		const string AssetGetContract(const std::string & assetID);
+		const string AssetGetDefault(); // Also known as purse
+		void AssetRemove(const string & assetName);
+		void AssetSetDefault(const std::string & assetName); // Also known as purse
 
-		const string contractSign(const std::string & nymID, const std::string & contract);
+		const string ContractSign(const std::string & nymID, const std::string & contract);
 
-		const vector<string> msgGetAll();
-		const vector<string> msgGetForNym(const string & nymName);
-		void msgSend(const string & nymSender, const string & nymRecipient, const string & msg);
-		void msgSend(const string & nymRecipient, const string & msg);
-		void msgInRemoveByIndex(const string & nymName, const int32_t & nIndex);
-		void msgOutRemoveByIndex(const string & nymName, const int32_t & nIndex);
+		const vector<string> MsgGetAll();
+		const vector<string> MsgGetForNym(const string & nymName);
+		void MsgSend(const string & nymSender, const string & nymRecipient, const string & msg);
+		void MsgSend(const string & nymRecipient, const string & msg);
+		void MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex);
+		void MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex);
 
-		void nymCheck(const string & hisNymID);
-		bool nymCheckByName(const string & nymName);
-		void nymCreate(const string & nymName);
-		const string nymGetDefault();
-		const string nymGetId(const string & nymName);
-		const string nymGetInfo(const string & nymName);
-		const string nymGetName(const string & nymID);
-		void nymRefresh();
-		void nymRegister(const string & nymName);
-		void nymRegister(const string & nymName, const string & serverName);
-		void nymRemove(const string & nymName);
-		void nymSetDefault(const string & nymName);
-		const vector<string> nymsGetMy();
+		void NymCheck(const string & hisNymID);
+		bool NymCheckByName(const string & nymName);
+		void NymCreate(const string & nymName);
+		const string NymGetDefault();
+		const string NymGetId(const string & nymName);
+		const string NymGetInfo(const string & nymName);
+		const string NymGetName(const string & nymID);
+		void NymRefresh();
+		void NymRegister(const string & nymName);
+		void NymRegister(const string & nymName, const string & serverName);
+		void NymRemove(const string & nymName);
+		void NymSetDefault(const string & nymName);
+		const vector<string> NymsGetMy();
 
-		void serverAdd(const std::string & contract);
-		void serverCheck();
-		const string serverGetDefault();
-		const string serverGetId(const string & serverName);
-		const string serverGetName(const string & serverID);
-		void serverRemove(const string & serverName);
-		void serverSetDefault(const string & serverName);
-		const vector<string> serversGet();
+		void ServerAdd(const std::string & contract);
+		void ServerCheck();
+		const string ServerGetDefault();
+		const string ServerGetId(const string & serverName);
+		const string ServerGetName(const string & serverID);
+		void ServerRemove(const string & serverName);
+		void ServerSetDefault(const string & serverName);
+		const vector<string> ServersGet();
 
-		const string textEncode(const string & plainText);
-		const string textEncrypt(const string & recipientNymName, const string & plainText);
-		const string textDecode(const string & encodedText);
-		const string textDecrypt(const string & recipientNymName, const string & encryptedText);
+		const string TextEncode(const string & plainText);
+		const string TextEncrypt(const string & recipientNymName, const string & plainText);
+		const string TextDecode(const string & encodedText);
+		const string TextDecrypt(const string & recipientNymName, const string & encryptedText);
 	};
 
 	extern cUseOT useOT;

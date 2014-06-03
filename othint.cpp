@@ -78,7 +78,7 @@ Commandline-Functor(s) are expressions that are expected to have certain value, 
 Consider following command line:
 	ot msg send mynym hisnym [ccnym]
 	ot msg send $get_mynym $get_somenym [$get_somenym_o]
-get_mynym is a Cmdfunc, and this one for example links to cUse::nymsGetMy
+get_mynym is a Cmdfunc, and this one for example links to cUse::NymsGetMy
 
 They are defined in code in order to have following functions:
 - othint - completion, e.g. mynym provides list of possible your nyms
@@ -726,35 +726,35 @@ TODO - planned new tree of commands using lambda
 	if (topic=="account") {
 
 		if (full_words<2) { // word2 - the action:
-			string defAcct = nOT::nUse::useOT.accountGetDefault();
-			cout << "Default account: " << nOT::nUse::useOT.accountGetName(defAcct) + " - " + defAcct << endl;// <====== Execute - show active account
+			string defAcct = nOT::nUse::useOT.AccountGetDefault();
+			cout << "Default account: " << nOT::nUse::useOT.AccountGetName(defAcct) + " - " + defAcct << endl;// <====== Execute - show active account
 			return WordsThatMatch(  current_word  ,  vector<string>{"new", "ls", "refresh", "rm", "set-default", "mv"} ) ;
 		}
 		if (full_words<3) { // word3 (cmdArgs.at(0))
 			if (action=="new") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.assetsGetNames() ) ; // <====== Execute
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AssetsGetNames() ) ; // <====== Execute
 			}
 			if (action=="ls") {
-				nOT::nUtils::DisplayVectorEndl( cout, nOT::nUse::useOT.accountsGet() ); // <====== Execute
+				nOT::nUtils::DisplayVectorEndl( cout, nOT::nUse::useOT.AccountsGet() ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="refresh") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.nymsGetMy() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() ) ;
 			}
 			if (action=="rm") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.accountsGet() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
 			}
 			if (action=="set-default") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.accountsGet() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
 			}
 			if (action=="mv") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.accountsGet() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
 			}
 		}
 
 		if (full_words<4) { // word4 (cmdArgs.at(1))
 			if (action=="new") {
-				if (nOT::nUse::useOT.assetCheckIfExists(cmdArgs.at(0))) {
+				if (nOT::nUse::useOT.AssetCheckIfExists(cmdArgs.at(0))) {
 					return vector<string>{};
 				}
 				else {
@@ -763,8 +763,8 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="rm") {
-				if (nOT::nUse::useOT.accountCheckIfExists(cmdArgs.at(0))) {
-					return vector<string>{nOT::nUse::useOT.accountDelete(cmdArgs.at(0))};
+				if (nOT::nUse::useOT.AccountCheckIfExists(cmdArgs.at(0))) {
+					return vector<string>{nOT::nUse::useOT.AccountDelete(cmdArgs.at(0))};
 				}
 				else {
 					std::cout << "No account with this name: "  << (cmdArgs.at(0)) << endl;
@@ -772,7 +772,7 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="set-default") {
-				nOT::nUse::useOT.accountSetDefault(cmdArgs.at(0));
+				nOT::nUse::useOT.AccountSetDefault(cmdArgs.at(0));
 			}
 			if (action=="mv") {
 				std::cout <<"Pass new account name";
@@ -782,8 +782,8 @@ TODO - planned new tree of commands using lambda
 
 		if (full_words<5) { // word5 (cmdArgs.at(2))
 			if (action=="new") {
-				if (!nOT::nUse::useOT.accountCheckIfExists(cmdArgs.at(1))) { // make sure that the name is unique
- 					nOT::nUse::useOT.accountCreate(cmdArgs.at(0), cmdArgs.at(1)); // <====== Execute
+				if (!nOT::nUse::useOT.AccountCheckIfExists(cmdArgs.at(1))) { // make sure that the name is unique
+ 					nOT::nUse::useOT.AccountCreate(cmdArgs.at(0), cmdArgs.at(1)); // <====== Execute
 					return vector<string>{};
 				}
 				else {
@@ -793,8 +793,8 @@ TODO - planned new tree of commands using lambda
 
 			}
 			if (action=="mv") {
-				if (!nOT::nUse::useOT.accountCheckIfExists(cmdArgs.at(1))) { // make sure that the name is unique
-					nOT::nUse::useOT.accountRename(cmdArgs.at(0), cmdArgs.at(1)); // <====== Execute
+				if (!nOT::nUse::useOT.AccountCheckIfExists(cmdArgs.at(1))) { // make sure that the name is unique
+					nOT::nUse::useOT.AccountRename(cmdArgs.at(0), cmdArgs.at(1)); // <====== Execute
 					return vector<string>{};
 				}
 				else {
@@ -832,19 +832,19 @@ TODO - planned new tree of commands using lambda
 		}
 		if (full_words<3) { // we work on word3 - cmdArgs.at(0) - asset name
 			if (action=="ls") {
-				nOT::nUtils::DisplayVectorEndl( cout,  nOT::nUse::useOT.assetsGetNames() ) ;
+				nOT::nUtils::DisplayVectorEndl( cout,  nOT::nUse::useOT.AssetsGetNames() ) ;
 				return vector<string>{};
 			}
 			else if (action=="issue") {
 				nOT::nUtils::DisplayStringEndl( cout, "Please paste a currency contract, followed by an EOF or a ~ by itself on a blank line:" );
-				nOT::nUtils::DisplayStringEndl( cout, "SERVER RESPONSE:\n" + nOT::nUse::useOT.assetIssue( nOT::nUse::useOT.serverGetDefault(),nOT::nUse::useOT.nymGetDefault(), nOT::nUtils::GetMultiline() ) );
+				nOT::nUtils::DisplayStringEndl( cout, "SERVER RESPONSE:\n" + nOT::nUse::useOT.AssetIssue( nOT::nUse::useOT.ServerGetDefault(),nOT::nUse::useOT.NymGetDefault(), nOT::nUtils::GetMultiline() ) );
 				return vector<string>{};
 			}
 			else if (action=="new") {
 				nOT::nUtils::DisplayStringEndl( cout, "Please enter the XML contents for the contract, followed by an EOF or a ~ by itself on a blank line:");
-				const string assetID = nOT::nUse::useOT.assetNew( nOT::nUse::useOT.nymGetDefault(), nOT::nUtils::GetMultiline() );
+				const string assetID = nOT::nUse::useOT.AssetNew( nOT::nUse::useOT.NymGetDefault(), nOT::nUtils::GetMultiline() );
 				nOT::nUtils::DisplayStringEndl( cout, "ASSET ID:\n" + assetID );
-				nOT::nUtils::DisplayStringEndl( cout, "SIGNED CONTRACT:\n" + nOT::nUse::useOT.assetGetContract(assetID) );
+				nOT::nUtils::DisplayStringEndl( cout, "SIGNED CONTRACT:\n" + nOT::nUse::useOT.AssetGetContract(assetID) );
 				return vector<string>{};
 			}
 		}
@@ -900,28 +900,28 @@ TODO - planned new tree of commands using lambda
 
 		if (full_words<3) { // we work on word3 - var1
 			if (action=="ls") {
-				//return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.nymsGetMy() ) ; // TODO nyms autocomplete
-				nOT::nUse::useOT.msgGetAll(); // <====== Execute
+				//return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() ) ; // TODO nyms autocomplete
+				nOT::nUse::useOT.MsgGetAll(); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="mv") {
 				return WordsThatMatch(  current_word  ,  vector<string>{"Where-to?"} ); // in mail box... will there be other directories?
 			}
 			if (action=="rm") { // nym
-				return WordsThatMatch(  current_word  , nOT::nUse::useOT.nymsGetMy() );
+				return WordsThatMatch(  current_word  , nOT::nUse::useOT.NymsGetMy() );
 			}
 			if (action=="sendfrom") { // sender name
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.nymsGetMy() );
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() );
 			}
 			if (action=="sendto") { // recipient name TODO finish sendto functionality
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.nymsGetMy() ); //TODO propose nyms from adressbook
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() ); //TODO propose nyms from adressbook
 			}
 		}
 
 		if (full_words<4) { // we work on word4 - var2
 			if (action=="ls") {
-				if (nOT::nUse::useOT.nymCheckByName( cmdArgs.at(0) )) {
-					nOT::nUse::useOT.msgGetForNym( cmdArgs.at(0) ); // <====== Execute
+				if (nOT::nUse::useOT.NymCheckByName( cmdArgs.at(0) )) {
+					nOT::nUse::useOT.MsgGetForNym( cmdArgs.at(0) ); // <====== Execute
 					return vector<string>{};
 				}
 				else {
@@ -930,7 +930,7 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="rm") { // nym
-				if (nOT::nUse::useOT.nymCheckByName(cmdArgs.at(0))) {
+				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(0))) {
 					cout << "Index?" << endl;
 					return vector<string>{};
 				}
@@ -940,8 +940,8 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="sendfrom") { // recipient name
-				if (nOT::nUse::useOT.nymCheckByName(cmdArgs.at(0))) {
-					return WordsThatMatch(  current_word  , nOT::nUse::useOT.nymsGetMy() );
+				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(0))) {
+					return WordsThatMatch(  current_word  , nOT::nUse::useOT.NymsGetMy() );
 				}
 				else {
 					std::cerr << "Can't find that nym: " << cmdArgs.at(0);
@@ -952,9 +952,9 @@ TODO - planned new tree of commands using lambda
 
 		if (full_words<5) { // we work on word5 - var3
 			if (action=="sendfrom") { // message text
-				if (nOT::nUse::useOT.nymCheckByName(cmdArgs.at(1))) {
+				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(1))) {
 					nOT::nUtils::DisplayStringEndl( cout, "Please enter multiple lines of message, followed by an EOF or a ~ by itself on a blank line:" );
-					nOT::nUse::useOT.msgSend(cmdArgs.at(0), cmdArgs.at(1), nOT::nUtils::GetMultiline()); // <====== Execute
+					nOT::nUse::useOT.MsgSend(cmdArgs.at(0), cmdArgs.at(1), nOT::nUtils::GetMultiline()); // <====== Execute
 					return vector<string>{}; // ready for message
 				}
 				else {
@@ -963,8 +963,8 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="rm") { // nym
-				if (nOT::nUse::useOT.nymCheckByName(cmdArgs.at(0))) {
-					nOT::nUse::useOT.msgInRemoveByIndex( cmdArgs.at(0), std::stoi(cmdArgs.at(1)) );
+				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(0))) {
+					nOT::nUse::useOT.MsgInRemoveByIndex( cmdArgs.at(0), std::stoi(cmdArgs.at(1)) );
 				}
 				else {
 					std::cerr << "Can't find that nym: " << cmdArgs.at(0);
@@ -975,7 +975,7 @@ TODO - planned new tree of commands using lambda
 
 		if (full_words<6) { // we work on word6
 			if (action=="sendfrom") { // message text
-				nOT::nUse::useOT.msgSend(cmdArgs.at(0), cmdArgs.at(1), cmdArgs.at(2)); // <====== Execute
+				nOT::nUse::useOT.MsgSend(cmdArgs.at(0), cmdArgs.at(1), cmdArgs.at(2)); // <====== Execute
 				return vector<string>{};
 			}
 		}
@@ -985,8 +985,8 @@ TODO - planned new tree of commands using lambda
 
 	if (topic=="nym") {
 		if (full_words<2) { // we work on word2 - the action:
-			string defNym = nOT::nUse::useOT.nymGetDefault();
-			cout << "Default Nym: " << nOT::nUse::useOT.nymGetName(defNym) + " - " + defNym << endl;// <====== Execute - show active nym
+			string defNym = nOT::nUse::useOT.NymGetDefault();
+			cout << "Default Nym: " << nOT::nUse::useOT.NymGetName(defNym) + " - " + defNym << endl;// <====== Execute - show active nym
 			return WordsThatMatch(  current_word  ,  vector<string>{"check", "edit", "export", "import", "info", "ls", "new", "refresh", "register", "rm", "set-default"} ) ;
 		}
 		if (full_words<3) { // we work on word3 - cmdArgs.at(0)
@@ -996,14 +996,14 @@ TODO - planned new tree of commands using lambda
 				return vector<string>{};
 			}
 			if (action=="edit") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.nymsGetMy() );//TODO Suitable changes to this part - propably after merging with otlib
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );//TODO Suitable changes to this part - propably after merging with otlib
 			}
 			if (action=="info") {
 				//nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.nymGetInfo(cmdArgs.at(0)) ); // <====== Execute TODO For default nym
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.nymsGetMy() );
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );
 			}
 			if (action=="ls") {
-				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.nymsGetMy(), "\n"); // <====== Execute
+				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.NymsGetMy(), "\n"); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="new") {
@@ -1011,39 +1011,39 @@ TODO - planned new tree of commands using lambda
 				return vector<string>{};
 			}
 			if (action=="refresh") {
-				nOT::nUse::useOT.nymRefresh(); // <====== Execute
+				nOT::nUse::useOT.NymRefresh(); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="register") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.nymsGetMy() );//TODO server name
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );//TODO server name
 			}
 			if (action=="rm") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.nymsGetMy() );//TODO Suitable changes to this part - propably after merging with otlib
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );//TODO Suitable changes to this part - propably after merging with otlib
 			}
 			if (action=="set-default") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.nymsGetMy() );
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );
 			}
 		}
 
 		if (full_words<4) { // we work on word4 - var2
 			if (action=="check") {
-				nOT::nUse::useOT.nymCheck( cmdArgs.at(0) ); // <====== Execute
+				nOT::nUse::useOT.NymCheck( cmdArgs.at(0) ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="info") {
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.nymGetInfo(cmdArgs.at(0)) ); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.NymGetInfo(cmdArgs.at(0)) ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="new") {
-				nOT::nUse::useOT.nymCreate( cmdArgs.at(0) ); // <====== Execute
+				nOT::nUse::useOT.NymCreate( cmdArgs.at(0) ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="register") {
-				nOT::nUse::useOT.nymRegister( cmdArgs.at(0) ); // <====== Execute
+				nOT::nUse::useOT.NymRegister( cmdArgs.at(0) ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="set-default") {
-				nOT::nUse::useOT.nymSetDefault( cmdArgs.at(0) ); // <====== Execute
+				nOT::nUse::useOT.NymSetDefault( cmdArgs.at(0) ); // <====== Execute
 				return vector<string>{};
 			}
 		}
@@ -1059,35 +1059,35 @@ TODO - planned new tree of commands using lambda
 
 	if (topic=="server") {
 		if (full_words<2) { // we work on word2 - the action:
-			string defServer = nOT::nUse::useOT.serverGetDefault();
-			cout << "Default server: " << nOT::nUse::useOT.serverGetName(defServer) + " - " + defServer << endl;// <====== Execute - show active server
+			string defServer = nOT::nUse::useOT.ServerGetDefault();
+			cout << "Default server: " << nOT::nUse::useOT.ServerGetName(defServer) + " - " + defServer << endl;// <====== Execute - show active server
 			return WordsThatMatch(  current_word  ,  vector<string>{"add", "check", "ls", "new", "set-default"} ) ;
 		}
 
 		if (full_words<3) { // we work on word3 - var1
 			if (action=="add") {
 				nOT::nUtils::DisplayStringEndl( cout, "Please paste a server contract, followed by an EOF or a ~ by itself on a blank line:" );
-				nOT::nUse::useOT.serverAdd( nOT::nUtils::GetMultiline() ); // <====== Execute
+				nOT::nUse::useOT.ServerAdd( nOT::nUtils::GetMultiline() ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="check") {
-				nOT::nUse::useOT.serverCheck();// <====== Execute
+				nOT::nUse::useOT.ServerCheck();// <====== Execute
 				return vector<string>{};
 			}
 			if (action=="ls") {
 
-				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.serversGet() ); // <====== Execute
+				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.ServersGet() ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="set-default") {
-				return WordsThatMatch(  current_word  , nOT::nUse::useOT.serversGet() );
+				return WordsThatMatch(  current_word  , nOT::nUse::useOT.ServersGet() );
 				return vector<string>{};
 			}
 		}
 
 		if (full_words<4) { // we work on word4 - var2
 			if (action=="set-default") {
-				nOT::nUse::useOT.serverSetDefault(cmdArgs.at(0)); // <====== Execute
+				nOT::nUse::useOT.ServerSetDefault(cmdArgs.at(0)); // <====== Execute
 				return vector<string>{};
 			}
 		}
@@ -1102,28 +1102,28 @@ TODO - planned new tree of commands using lambda
 		if (full_words<3) { // we work on word3 - var1
 			if (action=="encode") { // text to encode
 				nOT::nUtils::DisplayStringEndl( cout, "Please enter multiple lines of text to be encoded, followed by an EOF or a ~ by itself on a blank line:" );
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.textEncode(nOT::nUtils::GetMultiline())); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.TextEncode(nOT::nUtils::GetMultiline())); // <====== Execute
 				return vector<string>{};
 			}
 
 			if (action=="decode") { // text to decode
 				nOT::nUtils::DisplayStringEndl( cout, "Please enter multiple lines of text to be decoded, followed by an EOF or a ~ by itself on a blank line:" );
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.textDecode(nOT::nUtils::GetMultiline()) ); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.TextDecode(nOT::nUtils::GetMultiline()) ); // <====== Execute
 				return vector<string>{};
 			}
 
 			if (action=="encrypt") { // recipient Nym Name
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.nymsGetMy());
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy());
 			}
 
 			if (action=="decrypt") { // recipient Nym Name
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.nymsGetMy());
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy());
 			}
 		}
 
 		if (full_words<4) { // we work on word4 - var2
 			if (action=="encode") {
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.textEncode(cmdArgs.at(0))); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.TextEncode(cmdArgs.at(0))); // <====== Execute
 				return vector<string>{};
 			}
 
@@ -1133,20 +1133,20 @@ TODO - planned new tree of commands using lambda
 
 			if (action=="encrypt") {
 				nOT::nUtils::DisplayStringEndl( cout, "Please enter multiple lines of text to be encrypted, followed by an EOF or a ~ by itself on a blank line:" );
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.textEncrypt(cmdArgs.at(0), nOT::nUtils::GetMultiline())); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.TextEncrypt(cmdArgs.at(0), nOT::nUtils::GetMultiline())); // <====== Execute
 				return vector<string>{};
 			}
 
 			if (action=="decrypt") {
 				nOT::nUtils::DisplayStringEndl( cout, "Please enter multiple lines of text to be decrypted, followed by an EOF or a ~ by itself on a blank line:" );
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.textDecrypt(cmdArgs.at(0), nOT::nUtils::GetMultiline())); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.TextDecrypt(cmdArgs.at(0), nOT::nUtils::GetMultiline())); // <====== Execute
 				return vector<string>{};
 			}
 		}
 
 		if (full_words<5) { // we work on word5 - var3
 			if (action=="encrypt") { // if plain text is passed as argument (don't implemented for decrypt action because of multiline encrytped block)
-				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.textEncrypt(cmdArgs.at(0), cmdArgs.at(1))); // <====== Execute
+				nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.TextEncrypt(cmdArgs.at(0), cmdArgs.at(1))); // <====== Execute
 				return vector<string>{};
 			}
 		}
@@ -1244,7 +1244,7 @@ void cInteractiveShell::runEditline() {
 	my_rl_wrapper_debug = dbg;
 	rl_attempted_completion_function = completion;
 	rl_bind_key('\t',rl_complete);
-	while((buf = readline("commandline-part> "))!=NULL) { // <--- readline()
+	while((buf = readline("> "))!=NULL) { // <--- readline()
 		std::string word;
 		if (buf) word=buf; // if not-null buf, then assign
 		if (buf) { free(buf); buf=NULL; }

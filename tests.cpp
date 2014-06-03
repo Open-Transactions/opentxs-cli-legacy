@@ -16,8 +16,8 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 using namespace nOT::nUtils;
 
 std::string StreamName(std::ostream &str) {
-	if (str == std::cout) return "cout";
-	if (str == std::cout) return "cin";
+	//if (str == std::cout) return "cout";
+	//if (str == std::cout) return "cin";
 	return "other-stream";
 }
 

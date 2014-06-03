@@ -99,7 +99,7 @@ vector<string> cCmdProcessing::UseComplete(nUse::cUseOT &use) {
 }
 
 void cCmdProcessing::UseExecute(nUse::cUseOT &use) {
-	use.msgSend("bob", "alice", "from-code-1");
+	use.MsgSend("bob", "alice", "from-code-1");
 }
 
 // ========================================================================================================================
