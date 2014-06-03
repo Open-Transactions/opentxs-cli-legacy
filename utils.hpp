@@ -125,6 +125,16 @@ char GetLastChar(const std::string & str);
 std::string GetLastCharIf(const std::string & str); // TODO unicode?
 std::string EscapeString(const std::string &s);
 
+
+template <class T>
+std::string DbgVector(const std::vector<T> &v, const std::string &delim="|") {
+	std::ostringstream oss;
+	oss << "[";
+	std::copy( v.begin(), v.end(), std::ostream_iterator<T>(oss, delim.c_str()) );
+	oss << "]";
+	return oss.str();
+}
+
 // ====================================================================
 // assert
 

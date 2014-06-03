@@ -26,19 +26,24 @@ class cParamString;
 
 class cCmdParser_pimpl;
 
+
+struct cErrCommandNotFound : public std::runtime_error { cErrCommandNotFound(const string &s) : runtime_error(s) { } };
+
 /**
 The parser (can be used many times), that should contain some tree of possible commands and format/validation/hint of each.
 */
 class cCmdParser : public enable_shared_from_this<cCmdParser> {
 	protected:
 		unique_ptr< cCmdParser_pimpl > mI;
-		void AddFormat( const cCmdName &name, const cCmdFormat &format );
+		void AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format);
 
 	public:
 		cCmdParser();
 
 		cCmdProcessing StartProcessing(const vector<string> &words);
 		cCmdProcessing StartProcessing(const string &words);
+
+		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) throw(cErrCommandNotFound);
 
 		void Init();
 		void Test();
@@ -50,10 +55,12 @@ E.g. parsing the input "msg sendfrom rafal dorota 5000" and pointing to standard
 */
 class cCmdProcessing {
 	protected:
-		shared_ptr<cCmdParser> parser;
-		vector<string> commandLine;
+		shared_ptr<cCmdParser> mParser;
+		vector<string> mCommandLine;
+
+		shared_ptr<cCmdFormat> mFormat; // when we decide on what is the format that we have here
 	public:
-		cCmdProcessing(shared_ptr<cCmdParser> _parser, vector<string> _commandLine);
+		cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine);
 
 		void Parse();
 
@@ -62,15 +69,20 @@ class cCmdProcessing {
 };
 
 /** 
-A function to be executed that will do some actuall OT call
+A function to be executed that will do some actuall OT call <- e.g. execute this on "ot msg ls"
 */
 class cCmdExecutable {  
 	public:
-		typedef std::function< void (void) > tFunc;
+		typedef int tExitCode;
+		typedef std::function< tExitCode ( shared_ptr<cCmdData> , nUse::cUseOT & ) > tFunc;
+	public:
+		const static cCmdExecutable::tExitCode sSuccess;
 	private:
 		tFunc mFunc;
 	public:
 		cCmdExecutable( tFunc func );
+
+		tExitCode operator()( shared_ptr<cCmdData> , nUse::cUseOT & use );
 };
 
 /**
@@ -89,6 +101,8 @@ class cCmdFormat {
 
 	public:
 		cCmdFormat(cCmdExecutable exec, tVar var);
+
+		cCmdExecutable getExec() const;
 };
 
 /**
@@ -110,6 +124,7 @@ class cCmdName {
 		cCmdName(const string &name);
 		
 		bool operator<(const cCmdName &other) const;
+		operator std::string() const;	
 };
 
 

@@ -15,26 +15,24 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 class cCmdParser_pimpl {
 	friend class cCmdParser;
 
+	typedef map< cCmdName , shared_ptr<cCmdFormat> >::value_type tTreePair; // type of element (pair) in tree-map. TODO: will be not needed in C+11 map emplace
+
 	private:
-		map< cCmdName , cCmdFormat > tree;
+		map< cCmdName , shared_ptr<cCmdFormat> > mTree;
 };
 
 cCmdParser::cCmdParser() 
 : mI( new cCmdParser_pimpl )
 { }
 
-void Execute1() {
+cCmdExecutable::tExitCode Execute1( shared_ptr<cCmdData> , nUse::cUseOT ) {
 	_mark("***Execute1***");
+	return cCmdExecutable::sSuccess;
 }
 
-void Execute2() {
-	_mark("***Execute2***");
-}
-
-
-void cCmdParser::AddFormat( const cCmdName &name, const cCmdFormat &format ) {
-	typedef map< cCmdName , cCmdFormat >::value_type tMapPair; // type of element (pair) in tree-map. TODO: will be not needed in C+11 map emplace
-	mI->tree.insert( tMapPair ( name , format ) );
+void cCmdParser::AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format ) {
+	mI->mTree.insert( cCmdParser_pimpl::tTreePair ( name , format ) );
+	_info("Add format for command name (" << (string)name << "), now size=" << mI->mTree.size());
 }
 
 void cCmdParser::Init() {
@@ -46,8 +44,10 @@ void cCmdParser::Init() {
 
 	cCmdExecutable exec( Execute1 );
 	cCmdFormat::tVar var;
-	cCmdFormat msg_send_format( exec, var );
-	AddFormat( cCmdName("msg send") , msg_send_format );
+	// 1) cCmdFormat * format = new ... ;
+	// 2) shared_ptr<cCmdFormat> format( new cCmdFormat(exec, var ) )   
+	auto format = std::make_shared< cCmdFormat >( exec , var );
+	AddFormat( cCmdName("msg ls") , format );
 
 	//mI->tree.emplace( cCmdName("msg send") , msg_send_format );
 	
@@ -82,16 +82,65 @@ cCmdProcessing cCmdParser::StartProcessing(const string &words) {
 	return cCmdProcessing( shared_from_this() , nUtils::SplitString(words) );
 }
 
+shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name ) 
+	throw(cErrCommandNotFound)
+{
+	auto it = mI->mTree.find( name );
+	if (it == mI->mTree.end()) {
+		throw cErrCommandNotFound("No such ot command can be parsed by this parser: (" + (string)name + ")");
+	}
+
+	return it->second;
+}
+
 // ========================================================================================================================
 
 cCmdName::cCmdName(const string &name) : mName(name) { }
 
 bool cCmdName::operator<(const cCmdName &other) const { return mName < other.mName; }
 
+cCmdName::operator std::string() const { return mName; }
 
-cCmdProcessing::cCmdProcessing(shared_ptr<cCmdParser> _parser, vector<string> _commandLine)
-	: parser(_parser), commandLine(_commandLine)
-{ }
+// ========================================================================================================================
+
+
+cCmdProcessing::cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine)
+	: mParser(parser), mCommandLine(commandLine)
+{ 
+	_dbg3("Creating processing of: " << DbgVector(commandLine) );
+}
+
+
+void cCmdProcessing::Parse() {
+	// mCommandLine = ot, msg, sendfrom, alice, bob, hello
+
+	// mFormat.erase ? // remove old format, we parse something new [doublecheck]
+
+	if (!mCommandLine.empty()) {
+		if (mCommandLine.at(0) != "ot") {
+			_warn("Command for processing is mallformed");
+		}
+		mCommandLine.erase( mCommandLine.begin() ); // delete the first "ot"
+	} else {
+		_warn("Command for processing is empty");
+	}
+	// mCommandLine = msg, sendfrom, alice, bob, hello
+	_dbg1("Parsing: " << DbgVector(mCommandLine) );
+
+	// msg send
+	// msg ls
+	// always 2 words are the command (we assume there are no sub-command)
+	string name = mCommandLine.at(0) + " " + mCommandLine.at(1) ; // "msg send"
+	try {
+		mFormat = mParser->FindFormat( name );
+
+		// ...
+		_info("Got format for name="<<name);
+
+	} catch (cErrCommandNotFound &e) {
+		_warn("Command not found: " << e.what());
+	}
+}
 
 vector<string> cCmdProcessing::UseComplete(nUse::cUseOT &use) {
 	vector<string> ret;
@@ -99,7 +148,14 @@ vector<string> cCmdProcessing::UseComplete(nUse::cUseOT &use) {
 }
 
 void cCmdProcessing::UseExecute(nUse::cUseOT &use) {
-	use.MsgSend("bob", "alice", "from-code-1");
+	cCmdExecutable exec = mFormat->getExec();
+	auto data = std::make_shared<cCmdData>() ; // TODO get real data from myself (from processing)
+	exec( data , use ); 
+	
+	// test case, first create both users using:
+	// ot nym new bob x
+	// ot nym register bob x
+	// use.MsgSend("alice", "bob", "from-code-1");
 }
 
 // ========================================================================================================================
@@ -117,7 +173,20 @@ cCmdFormat::cCmdFormat(cCmdExecutable exec, tVar var)
 
 // ========================================================================================================================
 
+cCmdExecutable cCmdFormat::getExec() const {
+	return mExec;
+}
+
+cCmdExecutable::tExitCode cCmdExecutable::operator()( shared_ptr<cCmdData> data, nUse::cUseOT & useOt) {
+	_info("Executing function");
+	int ret = mFunc( data , useOt );
+	_info("Execution ret="<<ret);
+	return ret;
+}
+
 cCmdExecutable::cCmdExecutable(tFunc func) : mFunc(func) { }
+
+const cCmdExecutable::tExitCode cCmdExecutable::sSuccess = 0; 
 
 // ========================================================================================================================
 
@@ -125,12 +194,15 @@ void cmd_test() {
 	_mark("TEST TREE");
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
-	parser->Init();
-	auto processing = parser->StartProcessing("ot msg ls");
 
-	_mark("STARTING EXEC");
-	processing.UseExecute( nUse::useOT );
-	_mark("DONE TEST");
+	auto alltest = vector<string>{ "ot msg ls" , "ot msg senfrom alice bob", "ot msg show", "ot msg show alice" };  
+	for (auto cmd : alltest) {
+		parser->Init();
+		auto processing = parser->StartProcessing(cmd);
+		processing.Parse();
+		processing.UseExecute( nUse::useOT );
+	}
+
 }
 
 }; // namespace nNewcli

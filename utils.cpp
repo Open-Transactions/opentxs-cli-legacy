@@ -200,7 +200,10 @@ std::string GetLastCharIf(const std::string & str) { // TODO unicode?
 #define ASRT(x) do { if (!(x)) Assert(false, OT_CODE_STAMP); } while(0)
 
 void Assert(bool result, const std::string &stamp) {
-	if (!result) throw std::runtime_error("Assert failed at "+stamp);
+	if (!result) {
+		_erro("Assert failed at "+stamp);
+		throw std::runtime_error("Assert failed at "+stamp);
+	}
 }
 
 // ====================================================================
