@@ -375,6 +375,15 @@ void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, cons
 	if(!Init())
 		return;
 
+	if ( NymCheckByName(nymSender) ) {
+		_erro("Can't recognize sender name");
+		return;
+	}
+	if ( NymCheckByName(nymRecipient) ) {
+		_erro("Can't recognize recipient name");
+		return;
+	}
+
 	OT_ME madeEasy;
 	string sender = NymGetId(nymSender);
 	string recipient = NymGetId(nymRecipient);
@@ -397,6 +406,11 @@ void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, cons
 void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Send message from default Nym to Nym2
 	if(!Init())
 		return;
+
+	if ( NymCheckByName(nymRecipient) ) {
+		_erro("Can't recognize recipient name");
+		return;
+	}
 
 	OT_ME madeEasy;
 	string recipient = NymGetId(nymRecipient);
