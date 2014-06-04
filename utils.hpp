@@ -159,6 +159,17 @@ std::string DbgVector(const std::vector<T> &v, const std::string &delim="|") {
 	return oss.str();
 }
 
+template <class T, class T2>
+std::string DbgMap(const std::map<T, T2> &m, const std::string &delim="|") {
+	std::ostringstream oss;
+	oss << "[";
+	for(auto var : m) {
+		std::cerr << var.first << " - " << var.second << delim;
+	}
+	oss << "]";
+	return oss.str();
+}
+
 // ====================================================================
 // assert
 
