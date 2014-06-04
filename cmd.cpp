@@ -10,6 +10,8 @@ namespace nNewcli {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
+using namespace nUse;
+
 // ========================================================================================================================
 
 class cCmdParser_pimpl {
@@ -38,17 +40,76 @@ void cCmdParser::AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format 
 void cCmdParser::Init() {
 	_mark("Init tree");
 
-/*	 std::map<char,int> mymap;
-	   mymap.emplace('x',100);
-		 */
+	{
+		cCmdExecutable exec( Execute1 );
+		cCmdFormat::tVar var;
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("msg ls") , format );
+	}
 
-	cCmdExecutable exec( Execute1 );
-	cCmdFormat::tVar var;
-	// 1) cCmdFormat * format = new ... ;
-	// 2) shared_ptr<cCmdFormat> format( new cCmdFormat(exec, var ) )   
-	auto format = std::make_shared< cCmdFormat >( exec , var );
-	AddFormat( cCmdName("msg ls") , format );
+		/*
+		typedef function< bool ( cUseOT &, cCmdData &, int, const string &  ) > tFuncValid;
+		typedef function< vector<string> ( cUseOT &, cCmdData &, int, const string &  ) > tFuncHint;
+		cParamInfo(tFuncValid valid, tFuncHint hint);
+		*/
 
+		cParamInfo pNymFrom(
+			[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+				return true;
+			} , 
+			[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+				return vector<string> {};
+			}
+		);
+		cParamInfo pNymTo = pNymFrom; // TODO suggest not the same nym as was used already before
+		cParamInfo pNymAny = pNymFrom; 
+
+		cParamInfo pOnceInt(
+			[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+				// TODO check if is any integer
+				// TODO check if not present in data
+				return true;
+			} , 
+			[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+				return vector<string> { "-1", "0", "1", "2", "100" };
+			}
+		);
+
+		cParamInfo pSubject(
+			[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+				return true;
+			} , 
+			[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+				return vector<string> { "hello","hi","test","subject" };
+			}
+		);
+
+	{ 
+		// ot msg sendfrom alice bob 
+		// ot msg sendfrom NYM_FROM NYM_TO 
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use) -> cCmdExecutable::tExitCode {
+				_mark("Sending from inside lambda!");
+				use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNymFrom );
+			var.push_back( pNymTo );
+		cCmdFormat::tVar varExt;
+			var.push_back( pSubject );
+		cCmdFormat::tOption opt;
+			opt.insert(std::make_pair("--cc" , pNymAny));
+			opt.insert(std::make_pair("--bcc" , pNymAny));
+			opt.insert(std::make_pair("--prio" , pOnceInt));
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("msg sendfrom") , format );
+	}
+	
 	//mI->tree.emplace( cCmdName("msg send") , msg_send_format );
 	
 //	mI->tree[ cCmdName("msg send") ] = msg_send_format;
@@ -130,13 +191,43 @@ void cCmdProcessing::Parse() {
 	// msg send
 	// msg ls
 	// always 2 words are the command (we assume there are no sub-command)
-	string name = mCommandLine.at(0) + " " + mCommandLine.at(1) ; // "msg send"
+	const string name = mCommandLine.at(0) + " " + mCommandLine.at(1) ; // "msg send"
+	const size_t words_count = mCommandLine.size();
+
+	_dbg3("Alloc data");  
+	mData = std::make_shared<cCmdData>();
+
+	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt    
 	try {
 		mFormat = mParser->FindFormat( name );
-
-		// ...
 		_info("Got format for name="<<name);
 
+		phase=1;
+		int pos=2; // msg send -->
+
+		while (true) { // parse var
+			if (pos >= words_count) { _dbg1("reached end, pos="<<pos);
+				break;
+			}
+
+			_dbg2("phase="<<phase<<" pos="<<pos);
+			string word = mCommandLine.at(pos);
+			_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
+			++pos;
+
+			if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
+				phase=3;
+				break; // continue to phase 3 - the options
+			}
+			
+
+			_dbg1("adding var "<<word);  mData->mVar.push_back( word ); 
+		} // parse var
+
+		_note("mVar parsed:    " + DbgVector(mData->mVar));
+		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
+//		_note("mOption prased  " + DbgVector(mData->mOption));
+ 
 	} catch (cErrCommandNotFound &e) {
 		_warn("Command not found: " << e.what());
 	}
@@ -148,6 +239,8 @@ vector<string> cCmdProcessing::UseComplete(nUse::cUseOT &use) {
 }
 
 void cCmdProcessing::UseExecute(nUse::cUseOT &use) {
+	if (!mFormat) { _warn("Can not execute this command - mFormat is empty"); return; }
+
 	cCmdExecutable exec = mFormat->getExec();
 	auto data = std::make_shared<cCmdData>() ; // TODO get real data from myself (from processing)
 	exec( data , use ); 
@@ -166,7 +259,7 @@ cParamInfo::cParamInfo(tFuncValid valid, tFuncHint hint)
 
 // ========================================================================================================================
 
-cCmdFormat::cCmdFormat(cCmdExecutable exec, tVar var)
+cCmdFormat::cCmdFormat(cCmdExecutable exec, tVar var, tVar varExt, tOption opt) 
 	:	mExec(exec), mVar(var)
 {
 }
@@ -190,12 +283,57 @@ const cCmdExecutable::tExitCode cCmdExecutable::sSuccess = 0;
 
 // ========================================================================================================================
 
+string cCmdData::VarGetOrThrow(int nr, const string &def, bool doThrow) const throw(cErrArgMissing) { // nr: 1,2,3,4 including both arg and argExt
+	if (nr <= 0) throw cErrArgMissing("Illegal number for var (1,2,3... is expected)");
+	const int ix = nr - 1;
+	if (ix >= mVar.size()) { // then this is an extra argument
+		const int ix_ext = ix - mVar.size();
+		if (ix_ext >= mVarExt.size()) { // then this var number does not exist - out of range
+			if (doThrow) {
+				throw cErrArgMissing("Out of range number for var, nr="+ToStr(nr)+" ix_ext="+ToStr(ix_ext)+" size="+ToStr(mVarExt.size()));
+			}
+			return def; // just return the defaurl
+		}
+		return mVarExt.at(ix_ext);
+	}
+	return mVar.at(ix);
+}
+
+vector<string> cCmdData::OptIf(const string& name) const noexcept {
+	auto find = mOption.find( name );
+	if (find == mOption.end()) { 
+		return vector<string>{};
+	} 
+	return find->second;
+}
+
+string cCmdData::VarDef(int nr, const string &def, bool doThrow) const noexcept {
+	return VarGetOrThrow(nr, def, true);
+}
+
+string cCmdData::Var(int nr) const throw(cErrArgMissing) { // nr: 1,2,3,4 including both arg and argExt
+	static string nothing;
+	return VarGetOrThrow(nr, nothing, true);
+}
+
+vector<string> cCmdData::Opt(const string& name) const throw(cErrArgMissing) {
+	auto find = mOption.find( name );
+	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); } 
+	return find->second;
+}
+
+// ========================================================================================================================
+
+
 void cmd_test() {
 	_mark("TEST TREE");
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
-	auto alltest = vector<string>{ "ot msg ls" , "ot msg sendfrom alice bob", "ot msg show", "ot msg show alice" };
+	auto alltest = vector<string>{ //"ot msg ls" , 
+	"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+	// , "ot msg show", "ot msg show alice" 
+	};
 	for (auto cmd : alltest) {
 		parser->Init();
 		auto processing = parser->StartProcessing(cmd);

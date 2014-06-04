@@ -28,6 +28,7 @@ class cCmdParser_pimpl;
 
 
 struct cErrCommandNotFound : public std::runtime_error { cErrCommandNotFound(const string &s) : runtime_error(s) { } };
+struct cErrArgMissing : public std::runtime_error { cErrArgMissing(const string &s) : runtime_error(s) { } };
 
 /**
 The parser (can be used many times), that should contain some tree of possible commands and format/validation/hint of each.
@@ -55,16 +56,19 @@ E.g. parsing the input "msg sendfrom rafal dorota 5000" and pointing to standard
 */
 class cCmdProcessing {
 	protected:
-		shared_ptr<cCmdParser> mParser;
-		vector<string> mCommandLine;
+		shared_ptr<cCmdParser> mParser; // our "parent" parser to use here
 
-		shared_ptr<cCmdFormat> mFormat; // when we decide on what is the format that we have here
+		vector<string> mCommandLine; // the words of command to be parsed
+
+		shared_ptr<cCmdData> mData; // our parsed command as data; NULL if error/invalid
+		shared_ptr<cCmdFormat> mFormat; // the selected CmdFormat template; NULL if error/invalid
+
 	public:
 		cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine);
 
-		void Parse();
+		void Parse(); // parse into mData, mFormat
 
-		vector<string> UseComplete( nUse::cUseOT &use );
+		vector<string> UseComplete( nUse::cUseOT &use ); 
 		void UseExecute( nUse::cUseOT &use );
 };
 
@@ -95,12 +99,12 @@ class cCmdFormat {
 		
 	protected:
 		tVar mVar, mVarExt;
-		tOption mOption, mOptionExt;
+		tOption mOption;
 
 		cCmdExecutable mExec;
 
 	public:
-		cCmdFormat(cCmdExecutable exec, tVar var);
+		cCmdFormat(cCmdExecutable exec, tVar var, tVar varExt, tOption opt);
 
 		cCmdExecutable getExec() const;
 };
@@ -110,6 +114,25 @@ The parsed and interpreted data of command, arguments and options are ready in c
 */
 class cCmdData {
 	public:
+		typedef vector<string> tVar;
+		typedef map<string, vector<string> > tOption; // even single (not-multi) options will be placed in vector (1-element)
+		
+	protected:
+		tVar mVar, mVarExt;
+		tOption mOption;
+
+		friend class cCmdProcessing; // it will fill-in this class fields directly
+
+		string VarGetOrThrow(int nr, const string &def, bool doThrow) const throw(cErrArgMissing); // nr: 1,2,3,4 including both arg and argExt
+
+	public:
+		cCmdData()=default;
+
+		string VarDef(int nr, const string &def="",  bool doThrow=0) const noexcept; // nr: 1,2,3,4 including both arg and argExt
+		vector<string> OptIf(const string& name) const noexcept;
+
+		string Var(int nr) const throw(cErrArgMissing); // nr: 1,2,3,4 including both arg and argExt
+		vector<string> Opt(const string& name) const throw(cErrArgMissing);
 };
 
 // ============================================================================
@@ -133,8 +156,8 @@ Info about Parameter: How to validate and how to complete this argument
 */
 class cParamInfo {
 	public:
-		typedef function< bool ( cCmdData , int  ) > tFuncValid;
-		typedef function< vector<string> ( cCmdData , int  ) > tFuncHint;
+		typedef function< bool ( nUse::cUseOT &, cCmdData &, int, const string &  ) > tFuncValid;
+		typedef function< vector<string> ( nUse::cUseOT &, cCmdData &, int, const string &  ) > tFuncHint;
 
 	protected:
 		tFuncValid funcValid;
@@ -142,7 +165,7 @@ class cParamInfo {
 
 	public:
 		cParamInfo()=default;
-		cParamInfo(tFuncValid valid, tFuncHint hint=nullptr);
+		cParamInfo(tFuncValid valid, tFuncHint hint);
 };
 
 

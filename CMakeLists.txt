@@ -41,6 +41,7 @@ else ()
 endif (WITH_WRAPPER)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -g3 -O0 ")
+# -D_GNUCXX_DEBUG=1 seems to not work on llvm. TODO?
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/") # Add folder with cmake modules
 

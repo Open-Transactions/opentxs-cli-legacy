@@ -43,6 +43,7 @@ int main(int argc, const char **argv) {
 		_info("Program compiled with " + compiler_version);
 
 		ret = application.Run(args_clear);
+
 		_dbg1("Main after application with ret="<<ret);
 	}
 	catch (const std::exception &e) {
