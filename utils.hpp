@@ -135,7 +135,7 @@ void DbgDisplayMap(const std::map<T, T2> &m, const std::string &delim=" ") {
 
 template <class T>
 void DbgDisplayVectorEndl(const std::vector<T> &v, const std::string &delim=" ") {
-	DBGDisplayVector(v,delim);
+	DbgDisplayVector(v,delim);
 	std::cerr << std::endl;
 }
 

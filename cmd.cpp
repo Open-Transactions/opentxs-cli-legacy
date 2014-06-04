@@ -226,7 +226,7 @@ void cCmdProcessing::Parse() {
 
 		_note("mVar parsed:    " + DbgVector(mData->mVar));
 		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
-//		_note("mOption prased  " + DbgVector(mData->mOption));
+//		_note("mOption prased  " + DbgMap(mData->mOption));  // TODO 
  
 	} catch (cErrCommandNotFound &e) {
 		_warn("Command not found: " << e.what());
@@ -242,8 +242,7 @@ void cCmdProcessing::UseExecute(nUse::cUseOT &use) {
 	if (!mFormat) { _warn("Can not execute this command - mFormat is empty"); return; }
 
 	cCmdExecutable exec = mFormat->getExec();
-	auto data = std::make_shared<cCmdData>() ; // TODO get real data from myself (from processing)
-	exec( data , use ); 
+	exec( mData , use ); 
 	
 	// test case, first create both users using:
 	// ot nym new bob x
@@ -330,11 +329,14 @@ void cmd_test() {
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
-	auto alltest = vector<string>{ //"ot msg ls" , 
+	auto alltest = vector<string>{ 
+	"ot msg ls" , 
 	"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
-	// , "ot msg show", "ot msg show alice" 
+	"ot msg show", 
+	"ot msg show alice" 
 	};
 	for (auto cmd : alltest) {
+		_mark("====== Testing command: " << cmd );
 		parser->Init();
 		auto processing = parser->StartProcessing(cmd);
 		processing.Parse();

@@ -372,6 +372,8 @@ const vector<string> cUseOT::MsgGetForNym(const string & nymName) { ///< Get all
 }
 
 void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, const string & msg) { ///< Send message from Nym1 to Nym2
+	_note("MsgSend " << nymSender << " to " << nymRecipient << " msg=" << msg);
+	
 	if(!Init())
 		return;
 

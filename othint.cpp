@@ -922,7 +922,7 @@ static char* completionReadlineWrapper(const char *sofar , int number) {
 	if (number == 0) {
 		if (dbg) _dbg3("Start autocomplete (during first callback, number="<<number<<")");
 		completions = hint.AutoCompleteEntire(line); // <--
-		if (dbg)nOT::nUtils::DBGDisplayVectorEndl(completions); //TODO: display in debug
+		if (dbg)nOT::nUtils::DbgDisplayVectorEndl(completions); //TODO: display in debug
 		if (dbg) _dbg3("Done autocomplete (during first callback, number="<<number<<")");
 	}
 
