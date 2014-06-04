@@ -627,7 +627,7 @@ void cUseOT::NymRegister(const string & nymName) {
 	{
 		string response = madeEasy.register_nym(mDefaultIDs.at("ServerID"), nymID);
 		nOT::nUtils::DisplayStringEndl(cout, response);
-		nOT::nUtils::DisplayStringEndl(cout, "Nym " + ToStr(nymName) + "(" + ToStr(nymID) + ")" + " was registered successfully");
+		nOT::nUtils::DisplayStringEndl(cout, "Nym " + nymName + "(" + nymID + ")" + " was registered successfully");
 	}
 	else
 		cout << "Nym " << nymName << "(" << nymID << ")" << " was already registered" << endl;
@@ -723,7 +723,7 @@ void cUseOT::ServerSetDefault(const string & serverName) {
 	_info("Default server: " + mDefaultIDs.at("ServerID"));
 }
 
-const vector<string> cUseOT::ServersGet() { ///< Get all servers name
+const vector<string> cUseOT::ServerGetAllNames() { ///< Get all servers name
 	if(!Init())
 	return vector<string> {};
 

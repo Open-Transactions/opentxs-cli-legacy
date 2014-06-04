@@ -786,11 +786,11 @@ TODO - planned new tree of commands using lambda
 			}
 			if (action=="ls") {
 
-				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.ServersGet() ); // <====== Execute
+				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.ServerGetAllNames() ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="set-default") {
-				return WordsThatMatch(  current_word  , nOT::nUse::useOT.ServersGet() );
+				return WordsThatMatch(  current_word  , nOT::nUse::useOT.ServerGetAllNames() );
 				return vector<string>{};
 			}
 		}

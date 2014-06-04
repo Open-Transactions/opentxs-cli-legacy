@@ -96,7 +96,7 @@ namespace nUse {
 		const string ServerGetName(const string & serverID);
 		void ServerRemove(const string & serverName);
 		void ServerSetDefault(const string & serverName);
-		const vector<string> ServersGet();
+		const vector<string> ServerGetAllNames();
 
 		const string TextEncode(const string & plainText);
 		const string TextEncrypt(const string & recipientNymName, const string & plainText);
