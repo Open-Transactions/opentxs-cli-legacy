@@ -455,13 +455,6 @@ void cUseOT::NymCheck(const string & hisNymID) { // wip
 	_info("Successfully downloaded user public key.");
 }
 
-//bool cUseOT::NymCheckIfExists(const string & nymName) {
-//	vector<string> v = NymGetAllNames();
-//	if (std::find(v.begin(), v.end(), nymName) != v.end())
-//		return true;
-//	return false;
-//}
-
 void cUseOT::NymCreate(const string & nymName) {
 	if(!Init())
 	return ;
@@ -663,7 +656,7 @@ void cUseOT::ServerAdd(const std::string & contract) {
 	OTAPI_Wrap::AddServerContract( contract );
 }
 
-void cUseOT::ServerCheck() { // Use it to ping server
+void cUseOT::ServerCheck() { ///< Use it to ping server
 	if(!Init())
 			return ;
 
@@ -680,7 +673,7 @@ const string cUseOT::ServerGetDefault() {
 	return mDefaultIDs.at("ServerID");
 }
 
-const string cUseOT::ServerGetId(const string & serverName) { // Gets nym aliases and IDs begins with '%'
+const string cUseOT::ServerGetId(const string & serverName) { ///< Gets nym aliases and IDs begins with '%'
 	if(!Init())
 		return "";
 
@@ -723,7 +716,7 @@ void cUseOT::ServerSetDefault(const string & serverName) {
 	_info("Default server: " + mDefaultIDs.at("ServerID"));
 }
 
-const vector<string> cUseOT::ServerGetAllNames() { ///< Get all servers name
+const vector<string> cUseOT::ServerGetAllNames() { ///< Gets all servers name
 	if(!Init())
 	return vector<string> {};
 

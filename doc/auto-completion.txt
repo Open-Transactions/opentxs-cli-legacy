@@ -36,12 +36,12 @@ All OT commands will be neatly supported in this way.
 
 === Commands are in form ===
 
-ot [front1,front2...] topic action   	var1,...  [varM,...] [--optNameN[=[optArgN]]...]
+ot  [front1,front2...]     topic action   var1,...  [varM,...]      [--optNameN[=[optArgN]]...]
 
-ot <-front options--> <- cCmdname --> <---- arguments ------------------------------->
-ot                    <- cmd name --> <---- vars -----> <-- options ----------------->
-ot <--- optional ---> <- mandatory--> <--- optional ------------------------>
-ot <-- cmdFrontOpt -> <- cmdPart ---> <-------------- cmdArgs ----------------------->
+ot <-- front options --> <- cCmdname --> <---- arguments ------------------------------->
+ot                       <- cmd name --> <-- var --> <-- varExt --> <---- opt ---------->
+ot <---- optional -----> <---- mandatory ----------> <---------- optional -------------->
+ot <--- cmdFrontOpt ---> <- cmdPart ---> <-------------- cmdArgs ----------------------->
 
 Examples:
 ot  --H0              msg   send              bob a

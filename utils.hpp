@@ -109,6 +109,30 @@ void DBGDisplayVector(const std::vector<T> &v, const std::string &delim=" ") {
 	std::cerr << "]";
 }
 
+
+template <class T, class T2>
+void DisplayMap(std::ostream & out, const std::map<T, T2> &m, const std::string &delim=" ") {
+	for(auto var : m) {
+		out << var.first << delim << var.second << endl;
+ 	}
+}
+
+template <class T, class T2>
+void EndlDisplayMap(std::ostream & out, const std::map<T, T2> &m, const std::string &delim=" ") {
+	out << endl;
+	for(auto var : m) {
+		out << var.first << delim << var.second << endl;
+ 	}
+}
+
+template <class T, class T2>
+void DBGDisplayMap(const std::map<T, T2> &m, const std::string &delim=" ") {
+	for(auto var : m) {
+		std::cerr << var.first << delim << var.second << endl;
+ 	}
+}
+
+
 template <class T>
 void DBGDisplayVectorEndl(const std::vector<T> &v, const std::string &delim=" ") {
 	DBGDisplayVector(v,delim);
