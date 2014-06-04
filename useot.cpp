@@ -91,10 +91,22 @@ bool cUseOT::Init() {
 }
 
 bool cUseOT::AccountCheckIfExists(const string & accountName) {
-	vector<string> v = AccountsGet();
+	vector<string> v = AccountGetAllNames();
 	if (std::find(v.begin(), v.end(), accountName) != v.end())
 		return true;
 	return false;
+}
+
+const vector<string> cUseOT::AccountGetAllIds() {
+	if(!Init())
+	return vector<string> {};
+
+	_dbg3("Retrieving accounts ID's");
+	vector<string> accountsIDs;
+	for(int i = 0 ; i < OTAPI_Wrap::GetAccountCount ();i++) {
+		accountsIDs.push_back(OTAPI_Wrap::GetAccountWallet_ID (i));
+	}
+	return accountsIDs;
 }
 
 const int64_t cUseOT::AccountGetBalance(const string & accountName) {
@@ -103,6 +115,12 @@ const int64_t cUseOT::AccountGetBalance(const string & accountName) {
 
 	int64_t balance = OTAPI_Wrap::GetAccountWallet_Balance	( AccountGetId(accountName) );
 	return balance;
+}
+
+const string cUseOT::AccountGetDefault() {
+	if(!Init())
+		return "";
+	return mDefaultIDs.at("AccountID");
 }
 
 const string cUseOT::AccountGetId(const string & accountName) {
@@ -117,12 +135,6 @@ const string cUseOT::AccountGetId(const string & accountName) {
 		}
 	}
 	return "";
-}
-
-const string cUseOT::AccountGetDefault() {
-	if(!Init())
-		return "";
-	return mDefaultIDs.at("AccountID");
 }
 
 const string cUseOT::AccountGetName(const string & accountID) {
@@ -146,18 +158,6 @@ string cUseOT::AccountDelete(const string & accountName) { ///<
 		return "Error while deleting account";
 	else
 		return "";
-}
-
-const vector<string> cUseOT::AccountGetIds() {
-	if(!Init())
-	return vector<string> {};
-
-	_dbg3("Retrieving accounts ID's");
-	vector<string> accountsIDs;
-	for(int i = 0 ; i < OTAPI_Wrap::GetAccountCount ();i++) {
-		accountsIDs.push_back(OTAPI_Wrap::GetAccountWallet_ID (i));
-	}
-	return accountsIDs;
 }
 
 void cUseOT::AccountRefreshAll() {
@@ -234,13 +234,7 @@ void cUseOT::AccountCreate(const string & assetName, const string & newAccountNa
 
 	cout << "Account " << newAccountName << "(" << strID << ")" << " created successfully." << endl;
 }
-void cUseOT::AccountSetDefault(const string & accountName) {
-	if(!Init())
-		return ;
-	mDefaultIDs.at("AccountID") = AccountGetId(accountName);
-}
-
-const vector<string> cUseOT::AccountsGet() {
+const vector<string> cUseOT::AccountGetAllNames() {
 	if(!Init())
 	return vector<string> {};
 
@@ -252,11 +246,28 @@ const vector<string> cUseOT::AccountsGet() {
 	return accounts;
 }
 
+void cUseOT::AccountSetDefault(const string & accountName) {
+	if(!Init())
+		return ;
+	mDefaultIDs.at("AccountID") = AccountGetId(accountName);
+}
+
 bool cUseOT::AssetCheckIfExists(const string & assetName) {
-	vector<string> v = AssetsGetNames();
+	vector<string> v = AssetGetAllNames();
 	if (std::find(v.begin(), v.end(), assetName) != v.end())
 		return true;
 	return false;
+}
+
+const vector<string> cUseOT::AssetGetAllNames() {
+	if(!Init())
+	return vector<string> {};
+
+	vector<string> assets;
+	for(int i = 0 ; i < OTAPI_Wrap::GetAssetTypeCount ();i++) {
+		assets.push_back(OTAPI_Wrap::GetAssetType_Name ( OTAPI_Wrap::GetAssetType_ID (i)));
+	}
+	return assets;
 }
 
 const string cUseOT::AssetGetId(const string & assetName) {
@@ -273,15 +284,15 @@ const string cUseOT::AssetGetId(const string & assetName) {
 	return "";
 }
 
-const vector<string> cUseOT::AssetsGetNames() {
+const string cUseOT::AssetGetContract(const std::string & assetID){
 	if(!Init())
-	return vector<string> {};
+		return "";
+	string strContract = OTAPI_Wrap::GetAssetType_Contract(assetID);
+	return strContract;
+}
 
-	vector<string> assets;
-	for(int i = 0 ; i < OTAPI_Wrap::GetAssetTypeCount ();i++) {
-		assets.push_back(OTAPI_Wrap::GetAssetType_Name ( OTAPI_Wrap::GetAssetType_ID (i)));
-	}
-	return assets;
+const string cUseOT::AssetGetDefault(){
+	return mDefaultIDs.at("PurseID");
 }
 
 const string cUseOT::AssetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract) { // Issue new asset type
@@ -305,17 +316,6 @@ const string cUseOT::AssetNew(const std::string & nymID, const std::string & xml
 	if(!Init())
 			return "";
 	return OTAPI_Wrap::CreateAssetContract(nymID, xmlContents);
-}
-
-const string cUseOT::AssetGetContract(const std::string & assetID){
-	if(!Init())
-		return "";
-	string strContract = OTAPI_Wrap::GetAssetType_Contract(assetID);
-	return strContract;
-}
-
-const string cUseOT::AssetGetDefault(){
-	return mDefaultIDs.at("PurseID");
 }
 
 void cUseOT::AssetRemove(const string & assetName) {
@@ -414,7 +414,7 @@ void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Sen
 	OT_ME madeEasy;
 	string recipient = NymGetId(nymRecipient);
 
-	_dbg1("Sending message from" + mDefaultIDs + "to" + recipient );
+	_dbg1("Sending message from" + mDefaultIDs.at("UserID") + "to" + nymRecipient);
 
 	string strResponse = madeEasy.send_user_msg ( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), recipient, msg);
 

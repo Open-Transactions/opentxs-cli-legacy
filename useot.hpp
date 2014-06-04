@@ -44,18 +44,18 @@ namespace nUse {
 		const string AccountGetDefault();
 		const string AccountGetName(const string & accountID);
 		string AccountDelete(const string & accountName);
-		const vector<string> AccountGetIds();
+		const vector<string> AccountGetAllNames();
+		const vector<string> AccountGetAllIds();
 		void AccountRefreshAll();
 		const string AccountRename(const string & oldAccountName, const string & newAccountName);
 		void AccountSetDefault(const string & accountName);
 		const string AccountSetName(const string & accountID, const string & NewAccountName);
 		void AccountCreate(const string & MsgName, const string & newAccountName);
-		const vector<string> AccountsGet();
 
 
 		bool AssetCheckIfExists(const string & assetName);
 		const string AssetGetId(const string & assetName);
-		const vector<string> AssetsGetNames();
+		const vector<string> AssetGetAllNames();
 		const string AssetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract);
 		const string AssetNew(const std::string & nymID, const std::string & xmlContents);
 		const string AssetGetContract(const std::string & assetID);

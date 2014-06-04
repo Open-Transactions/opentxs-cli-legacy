@@ -442,23 +442,23 @@ TODO - planned new tree of commands using lambda
 		}
 		if (full_words<3) { // word3 (cmdArgs.at(0))
 			if (action=="new") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AssetsGetNames() ) ; // <====== Execute
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AssetGetAllNames() ) ; // <====== Execute
 			}
 			if (action=="ls") {
-				nOT::nUtils::DisplayVectorEndl( cout, nOT::nUse::useOT.AccountsGet() ); // <====== Execute
+				nOT::nUtils::DisplayVectorEndl( cout, nOT::nUse::useOT.AccountGetAllNames() ); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="refresh") {
 				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames() ) ;
 			}
 			if (action=="rm") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountGetAllNames() ) ;
 			}
 			if (action=="set-default") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountGetAllNames() ) ;
 			}
 			if (action=="mv") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountGetAllNames() ) ;
 			}
 		}
 
@@ -542,7 +542,7 @@ TODO - planned new tree of commands using lambda
 		}
 		if (full_words<3) { // we work on word3 - cmdArgs.at(0) - asset name
 			if (action=="ls") {
-				nOT::nUtils::DisplayVectorEndl( cout,  nOT::nUse::useOT.AssetsGetNames() ) ;
+				nOT::nUtils::DisplayVectorEndl( cout,  nOT::nUse::useOT.AssetGetAllNames() ) ;
 				return vector<string>{};
 			}
 			else if (action=="issue") {
