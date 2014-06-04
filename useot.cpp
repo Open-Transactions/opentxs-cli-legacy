@@ -376,11 +376,11 @@ void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, cons
 		return;
 
 	if ( NymCheckByName(nymSender) ) {
-		_erro("Can't recognize sender name");
+		_erro("Can't recognize sender name: " + nymSender);
 		return;
 	}
 	if ( NymCheckByName(nymRecipient) ) {
-		_erro("Can't recognize recipient name");
+		_erro("Can't recognize recipient name: " + nymRecipient);
 		return;
 	}
 
@@ -408,7 +408,7 @@ void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Sen
 		return;
 
 	if ( NymCheckByName(nymRecipient) ) {
-		_erro("Can't recognize recipient name");
+		_erro("Can't recognize recipient name: " + nymRecipient);
 		return;
 	}
 

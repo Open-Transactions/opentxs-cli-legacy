@@ -195,7 +195,7 @@ void cmd_test() {
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
-	auto alltest = vector<string>{ "ot msg ls" , "ot msg senfrom alice bob", "ot msg show", "ot msg show alice" };  
+	auto alltest = vector<string>{ "ot msg ls" , "ot msg sendfrom alice bob", "ot msg show", "ot msg show alice" };
 	for (auto cmd : alltest) {
 		parser->Init();
 		auto processing = parser->StartProcessing(cmd);
