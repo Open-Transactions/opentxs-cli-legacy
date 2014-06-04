@@ -103,7 +103,7 @@ void DisplayVectorEndl(std::ostream & out, const std::vector<T> &v, const std::s
 }
 
 template <class T>
-void DBGDisplayVector(const std::vector<T> &v, const std::string &delim=" ") {
+void DbgDisplayVector(const std::vector<T> &v, const std::string &delim=" ") {
 	std::cerr << "[";
 	std::copy( v.begin(), v.end(), std::ostream_iterator<T>(std::cerr, delim.c_str()) );
 	std::cerr << "]";
@@ -126,7 +126,7 @@ void EndlDisplayMap(std::ostream & out, const std::map<T, T2> &m, const std::str
 }
 
 template <class T, class T2>
-void DBGDisplayMap(const std::map<T, T2> &m, const std::string &delim=" ") {
+void DbgDisplayMap(const std::map<T, T2> &m, const std::string &delim=" ") {
 	for(auto var : m) {
 		std::cerr << var.first << delim << var.second << endl;
  	}
@@ -134,7 +134,7 @@ void DBGDisplayMap(const std::map<T, T2> &m, const std::string &delim=" ") {
 
 
 template <class T>
-void DBGDisplayVectorEndl(const std::vector<T> &v, const std::string &delim=" ") {
+void DbgDisplayVectorEndl(const std::vector<T> &v, const std::string &delim=" ") {
 	DBGDisplayVector(v,delim);
 	std::cerr << std::endl;
 }
