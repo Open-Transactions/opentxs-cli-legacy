@@ -375,11 +375,11 @@ void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, cons
 	if(!Init())
 		return;
 
-	if ( NymCheckByName(nymSender) ) {
+	if ( !NymCheckIfExists(nymSender) ) {
 		_erro("Can't recognize sender name: " + nymSender);
 		return;
 	}
-	if ( NymCheckByName(nymRecipient) ) {
+	if ( !NymCheckIfExists(nymRecipient) ) {
 		_erro("Can't recognize recipient name: " + nymRecipient);
 		return;
 	}
@@ -388,8 +388,7 @@ void cUseOT::MsgSend(const string & nymSender, const string & nymRecipient, cons
 	string sender = NymGetId(nymSender);
 	string recipient = NymGetId(nymRecipient);
 
-	_dbg1(sender);
-	_dbg1(recipient);
+	_dbg1("Sending message from" + sender + "to" + recipient );
 
 	string strResponse = madeEasy.send_user_msg ( mDefaultIDs.at("ServerID"), sender, recipient, msg);
 
@@ -407,7 +406,7 @@ void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Sen
 	if(!Init())
 		return;
 
-	if ( NymCheckByName(nymRecipient) ) {
+	if ( !NymCheckIfExists(nymRecipient) ) {
 		_erro("Can't recognize recipient name: " + nymRecipient);
 		return;
 	}
@@ -415,7 +414,7 @@ void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Sen
 	OT_ME madeEasy;
 	string recipient = NymGetId(nymRecipient);
 
-	_dbg1(recipient);
+	_dbg1("Sending message from" + mDefaultIDs + "to" + recipient );
 
 	string strResponse = madeEasy.send_user_msg ( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), recipient, msg);
 
@@ -456,12 +455,12 @@ void cUseOT::NymCheck(const string & hisNymID) { // wip
 	_info("Successfully downloaded user public key.");
 }
 
-bool cUseOT::NymCheckByName(const string & nymName) {
-	vector<string> v = NymsGetMy();
-	if (std::find(v.begin(), v.end(), nymName) != v.end())
-		return true;
-	return false;
-}
+//bool cUseOT::NymCheckIfExists(const string & nymName) {
+//	vector<string> v = NymGetAllNames();
+//	if (std::find(v.begin(), v.end(), nymName) != v.end())
+//		return true;
+//	return false;
+//}
 
 void cUseOT::NymCreate(const string & nymName) {
 	if(!Init())
@@ -483,6 +482,57 @@ void cUseOT::NymCreate(const string & nymName) {
 	OTAPI_Wrap::SetNym_Name(strID, strID, nymName);
 
 	_info("Nym " << nymName << "(" << strID << ")" << " created successfully.");
+}
+
+bool cUseOT::NymCheckIfExists(const string & nymName) { ///< Check only name!
+	if(!Init())
+			return false;
+	bool exists = false;
+
+	vector<string> v = NymGetAllNames();
+	if (std::find(v.begin(), v.end(), nymName) != v.end())
+		exists = true;
+
+	return exists;
+}
+
+void cUseOT::NymGetAll() {
+	if(!Init())
+		return;
+
+	try {
+		mNyms.clear();
+
+		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount();i++) {
+			string nym_ID = OTAPI_Wrap::GetNym_ID (i);
+			string nym_Name = OTAPI_Wrap::GetNym_Name (nym_ID);
+
+			mNyms[nym_ID] = nym_Name;
+		}
+	}
+	catch(...) { }
+}
+
+const vector<string> cUseOT::NymGetAllIDs() {
+	if(!Init())
+		return vector<string> {};
+	NymGetAllNames();
+	vector<string> IDs;
+	for (auto val : mNyms) {
+		IDs.push_back(val.first);
+	}
+	return IDs;
+}
+
+const vector<string> cUseOT::NymGetAllNames() {
+	if(!Init())
+		return vector<string> {};
+	NymGetAll();
+	vector<string> names;
+	for (auto val : mNyms) {
+		names.push_back(val.second);
+	}
+	return names;
 }
 
 const string cUseOT::NymGetDefault() {
@@ -511,7 +561,7 @@ const string cUseOT::NymGetInfo(const string & nymName) {
 	if(!Init())
 		return "";
 
-	if (NymCheckByName(nymName)){
+	if (NymCheckIfExists(nymName)){
 		return OTAPI_Wrap::GetNym_Stats( NymGetId(nymName) );
 	}
 	else {
@@ -605,28 +655,6 @@ void cUseOT::NymSetDefault(const string & nymName) {
 	if(!Init())
 		return ;
 	mDefaultIDs.at("UserID") = NymGetId(nymName);
-}
-
-const vector<string> cUseOT::NymsGetMy() {
-	if(!Init())	return vector<string> {};
-
-	if (!mNymsMy_loaded) {
-		try {
-		mNymsMy_loaded=0; // to mark that we start to delete data/data is inconsistent
-		//mNymsMy.clear(); // FIXME Not used class cNyminfo (look: othint.cpp)
-		mNymsMy_str.clear();
-
-		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount ();i++) {
-			string nym_ID = OTAPI_Wrap::GetNym_ID (i);
-			string nym_Name = OTAPI_Wrap::GetNym_Name (nym_ID);
-
-			mNymsMy_str.push_back(nym_Name);
-		}
-	}
-	catch(...) { }
-	mNymsMy_loaded = true;
-	}
-return mNymsMy_str;
 }
 
 void cUseOT::ServerAdd(const std::string & contract) {

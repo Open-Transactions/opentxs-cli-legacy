@@ -78,7 +78,7 @@ Commandline-Functor(s) are expressions that are expected to have certain value, 
 Consider following command line:
 	ot msg send mynym hisnym [ccnym]
 	ot msg send $get_mynym $get_somenym [$get_somenym_o]
-get_mynym is a Cmdfunc, and this one for example links to cUse::NymsGetMy
+get_mynym is a Cmdfunc, and this one for example links to cUse::NymGetAllNames
 
 They are defined in code in order to have following functions:
 - othint - completion, e.g. mynym provides list of possible your nyms
@@ -449,7 +449,7 @@ TODO - planned new tree of commands using lambda
 				return vector<string>{};
 			}
 			if (action=="refresh") {
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() ) ;
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames() ) ;
 			}
 			if (action=="rm") {
 				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.AccountsGet() ) ;
@@ -610,7 +610,7 @@ TODO - planned new tree of commands using lambda
 
 		if (full_words<3) { // we work on word3 - var1
 			if (action=="ls") {
-				//return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() ) ; // TODO nyms autocomplete
+				//return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames() ) ; // TODO nyms autocomplete
 				nOT::nUse::useOT.MsgGetAll(); // <====== Execute
 				return vector<string>{};
 			}
@@ -618,19 +618,19 @@ TODO - planned new tree of commands using lambda
 				return WordsThatMatch(  current_word  ,  vector<string>{"Where-to?"} ); // in mail box... will there be other directories?
 			}
 			if (action=="rm") { // nym
-				return WordsThatMatch(  current_word  , nOT::nUse::useOT.NymsGetMy() );
+				return WordsThatMatch(  current_word  , nOT::nUse::useOT.NymGetAllNames() );
 			}
 			if (action=="sendfrom") { // sender name
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() );
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames() );
 			}
 			if (action=="sendto") { // recipient name TODO finish sendto functionality
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy() ); //TODO propose nyms from adressbook
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames() ); //TODO propose nyms from adressbook
 			}
 		}
 
 		if (full_words<4) { // we work on word4 - var2
 			if (action=="ls") {
-				if (nOT::nUse::useOT.NymCheckByName( cmdArgs.at(0) )) {
+				if (nOT::nUse::useOT.NymCheckIfExists( cmdArgs.at(0) )) {
 					nOT::nUse::useOT.MsgGetForNym( cmdArgs.at(0) ); // <====== Execute
 					return vector<string>{};
 				}
@@ -640,7 +640,7 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="rm") { // nym
-				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(0))) {
+				if (nOT::nUse::useOT.NymCheckIfExists(cmdArgs.at(0))) {
 					cout << "Index?" << endl;
 					return vector<string>{};
 				}
@@ -650,8 +650,8 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="sendfrom") { // recipient name
-				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(0))) {
-					return WordsThatMatch(  current_word  , nOT::nUse::useOT.NymsGetMy() );
+				if (nOT::nUse::useOT.NymCheckIfExists(cmdArgs.at(0))) {
+					return WordsThatMatch(  current_word  , nOT::nUse::useOT.NymGetAllNames() );
 				}
 				else {
 					std::cerr << "Can't find that nym: " << cmdArgs.at(0);
@@ -662,7 +662,7 @@ TODO - planned new tree of commands using lambda
 
 		if (full_words<5) { // we work on word5 - var3
 			if (action=="sendfrom") { // message text
-				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(1))) {
+				if (nOT::nUse::useOT.NymCheckIfExists(cmdArgs.at(1))) {
 					nOT::nUtils::DisplayStringEndl( cout, "Please enter multiple lines of message, followed by an EOF or a ~ by itself on a blank line:" );
 					nOT::nUse::useOT.MsgSend(cmdArgs.at(0), cmdArgs.at(1), nOT::nUtils::GetMultiline()); // <====== Execute
 					return vector<string>{}; // ready for message
@@ -673,7 +673,7 @@ TODO - planned new tree of commands using lambda
 				}
 			}
 			if (action=="rm") { // nym
-				if (nOT::nUse::useOT.NymCheckByName(cmdArgs.at(0))) {
+				if (nOT::nUse::useOT.NymCheckIfExists(cmdArgs.at(0))) {
 					nOT::nUse::useOT.MsgInRemoveByIndex( cmdArgs.at(0), std::stoi(cmdArgs.at(1)) );
 				}
 				else {
@@ -706,14 +706,14 @@ TODO - planned new tree of commands using lambda
 				return vector<string>{};
 			}
 			if (action=="edit") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );//TODO Suitable changes to this part - propably after merging with otlib
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymGetAllNames() );//TODO Suitable changes to this part - propably after merging with otlib
 			}
 			if (action=="info") {
 				//nOT::nUtils::DisplayStringEndl( cout, nOT::nUse::useOT.nymGetInfo(cmdArgs.at(0)) ); // <====== Execute TODO For default nym
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymGetAllNames() );
 			}
 			if (action=="ls") {
-				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.NymsGetMy(), "\n"); // <====== Execute
+				nOT::nUtils::DisplayVectorEndl(cout, nOT::nUse::useOT.NymGetAllNames(), "\n"); // <====== Execute
 				return vector<string>{};
 			}
 			if (action=="new") {
@@ -725,13 +725,13 @@ TODO - planned new tree of commands using lambda
 				return vector<string>{};
 			}
 			if (action=="register") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );//TODO server name
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymGetAllNames() );//TODO server name
 			}
 			if (action=="rm") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );//TODO Suitable changes to this part - propably after merging with otlib
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymGetAllNames() );//TODO Suitable changes to this part - propably after merging with otlib
 			}
 			if (action=="set-default") {
-				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymsGetMy() );
+				return WordsThatMatch( current_word  ,  nOT::nUse::useOT.NymGetAllNames() );
 			}
 		}
 
@@ -823,11 +823,11 @@ TODO - planned new tree of commands using lambda
 			}
 
 			if (action=="encrypt") { // recipient Nym Name
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy());
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames());
 			}
 
 			if (action=="decrypt") { // recipient Nym Name
-				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymsGetMy());
+				return WordsThatMatch(  current_word  ,  nOT::nUse::useOT.NymGetAllNames());
 			}
 		}
 

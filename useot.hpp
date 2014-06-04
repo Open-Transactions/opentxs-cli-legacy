@@ -24,6 +24,7 @@ namespace nUse {
 
 		public:
 
+		map<string, string> mNyms;
 		vector<string> mNymsMy_str; // TODO optimize/share memory? or convert on usage
 
 		bool mNymsMy_loaded;
@@ -74,6 +75,10 @@ namespace nUse {
 		void NymCheck(const string & hisNymID);
 		bool NymCheckByName(const string & nymName);
 		void NymCreate(const string & nymName);
+		bool NymCheckIfExists(const string & nymName);
+		void NymGetAll();
+		const vector<string> NymGetAllIDs();
+		const vector<string> NymGetAllNames();
 		const string NymGetDefault();
 		const string NymGetId(const string & nymName);
 		const string NymGetInfo(const string & nymName);
@@ -83,7 +88,6 @@ namespace nUse {
 		void NymRegister(const string & nymName, const string & serverName);
 		void NymRemove(const string & nymName);
 		void NymSetDefault(const string & nymName);
-		const vector<string> NymsGetMy();
 
 		void ServerAdd(const std::string & contract);
 		void ServerCheck();
