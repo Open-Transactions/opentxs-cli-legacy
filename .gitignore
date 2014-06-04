@@ -6,3 +6,9 @@ CMakeFiles/
 cmake_install.cmake
 autostart*.local
 debuglog.txt
+log.txt
+
+# Eclipse files
+.cproject
+.project
+.settings/
