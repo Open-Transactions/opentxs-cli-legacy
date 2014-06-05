@@ -157,12 +157,13 @@ void cCmdParser::Init() {
 }
 
 
-cCmdProcessing cCmdParser::StartProcessing(const vector<string> &words) {
-	return cCmdProcessing( shared_from_this() , words );
+cCmdProcessing cCmdParser::StartProcessing(const vector<string> &words, shared_ptr<nUse::cUseOT> use ) {
+	return cCmdProcessing( shared_from_this() , words , use );
 }
 
-cCmdProcessing cCmdParser::StartProcessing(const string &words) {
-	return cCmdProcessing( shared_from_this() , nUtils::SplitString(words) );
+cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use ) {
+	_dbg3("Will split words: [" << words << "]");
+	return cCmdProcessing( shared_from_this() , nUtils::SplitString(words) , use );
 }
 
 shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name ) 
@@ -187,10 +188,11 @@ cCmdName::operator std::string() const { return mName; }
 // ========================================================================================================================
 
 
-cCmdProcessing::cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine)
-	: mParser(parser), mCommandLine(commandLine)
+cCmdProcessing::cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine, shared_ptr<nUse::cUseOT> &use )
+	: mParser(parser), mCommandLine(commandLine), mUse(use)
 { 
-	_dbg3("Creating processing of: " << DbgVector(commandLine) );
+	_dbg2("Creating processing of: " << DbgVector(commandLine) );
+	_dbg2("Working on use=" << use->DbgName() );
 }
 
 

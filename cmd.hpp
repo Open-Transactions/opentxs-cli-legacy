@@ -46,8 +46,8 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> {
 	public:
 		cCmdParser();
 
-		cCmdProcessing StartProcessing(const vector<string> &words);
-		cCmdProcessing StartProcessing(const string &words);
+		cCmdProcessing StartProcessing(const vector<string> &words, shared_ptr<nUse::cUseOT> use );
+		cCmdProcessing StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use );
 
 		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) throw(cErrCommandNotFound);
 
@@ -68,8 +68,10 @@ class cCmdProcessing {
 		shared_ptr<cCmdData> mData; // our parsed command as data; NULL if error/invalid
 		shared_ptr<cCmdFormat> mFormat; // the selected CmdFormat template; NULL if error/invalid
 
+		shared_ptr<nUse::cUseOT> &mUse; // this will be used e.g. in Parse() - passed to called validations, in UseExecute and UseComplete etc
+
 	public:
-		cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine);
+		cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> commandLine, shared_ptr<nUse::cUseOT> &use );
 
 		void Parse(); // parse into mData, mFormat
 

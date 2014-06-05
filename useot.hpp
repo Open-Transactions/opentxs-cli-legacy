@@ -16,6 +16,8 @@ namespace nUse {
 
 	class cUseOT {
 
+		string mDbgName;
+
 		map<string, string> mDefaultIDs;
 		const string mDataFolder;
 		const string mDefaultIDsFile;
@@ -31,8 +33,12 @@ namespace nUse {
 		bool OTAPI_loaded;
 		bool OTAPI_error;
 
-		cUseOT();
+		public:
+
+		cUseOT(const string &mDbgName);
 		~cUseOT();
+
+		string DbgName() const noexcept;
 
 		bool Init();
 		void Done();

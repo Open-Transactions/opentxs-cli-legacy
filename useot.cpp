@@ -12,14 +12,21 @@ namespace nUse {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_3; // <=== namespaces
 
-cUseOT::cUseOT()
-: mNymsMy_loaded(false)
+cUseOT::cUseOT(const string &mDbgName)
+: 
+	mDbgName(mDbgName)
+, mNymsMy_loaded(false)
 , OTAPI_loaded(false)
 , OTAPI_error(false)
 , mDataFolder( OTPaths::AppDataFolder().Get() )
 , mDefaultIDsFile( mDataFolder + "defaults.opt" )
 {
+	_dbg1("Creating cUseOT "<<DbgName());
+}
 
+
+string cUseOT::DbgName() const noexcept {
+	return "cUseOT-" + ToStr((void*)this) + "-" + mDbgName;
 }
 
 void cUseOT::CloseApi() {
