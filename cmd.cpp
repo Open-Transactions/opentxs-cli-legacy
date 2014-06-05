@@ -34,7 +34,8 @@ cCmdExecutable::tExitCode Execute1( shared_ptr<cCmdData> , nUse::cUseOT ) {
 
 void cCmdParser::AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format ) {
 	mI->mTree.insert( cCmdParser_pimpl::tTreePair ( name , format ) );
-	_info("Add format for command name (" << (string)name << "), now size=" << mI->mTree.size());
+	_info("Add format for command name (" << (string)name << "), now size=" << mI->mTree.size() << " new format is: ");
+	format->Debug();
 }
 
 void cCmdParser::Init() {
@@ -114,8 +115,8 @@ void cCmdParser::Init() {
 	}
 
 	{
-		// ot msg sendfrom alice bob 
-		// ot msg sendfrom NYM_FROM NYM_TO 
+		// ot msg sendfrom alice bob subj
+		// ot msg sendfrom NYM_FROM NYM_TO SUBJ
 		cCmdExecutable exec(
 			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
 				_mark("Sending from inside lambda!");
@@ -227,49 +228,88 @@ void cCmdProcessing::Parse() {
 	// mCommandLine = msg, sendfrom, alice, bob, hello
 	_dbg1("Parsing: " << DbgVector(mCommandLine) );
 
-	// msg send
-	// msg ls
-	// always 2 words are the command (we assume there are no sub-command)
-	const string name = mCommandLine.at(0) + " " + mCommandLine.at(1) ; // "msg send"
-	const size_t words_count = mCommandLine.size();
-
 	_dbg3("Alloc data");  
 	mData = std::make_shared<cCmdData>();
 
-	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt  //FIXME How to check if variable is varExt?
+	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt   9:end
 	try {
+
+		const string name = mCommandLine.at(0) + " " + mCommandLine.at(1) ; // "msg send"
 		mFormat = mParser->FindFormat( name );
 		_info("Got format for name="<<name);
 
+		// msg send
+		// msg ls
+		// always 2 words are the command (we assume there are no sub-command)
+		const size_t words_count = mCommandLine.size();
+		const cCmdFormat & format = * mFormat; // const to be sure to just read from it (we are friends of this class)
+		const size_t var_size_normal = format.mVar.size(); // number of the normal (mandatory) part of variables
+		const size_t var_size_all = format.mVar.size() + format.mVarExt.size(); // number of the size of all variables (normal + extra)
+		_dbg2("Format: size of vars: " << var_size_normal << " normal, and all is: " << var_size_all);
+		int pos = 2; // "msg send"
+
 		phase=1;
-		int pos=2; // msg send -->
+		const size_t offset_to_var = pos; // skip this many words before we have first var, to conver pos(word number) to var number
 
-		while (true) { // parse var
-			if (pos >= words_count) { _dbg1("reached end, pos="<<pos);
-				break;
-			}
+		if (phase==1) {
+			while (true) { // parse var normal
+				const int var_nr = pos - offset_to_var;
+				_dbg2("phase="<<phase<<" pos="<<pos<<" var_nr="<<var_nr);
+				if (var_nr >= words_count) { _dbg1("reached end, var_nr="<<var_nr);	phase=9; break;	}
+				if (var_nr >= var_size_normal) { _dbg1("reached end of var normal, var_nr="<<var_nr); phase=2;	break;	}
 
-			_dbg2("phase="<<phase<<" pos="<<pos);
-			string word = mCommandLine.at(pos);
-			_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
-			++pos;
+				string word = mCommandLine.at(pos);
+				_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
+				++pos;
 
-			if ( nUtils::CheckIfBegins("\"", word) ) {
-				_dbg1("Quotes detected in: " + word);
-				word.erase(0,1);
-				while ( !nUtils::CheckIfEnds("\"", word) ) {
-					word += mCommandLine.at(pos);
-					++pos;
+				if ( nUtils::CheckIfBegins("\"", word) ) { // TODO review memory access
+					_dbg1("Quotes detected in: " + word);
+					word.erase(0,1);
+					while ( !nUtils::CheckIfEnds("\"", word) ) {
+						word += " " + mCommandLine.at(pos);
+						++pos;
+					}
+					word.erase(word.end(), word.end()-1); // ease the closing " of last mCommandLine[..] that is not at end of word
+					_dbg1("Quoted word is:"<<word);
 				}
-				word.erase(word.end(), word.end()-1);
-			}
-			if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
-				phase=3;
-				break; // continue to phase 3 - the options
-			}
+				if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
+					phase=3;
+					break; // continue to phase 3 - the options
+				}
 
-			_dbg1("adding var "<<word);  mData->mVar.push_back( word ); 
-		} // parse var
+				_dbg1("adding var "<<word);  mData->mVar.push_back( word ); 
+			}
+		} // parse var phase 1
+
+		if (phase==2) {
+			while (true) { // parse var normal
+				const int var_nr = pos - offset_to_var;
+				_dbg2("phase="<<phase<<" pos="<<pos<<" var_nr="<<var_nr);
+				if (var_nr >= words_count) { _dbg1("reached end, var_nr="<<var_nr);	phase=9; break;	}
+				if (var_nr >= var_size_all) { _dbg1("reached end of var ALL, var_nr="<<var_nr); phase=3;	break;	}
+
+				string word = mCommandLine.at(pos);
+				_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
+				++pos;
+
+				if ( nUtils::CheckIfBegins("\"", word) ) { // TODO review memory access
+					_dbg1("Quotes detected in: " + word);
+					word.erase(0,1);
+					while ( !nUtils::CheckIfEnds("\"", word) ) {
+						word += " " + mCommandLine.at(pos);
+						++pos;
+					}
+					word.erase(word.end(), word.end()-1); // ease the closing " of last mCommandLine[..] that is not at end of word
+					_dbg1("Quoted word is:"<<word);
+				}
+				if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
+					phase=3;
+					break; // continue to phase 3 - the options
+				}
+
+				_dbg1("adding var ext "<<word);  mData->mVarExt.push_back( word ); 
+			}
+		} // phase 2
 
 		_note("mVar parsed:    " + DbgVector(mData->mVar));
 		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
@@ -300,15 +340,23 @@ cParamInfo::cParamInfo(tFuncValid valid, tFuncHint hint)
 // ========================================================================================================================
 
 cCmdFormat::cCmdFormat(cCmdExecutable exec, tVar var, tVar varExt, tOption opt) 
-	:	mExec(exec), mVar(var)
+	:	mExec(exec), mVar(var), mVarExt(varExt), mOption(opt)
 {
+	_dbg1("Created new format");
 }
-
-// ========================================================================================================================
 
 cCmdExecutable cCmdFormat::getExec() const {
 	return mExec;
 }
+
+void cCmdFormat::Debug() const {
+	_info("Format at " << (void*)this );
+	_info(".. mVar size=" << mVar.size());
+	_info(".. mVarExt size=" << mVarExt.size());
+	_info(".. mOption size=" << mOption.size());
+}
+
+// ========================================================================================================================
 
 cCmdExecutable::tExitCode cCmdExecutable::operator()( shared_ptr<cCmdData> data, nUse::cUseOT & useOt) {
 	_info("Executing function");
@@ -414,6 +462,7 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 	_mark("TEST TREE");
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
+	parser->Init();
 
 	auto alltest = vector<string>{ 
 //		 "ot msg ls"
@@ -421,14 +470,13 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 //		,"ot msg ls alice"
 //		,"ot msg ls alice"
 	"ot msg sendfrom alice bob --prio 1"
-	"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+	, "ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"
 	};
 	for (auto cmd : alltest) {
 		_mark("====== Testing command: " << cmd );
-		parser->Init();
 		auto processing = parser->StartProcessing(cmd, use);
 		processing.Parse();
 		processing.UseExecute();

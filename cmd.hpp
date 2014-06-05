@@ -103,17 +103,21 @@ class cCmdFormat {
 	public:
 		typedef vector<cParamInfo> tVar;
 		typedef map<string, cParamInfo> tOption;
-		
+
 	protected:
 		tVar mVar, mVarExt;
 		tOption mOption;
 
 		cCmdExecutable mExec;
 
+		friend class cCmdProcessing; // allow direct access (should be read-only!)
+
 	public:
 		cCmdFormat(cCmdExecutable exec, tVar var, tVar varExt, tOption opt);
 
 		cCmdExecutable getExec() const;
+
+		void Debug() const;
 };
 
 /**
@@ -159,10 +163,10 @@ class cCmdData {
 		string Opt1If(const string& name, const string &def="") const throw(cErrArgIllegal); // same but requires the 1st element; therefore we need def argument again
 
 		string Var(int nr) const throw(cErrArgNotFound); // see [nr] ; throws if this var was missing
-		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // returns option values, throws if missing (if none)
-		string Opt1(const string& name) const throw(cErrArgNotFound); // same but requires the 1st element
+		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // --cc bob --bob alice returns option values, throws if missing (if none)
+		string Opt1(const string& name) const throw(cErrArgNotFound); // --prio 100 same but requires the 1st element
 		
-		bool IsOpt(const string &name) const throw(cErrArgIllegal);
+		bool IsOpt(const string &name) const throw(cErrArgIllegal); // --dryrun
 
 		void AssertLegalOptName(const string & name) const throw(cErrArgIllegal); // used internally to catch programming errors e.g. in binding lambdas
 }; 
