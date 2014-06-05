@@ -41,7 +41,6 @@ namespace nUse {
 		string DbgName() const noexcept;
 
 		bool Init();
-		void Done();
 		void CloseApi();
 
 		bool AccountCheckIfExists(const string & accountName);

@@ -37,13 +37,6 @@ void cUseOT::CloseApi() {
 	} else _dbg3("Will cleanup OTAPI ... was already not loaded");
 }
 
-void cUseOT::Done() {
-	_dbg2("Will save defaults");
-	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
-	_dbg3("Will save defaults - DONE");
-	CloseApi();
-}
-
 cUseOT::~cUseOT() {
 	CloseApi();
 }
@@ -62,7 +55,7 @@ void cUseOT::LoadDefaults() {
 
 bool cUseOT::Init() {
 	if (OTAPI_error) return false;
-	if (OTAPI_loaded) return true;
+	if (OTAPI_loaded) { _note("OTAPI was already initialized"); return true; }
 	try {
 		if (!OTAPI_Wrap::AppInit()) {// Init OTAPI
 			_erro("Error while initializing wrapper");
@@ -435,6 +428,17 @@ void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Sen
 	_info("Message was sent successfully.");
 }
 
+//void cUseOT::MsgInCheckIndex(const string & nymName, const int32_t & nIndex) {
+//	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){
+//		_info("Message removed successfully from inbox");
+//	}
+//}
+//
+//void cUseOT::MsgOutCheckIndex(const string & nymName, const int32_t & nIndex) {
+//	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){
+//		_info("Message removed successfully from inbox");
+//	}
+//}
 
 void cUseOT::MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex) {
 	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){

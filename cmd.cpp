@@ -89,7 +89,7 @@ void cCmdParser::Init() {
 
 	{ // msg ls alice <-- FIXME alice is an extra variable. exec must call different exec function based on existance of extra argument.
 		cCmdExecutable exec(
-			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use ) -> cCmdExecutable::tExitCode {
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use ) -> cCmdExecutable::tExitCode {
 				_mark("Try vardef");
 				string s = data->VarDef(1,"");
 				_mark("... s="<<s);
@@ -117,7 +117,7 @@ void cCmdParser::Init() {
 		// ot msg sendfrom alice bob 
 		// ot msg sendfrom NYM_FROM NYM_TO 
 		cCmdExecutable exec(
-			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use) -> cCmdExecutable::tExitCode {
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
 				_mark("Sending from inside lambda!");
 				string from = data->Var(1);
 				string to = data->Var(2);
