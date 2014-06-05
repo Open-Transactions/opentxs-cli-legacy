@@ -100,9 +100,9 @@ std::string cLogger::icon(int level) const {
 
 	using namespace zkr;
 
-	if (level >= 100) return cc::fore::red     + ToStr("ERROR ");
-	if (level >=  90) return cc::fore::yellow  + ToStr("Warn  ");
-	if (level >=  80) return cc::fore::magenta + ToStr("MARK  ");
+	if (level >= 100) return cc::back::red     + ToStr(cc::back::black) + ToStr("ERROR ") + zkr::cc::console + ToStr(cc::back::red)+" " ;
+	if (level >=  90) return cc::back::yellow  + ToStr(cc::fore::black) + ToStr("Warn  ") + zkr::cc::console + ToStr(cc::back::yellow)+ " " ;
+	if (level >=  80) return cc::back::magenta + ToStr(cc::fore::black) + ToStr("MARK  ") + zkr::cc::console + ToStr(cc::back::magenta)+ " ";
 	if (level >=  70) return cc::fore::cyan    + ToStr("Note  ");
 	if (level >=  50) return cc::fore::green   + ToStr("info  ");
 	if (level >=  40) return cc::fore::lightwhite    + ToStr("dbg   ");
@@ -113,7 +113,7 @@ std::string cLogger::icon(int level) const {
 }
 
 std::string cLogger::endline() const {
-	return ToStr("\n") + zkr::cc::console; // TODO replan to avoid needles converting back and forth char*, string etc
+	return ToStr("") + zkr::cc::console + ToStr("\n"); // TODO replan to avoid needles converting back and forth char*, string etc
 }
 
 
