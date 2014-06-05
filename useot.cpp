@@ -91,8 +91,11 @@ bool cUseOT::Init() {
 
 bool cUseOT::AccountCheckIfExists(const string & accountName) {
 	vector<string> v = AccountGetAllNames();
-	if (std::find(v.begin(), v.end(), accountName) != v.end())
+	if (std::find(v.begin(), v.end(), accountName) != v.end()){
+		_dbg3("Account " + accountName + " exists");
 		return true;
+	}
+	_warn("Can't find account: " + accountName);
 	return false;
 }
 
@@ -237,7 +240,7 @@ const vector<string> cUseOT::AccountGetAllNames() {
 	if(!Init())
 	return vector<string> {};
 
-	_dbg3("Retrieving accounts names");
+	_dbg3("Retrieving all accounts names");
 	vector<string> accounts;
 	for(int i = 0 ; i < OTAPI_Wrap::GetAccountCount ();i++) {
 		accounts.push_back(OTAPI_Wrap::GetAccountWallet_Name ( OTAPI_Wrap::GetAccountWallet_ID (i)));
@@ -253,8 +256,11 @@ void cUseOT::AccountSetDefault(const string & accountName) {
 
 bool cUseOT::AssetCheckIfExists(const string & assetName) {
 	vector<string> v = AssetGetAllNames();
-	if (std::find(v.begin(), v.end(), assetName) != v.end())
+	if (std::find(v.begin(), v.end(), assetName) != v.end()) {
+		_dbg3("Asset " + assetName + " exists");
 		return true;
+	}
+	_warn("Can't find that asset: " + assetName);
 	return false;
 }
 
@@ -428,25 +434,35 @@ void cUseOT::MsgSend(const string & nymRecipient, const string & msg) { ///< Sen
 	_info("Message was sent successfully.");
 }
 
-//void cUseOT::MsgInCheckIndex(const string & nymName, const int32_t & nIndex) {
-//	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){
-//		_info("Message removed successfully from inbox");
-//	}
-//}
-//
-//void cUseOT::MsgOutCheckIndex(const string & nymName, const int32_t & nIndex) {
-//	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){
-//		_info("Message removed successfully from inbox");
-//	}
-//}
+const bool cUseOT::MsgInCheckIndex(const string & nymName, const int32_t & nIndex) {
+	if(!Init())
+			return false;
+	if ( nIndex >= 0 && nIndex < OTAPI_Wrap::GetNym_MailCount(NymGetId(nymName)) ) {
+		return true;
+	}
+	return false;
+}
+
+const bool cUseOT::MsgOutCheckIndex(const string & nymName, const int32_t & nIndex) {
+	if(!Init())
+			return false;
+	if ( nIndex >= 0 && nIndex < OTAPI_Wrap::GetNym_OutmailCount(NymGetId(nymName)) ) {
+		return true;
+	}
+	return false;
+}
 
 void cUseOT::MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex) {
+	if(!Init())
+			return;
 	if(OTAPI_Wrap::Nym_RemoveMailByIndex (NymGetId(nymName), nIndex)){
 		_info("Message removed successfully from inbox");
 	}
 }
 
 void cUseOT::MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex) {
+	if(!Init())
+			return;
 	if( OTAPI_Wrap::Nym_RemoveOutmailByIndex(NymGetId(nymName), nIndex) ){
 		_info("Message removed successfully from outbox");
 	}
@@ -492,13 +508,13 @@ void cUseOT::NymCreate(const string & nymName) {
 bool cUseOT::NymCheckIfExists(const string & nymName) { ///< Check only name!
 	if(!Init())
 			return false;
-	bool exists = false;
-
 	vector<string> v = NymGetAllNames();
-	if (std::find(v.begin(), v.end(), nymName) != v.end())
-		exists = true;
-
-	return exists;
+	if (std::find(v.begin(), v.end(), nymName) != v.end()) {
+		_dbg3("Nym " + nymName + " exists");
+		return true;
+	}
+	_warn("Can't find this Nym: " + nymName);
+	return false;
 }
 
 void cUseOT::NymGetAll() {
@@ -673,9 +689,19 @@ void cUseOT::ServerCheck() { ///< Use it to ping server
 			return ;
 
 	if( !OTAPI_Wrap::checkServerID( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID") ) ){
-		_erro("No response from server");
+		_erro( "No response from server: " + mDefaultIDs.at("ServerID") );
 	}
-	_info("Server OK");
+	_info("Server " + mDefaultIDs.at("ServerID") + " is OK");
+}
+
+bool cUseOT::ServerCheckIfExists(const string & serverName) {
+	vector<string> v = ServerGetAllNames();
+	if (std::find(v.begin(), v.end(), serverName) != v.end()) {
+		_dbg3("Server " + serverName + " exists");
+		return true;
+	}
+	_warn("Can't find this server: " + serverName);
+	return false;
 }
 
 

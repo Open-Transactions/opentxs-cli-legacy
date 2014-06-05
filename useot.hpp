@@ -74,6 +74,8 @@ namespace nUse {
 		const vector<string> MsgGetForNym(const string & nymName);
 		void MsgSend(const string & nymSender, const string & nymRecipient, const string & msg);
 		void MsgSend(const string & nymRecipient, const string & msg);
+		const bool MsgInCheckIndex(const string & nymName, const int32_t & nIndex);
+		const bool MsgOutCheckIndex(const string & nymName, const int32_t & nIndex);
 		void MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex);
 		void MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex);
 
@@ -96,6 +98,7 @@ namespace nUse {
 
 		void ServerAdd(const std::string & contract);
 		void ServerCheck();
+		bool ServerCheckIfExists(const string & serverName);
 		const string ServerGetDefault();
 		const string ServerGetId(const string & serverName);
 		const string ServerGetName(const string & serverID);
