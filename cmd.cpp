@@ -90,7 +90,7 @@ void cCmdParser::Init() {
 	{ // msg ls alice <-- FIXME alice is an extra variable. exec must call different exec function based on existance of extra argument.
 		cCmdExecutable exec(
 			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use ) -> cCmdExecutable::tExitCode {
-				if( data->VarDef(1,"") == "" ) {
+				if ( data->VarDef(1,"") == "" ) {
 					_dbg3("Execute MsgGetAll()");
 					use.MsgGetAll();
 				}else {
@@ -337,7 +337,11 @@ vector<string> cCmdData::OptIf(const string& name) const noexcept {
 }
 
 string cCmdData::VarDef(int nr, const string &def, bool doThrow) const noexcept {
-	return VarGetOrThrow(nr, def, true);
+	try {
+		return VarGetOrThrow(nr, def, true);
+	} catch (cErrArgMissing &e) {
+		return def;
+	}
 }
 
 string cCmdData::Var(int nr) const throw(cErrArgMissing) { // nr: 1,2,3,4 including both arg and argExt
@@ -360,9 +364,9 @@ void cmd_test() {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
 	auto alltest = vector<string>{ 
-//	 "ot msg ls"
-//	,"ot msg ls alice"
-	"ot msg sendfrom alice bob \"hello bob\" --cc eve --cc mark --bcc john --prio 4"
+	 "ot msg ls"
+	,"ot msg ls alice"
+//	"ot msg sendfrom alice bob \"hello bob\" --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"
