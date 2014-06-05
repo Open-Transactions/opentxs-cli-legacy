@@ -27,7 +27,9 @@ class cParamString;
 class cCmdParser_pimpl;
 
 
-struct cErrCommandNotFound : public std::runtime_error { cErrCommandNotFound(const string &s) : runtime_error(s) { } };
+struct cErrParse : public std::runtime_error { cErrParse(const string &s) : runtime_error(s) { } };
+struct cErrParseName : public cErrParse { cErrParseName(const string &s) : cErrParse("name of command is unknown: "+s) { } };
+struct cErrParseSyntax : public cErrParse { cErrParseSyntax(const string &s) : cErrParse("syntax error: "+s) { } };
 
 struct cErrArgNotFound : public std::runtime_error { cErrArgNotFound(const string &s) : runtime_error(s) { } }; // generally this arg was not found
 struct cErrArgMissing : public cErrArgNotFound { 
@@ -38,7 +40,7 @@ struct cErrArgIllegal : public cErrArgNotFound {
 /**
 The parser (can be used many times), that should contain some tree of possible commands and format/validation/hint of each.
 */
-class cCmdParser : public enable_shared_from_this<cCmdParser> {
+class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME("cCmdParser");
 	protected:
 		unique_ptr< cCmdParser_pimpl > mI;
 		void AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format);
@@ -49,7 +51,7 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> {
 		cCmdProcessing StartProcessing(const vector<string> &words, shared_ptr<nUse::cUseOT> use );
 		cCmdProcessing StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use );
 
-		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) throw(cErrCommandNotFound);
+		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) throw(cErrParseName);
 
 		void Init();
 		void Test();
@@ -59,7 +61,7 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> {
 Particular instance of process of parsing one input. 
 E.g. parsing the input "msg sendfrom rafal dorota 5000" and pointing to standard parser
 */
-class cCmdProcessing {
+class cCmdProcessing { MAKE_CLASS_NAME("cCmdProcessing");
 	protected:
 		shared_ptr<cCmdParser> mParser; // our "parent" parser to use here
 
@@ -82,7 +84,7 @@ class cCmdProcessing {
 /** 
 A function to be executed that will do some actuall OT call <- e.g. execute this on "ot msg ls"
 */
-class cCmdExecutable {  
+class cCmdExecutable {  MAKE_CLASS_NAME("cCmdExecutable");
 	public:
 		typedef int tExitCode;
 		typedef std::function< tExitCode ( shared_ptr<cCmdData> , nUse::cUseOT & ) > tFunc;
@@ -99,7 +101,7 @@ class cCmdExecutable {
 /**
 Describes template how given command arguments should look like (validation, hint)
 */
-class cCmdFormat {
+class cCmdFormat {  MAKE_CLASS_NAME("cCmdFormat");
 	public:
 		typedef vector<cParamInfo> tVar;
 		typedef map<string, cParamInfo> tOption;
@@ -123,16 +125,18 @@ class cCmdFormat {
 /**
 The parsed and interpreted data of command, arguments and options are ready in containers etc.
 */
-class cCmdData {
+class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 	public:
 		typedef vector<string> tVar;
 		typedef map<string, vector<string> > tOption; // even single (not-multi) options will be placed in vector (1-element)
 		
 	protected:
+
+		friend class cCmdProcessing; // it will fill-in this class fields directly
 		tVar mVar, mVarExt;
 		tOption mOption;
 
-		friend class cCmdProcessing; // it will fill-in this class fields directly
+		void AddOpt(const string &name, const string &value) throw(cErrArgIllegal); // append an option with value (value can be empty)
 
 		// [nr] REMARK: the argument "nr" is indexed like 1,2,3,4 (not from 0) and is including both arg and argExt.
 
@@ -176,7 +180,7 @@ class cCmdData {
 /**
 Name of command like "msg sendfrom"
 */
-class cCmdName {
+class cCmdName {  MAKE_CLASS_NAME("cCmdName");
 	protected:
 		string mName;
 	public:
@@ -190,7 +194,7 @@ class cCmdName {
 /**
 Info about Parameter: How to validate and how to complete this argument
 */
-class cParamInfo {
+class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 	public:
 
 		// bool validation_function ( otuse, partial_data, curr_word_ix )

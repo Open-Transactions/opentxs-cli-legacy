@@ -47,7 +47,7 @@ void cRunOptions::Exec(const string & runoption) { // eg: Exec("+debug");
 	else if (runoption == "+demo") { mRunMode=eRunModeDemo; }
 	else if (runoption == "+normal") { mRunMode=eRunModeNormal; }
 	else if (runoption == "+current") { mRunMode=eRunModeCurrent; }
-	else if (runoption == "+debugshow") { mDoRunDebugshow=true; }
+	else if (runoption == "+debugshow") { mDebug=true;  mDebugSendToCerr=true;  mDoRunDebugshow=true; }
 	else {
 		cerr << "Unknown runoption in Exec: '" << runoption << "'" << endl;
 		throw std::runtime_error("Unknown runoption");

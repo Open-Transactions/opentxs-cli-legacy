@@ -100,11 +100,12 @@ std::string cLogger::icon(int level) const {
 
 	using namespace zkr;
 
-	if (level >= 100) return cc::back::red     + ToStr(cc::back::black) + ToStr("ERROR ") + zkr::cc::console + ToStr(cc::back::red)+" " ;
-	if (level >=  90) return cc::back::yellow  + ToStr(cc::fore::black) + ToStr("Warn  ") + zkr::cc::console + ToStr(cc::back::yellow)+ " " ;
-	if (level >=  80) return cc::back::magenta + ToStr(cc::fore::black) + ToStr("MARK  ") + zkr::cc::console + ToStr(cc::back::magenta)+ " ";
-	if (level >=  70) return cc::fore::cyan    + ToStr("Note  ");
-	if (level >=  50) return cc::fore::green   + ToStr("info  ");
+	if (level >= 100) return cc::back::red     + ToStr(cc::fore::black) + ToStr("ERROR ") + ToStr(cc::fore::lightyellow) + " " ;
+	if (level >=  90) return cc::back::lightyellow  + ToStr(cc::fore::black) + ToStr("Warn  ") + ToStr(cc::fore::red)+ " " ;
+	if (level >=  80) return cc::back::lightmagenta + ToStr(cc::fore::black) + ToStr("MARK  "); //+ zkr::cc::console + ToStr(cc::fore::lightmagenta)+ " ";
+	if (level >=  75) return cc::back::lightyellow + ToStr(cc::fore::black) + ToStr("FACT ") + zkr::cc::console + ToStr(cc::fore::lightyellow)+ " ";
+	if (level >=  70) return cc::fore::green    + ToStr("Note  ");
+	if (level >=  50) return cc::fore::cyan   + ToStr("info  ");
 	if (level >=  40) return cc::fore::lightwhite    + ToStr("dbg   ");
 	if (level >=  30) return cc::fore::lightblue   + ToStr("dbg   ");
 	if (level >=  20) return cc::fore::blue    + ToStr("dbg   ");
@@ -306,9 +307,13 @@ ConfigManager configManager;
 
 }; // namespace OT
 
-const std::string * GetObjectName() {	
-	static std::string * name=nullptr;
-	if (!name) name = new std::string("(global)");
-	return name;
+// global namespace
+
+const extern int _dbg_ignore = 0; // see description in .hpp
+
+std::string GetObjectName() {	
+	//static std::string * name=nullptr;
+	//if (!name) name = new std::string("(global)");
+	return "";
 }
 

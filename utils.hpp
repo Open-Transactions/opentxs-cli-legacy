@@ -13,6 +13,9 @@ we find helpful in coding this project.
 	#error "You requested to turn off terminal colors (CFG_WITH_TERMCOLORS), how ever currently they are hardcoded (this option to turn them off is not yet implemented)."
 #endif
 
+#define MAKE_CLASS_NAME(NAME) private: static std::string GetObjectName() { return #NAME; } 
+#define MAKE_STRUCT_NAME(NAME) private: static std::string GetObjectName() { return #NAME; } public: 
+
 namespace nOT {
 
 namespace nUtils {
@@ -41,14 +44,17 @@ extern cNullstream g_nullstream; // a stream that does nothing (eats/discards da
 
 // ========== debug ==========
 
-#define _dbg3(X) do { gCurrentLogger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
-#define _dbg2(X) do { gCurrentLogger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
-#define _dbg1(X) do { gCurrentLogger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // details
-#define _info(X) do { gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // more boring info
-#define _note(X) do { gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
-#define _mark(X) do { gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
-#define _warn(X) do { gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // some problem
-#define _erro(X) do { gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // error - report
+// _dbg_ignore is moved to global namespace (on purpose)
+
+#define _dbg3(X) do { if (_dbg_ignore< 20) gCurrentLogger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
+#define _dbg2(X) do { if (_dbg_ignore< 30) gCurrentLogger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
+#define _dbg1(X) do { if (_dbg_ignore< 40) gCurrentLogger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // details
+#define _info(X) do { if (_dbg_ignore< 50) gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // more boring info
+#define _note(X) do { if (_dbg_ignore< 70) gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // info
+#define _fact(X) do { if (_dbg_ignore< 75) gCurrentLogger.write_stream( 75) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
+#define _mark(X) do { if (_dbg_ignore< 80) gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // marked action 
+#define _warn(X) do { if (_dbg_ignore< 90) gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // some problem
+#define _erro(X) do { if (_dbg_ignore<100) gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // error - report
 
 const char* DbgShortenCodeFileName(const char *s);
 
@@ -155,19 +161,18 @@ template <class T>
 std::string DbgVector(const std::vector<T> &v, const std::string &delim="|") {
 	std::ostringstream oss;
 	oss << "[";
-	std::copy( v.begin(), v.end(), std::ostream_iterator<T>(oss, delim.c_str()) );
+	bool first=true;
+	for(auto vElement : v) { if (!first) oss<<delim; first=false; oss <<vElement ; }
 	oss << "]";
+	//std::copy( v.begin(), v.end(), std::ostream_iterator<T>(oss, delim.c_str()) );
 	return oss.str();
 }
 
 template <class T>
 std::ostream & operator<<(std::ostream & os, const map< T, vector<T> > & obj){
 	os << "[";
-	for(auto mElement : obj) {
-		os << "[" << mElement.first << " - ";
-				for(auto vElement : mElement.second)
-					os << vElement << "|";
-		os << "] ";
+	for(auto const & elem : obj) {
+		os << " [" << elem.first << "=" << DbgVector(elem.second) << "] ";
 	}
 	os << "]";
   return os;
@@ -240,9 +245,12 @@ vector<T> & operator+=(vector<T> &a, const vector<T> &b) {
 // global namespace
 extern nOT::nUtils::cLogger gCurrentLogger;
 
-const std::string * GetObjectName();
+std::string GetObjectName();
 
-#define OT_CODE_STAMP ( nOT::nUtils::ToStr("[") + nOT::nUtils::DbgShortenCodeFileName(__FILE__) + nOT::nUtils::ToStr("+") + nOT::nUtils::ToStr(__LINE__) + nOT::nUtils::ToStr(" ") + nOT::nUtils::ToStr(*GetObjectName()) + nOT::nUtils::ToStr("::") + nOT::nUtils::ToStr(__FUNCTION__) + nOT::nUtils::ToStr("]"))
+const extern int _dbg_ignore; // the global _dbg_ignore, but local code (blocks, classes etc) should shadow it to override debug compile-time setting for given block/class
+// or to make it runtime by providing a class normal member and editing it in runtime
+
+#define OT_CODE_STAMP ( nOT::nUtils::ToStr("[") + nOT::nUtils::DbgShortenCodeFileName(__FILE__) + nOT::nUtils::ToStr("+") + nOT::nUtils::ToStr(__LINE__) + nOT::nUtils::ToStr(" ") + (GetObjectName()) + nOT::nUtils::ToStr("::") + nOT::nUtils::ToStr(__FUNCTION__) + nOT::nUtils::ToStr("]"))
 
 
 #endif

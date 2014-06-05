@@ -22,6 +22,7 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 		_erro(msg);
 		_warn(msg);
 		_mark(msg);
+		_fact(msg);
 		_note(msg);
 		_info(msg);
 		_dbg1(msg);

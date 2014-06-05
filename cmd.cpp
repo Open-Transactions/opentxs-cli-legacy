@@ -119,7 +119,7 @@ void cCmdParser::Init() {
 		// ot msg sendfrom NYM_FROM NYM_TO SUBJ
 		cCmdExecutable exec(
 			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
-				_mark("Sending from inside lambda!");
+				_fact("Sending (msg sendfrom) inside lambda!");
 				string from = data->Var(1);
 				string to = data->Var(2);
 				string subj = data->VarDef(3,"");
@@ -128,7 +128,6 @@ void cCmdParser::Init() {
 				_note("from " << from << " to " << to << " subj=" << subj << " prio="<<prio);
 				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
 				for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
-
 				//use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
 				return 0;
 			}
@@ -183,13 +182,12 @@ cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse:
 }
 
 shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name ) 
-	throw(cErrCommandNotFound)
+	throw(cErrParseName)
 {
 	auto it = mI->mTree.find( name );
 	if (it == mI->mTree.end()) {
-		throw cErrCommandNotFound("No such ot command can be parsed by this parser: (" + (string)name + ")");
+		throw cErrParseName("No such ot command="+(string)name);
 	}
-
 	return it->second;
 }
 
@@ -211,10 +209,10 @@ cCmdProcessing::cCmdProcessing(shared_ptr<cCmdParser> parser, vector<string> com
 	_dbg2("Working on use=" << use->DbgName() );
 }
 
-
 void cCmdProcessing::Parse() {
-	// mCommandLine = ot, msg, sendfrom, alice, bob, hello
+	int _dbg_ignore=50;
 
+	// mCommandLine = ot, msg, sendfrom, alice, bob, hello
 	// mFormat.erase ? // remove old format, we parse something new [doublecheck]
 
 	if (!mCommandLine.empty()) {
@@ -255,7 +253,7 @@ void cCmdProcessing::Parse() {
 			while (true) { // parse var normal
 				const int var_nr = pos - offset_to_var;
 				_dbg2("phase="<<phase<<" pos="<<pos<<" var_nr="<<var_nr);
-				if (var_nr >= words_count) { _dbg1("reached end, var_nr="<<var_nr);	phase=9; break;	}
+				if (pos >= words_count) { _dbg1("reached END, pos="<<pos);	phase=9; break;	}
 				if (var_nr >= var_size_normal) { _dbg1("reached end of var normal, var_nr="<<var_nr); phase=2;	break;	}
 
 				string word = mCommandLine.at(pos);
@@ -273,7 +271,8 @@ void cCmdProcessing::Parse() {
 					_dbg1("Quoted word is:"<<word);
 				}
 				if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
-					phase=3;
+					phase=3; --pos; // this should be re-prased in proper phase
+					_dbg1("Got an --option, so jumping to phase="<<phase);
 					break; // continue to phase 3 - the options
 				}
 
@@ -285,7 +284,7 @@ void cCmdProcessing::Parse() {
 			while (true) { // parse var normal
 				const int var_nr = pos - offset_to_var;
 				_dbg2("phase="<<phase<<" pos="<<pos<<" var_nr="<<var_nr);
-				if (var_nr >= words_count) { _dbg1("reached end, var_nr="<<var_nr);	phase=9; break;	}
+				if (pos >= words_count) { _dbg1("reached END, pos="<<pos);	phase=9; break;	}
 				if (var_nr >= var_size_all) { _dbg1("reached end of var ALL, var_nr="<<var_nr); phase=3;	break;	}
 
 				string word = mCommandLine.at(pos);
@@ -303,7 +302,8 @@ void cCmdProcessing::Parse() {
 					_dbg1("Quoted word is:"<<word);
 				}
 				if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
-					phase=3;
+					phase=3; --pos; // this should be re-prased in proper phase
+					_dbg1("Got an --option, so jumping to phase="<<phase);
 					break; // continue to phase 3 - the options
 				}
 
@@ -312,40 +312,50 @@ void cCmdProcessing::Parse() {
 		} // phase 2
 
 		if (phase==3) {
-		/*
+			string prev_name="";  bool inside_opt=false; // are we now in middle of --option ?  curr_name is the opt name like "--cc"
 			while (true) { // parse options
-				if (var_nr >= words_count) { _dbg1("reached end, var_nr="<<var_nr);	phase=9; break;	}
+				if (pos >= words_count) { _dbg1("reached END, pos="<<pos);	phase=9; break;	}
 
 				string word = mCommandLine.at(pos);
 				_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
 				++pos;
 
-				if ( nUtils::CheckIfBegins("\"", word) ) { // TODO review memory access
-					_dbg1("Quotes detected in: " + word);
-					word.erase(0,1);
-					while ( !nUtils::CheckIfEnds("\"", word) ) {
-						word += " " + mCommandLine.at(pos);
-						++pos;
-					}
-					word.erase(word.end(), word.end()-1); // ease the closing " of last mCommandLine[..] that is not at end of word
-					_dbg1("Quoted word is:"<<word);
-				}
-				if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
-					phase=3;
-					break; // continue to phase 3 - the options
-				}
+				bool is_newopt =  nUtils::CheckIfBegins("--", word); // word is opt name like "--cc"
 
-				_dbg1("adding var ext "<<word);  mData->mVarExt.push_back( word ); 
+				if (is_newopt) { // some new option like --private or --cc
+					if (inside_opt) { // finish the previos option, that didn't got a value then.  --fast [--private]
+						inside_opt=false;
+						mData->AddOpt(prev_name , "");
+						_dbg1("got option "<<prev_name<<" (empty)");
+					}
+					inside_opt=true; prev_name=word; // we now started the new option (and next iteration will finish it)
+					_dbg3("started new option: prev_name="<<prev_name);
+				}
+				else { // not an --option, so should be a value to finish previous one
+					if (inside_opt) { // we are in middle of option, now we have the argment that ends it: --cc [alice]
+						string value=word; // like "alice"
+						inside_opt=false;
+						mData->AddOpt(prev_name , value);
+						_dbg1("got option "<<prev_name<<" with value="<<value);
+					}
+					else { // we have a word like "bob", but we are not in middle of an option - syntax error
+						throw cErrParseSyntax("Expected an --option here, but got a word=" + ToStr(word) + " at pos=" + ToStr(pos));
+					}
+				}
+			} // all words
+			if (inside_opt) { // finish the previos LAST option, that didn't got a value then.  --fast [--private] (END)
+				inside_opt=false;
+				mData->AddOpt(prev_name , "");
+				_dbg1("got option "<<prev_name<<" (empty) - on end");
 			}
-			*/
 		} // phase 3
 
 		_note("mVar parsed:    " + DbgVector(mData->mVar));
 		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
 		_note("mOption parsed  " + DbgMap(mData->mOption));
  
-	} catch (cErrCommandNotFound &e) {
-		_warn("Command not found: " << e.what());
+	} catch (cErrParse &e) {
+		_warn("Command can not be parsed " << e.what());
 	}
 }
 
@@ -482,6 +492,16 @@ bool cCmdData::IsOpt(const string &name) const throw(cErrArgIllegal) {
 
 	_warn("Not normalized options for name="<<name<<" an empty vector exists there:" << DbgVector(vect));
 	return false; // there was a vector for this options but it's empty now (maybe deleted?)
+}
+
+void cCmdData::AddOpt(const string &name, const string &value) throw(cErrArgIllegal) { // append an option with value (value can be empty
+	_dbg3("adding option ["<<name<<"] with value="<<value);
+	auto find = mOption.find( name );
+	if (find == mOption.end()) {
+		mOption.insert( std::make_pair( name , vector<string>{ value } ) );	
+	} else {
+		find->second.push_back( value );
+	}	
 }
 
 // ========================================================================================================================
