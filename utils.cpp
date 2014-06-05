@@ -170,6 +170,15 @@ bool CheckIfBegins(const std::string & beggining, const std::string & all) {
 	}
 }
 
+bool CheckIfEnds (std::string const & ending, std::string const & all){
+    if (all.length() >= ending.length()) {
+        return (0 == all.compare (all.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
+
 vector<string> WordsThatMatch(const std::string & sofar, const vector<string> & possib) {
 	vector<string> ret;
 	for ( auto rec : possib) { // check of possibilities

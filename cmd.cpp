@@ -87,16 +87,16 @@ void cCmdParser::Init() {
 //		,"ot msg-out rm alice 0"
 
 
-	{ // msg ls alice <-- alice is an extra variable. exec must call different exec function based on existance of extra argument.
+	{ // msg ls alice <-- FIXME alice is an extra variable. exec must call different exec function based on existance of extra argument.
 		cCmdExecutable exec(
 			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use ) -> cCmdExecutable::tExitCode {
-//				if( data->VarDef(1,"") == "" ) {
+				if( data->VarDef(1,"") == "" ) {
 					_dbg3("Execute MsgGetAll()");
 					use.MsgGetAll();
-//				}else {
-//					_dbg3("Execute MsgGetforNym(" + data->Var(1) + ")");
-//					use.MsgGetForNym(data->Var(1));
-//				}
+				}else {
+					_dbg3("Execute MsgGetforNym(" + data->Var(1) + ")");
+					use.MsgGetForNym(data->Var(1));
+				}
 				return 0;
 			}
 		);
@@ -237,6 +237,15 @@ void cCmdProcessing::Parse() {
 			_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
 			++pos;
 
+			if ( nUtils::CheckIfBegins("\"", word) ) {
+				_dbg1("Quotes detected in: " + word);
+				word.erase(0,1);
+				while ( !nUtils::CheckIfEnds("\"", word) ) {
+					word += mCommandLine.at(pos);
+					++pos;
+				}
+				word.erase(word.end(), word.end()-1);
+			}
 			if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
 				phase=3;
 				break; // continue to phase 3 - the options
@@ -351,12 +360,12 @@ void cmd_test() {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
 	auto alltest = vector<string>{ 
-	 "ot msg ls"
-	,"ot msg ls alice"
-	,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
-	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
-	,"ot msg rm alice 0"
-	,"ot msg-out rm alice 0"
+//	 "ot msg ls"
+//	,"ot msg ls alice"
+	"ot msg sendfrom alice bob \"hello bob\" --cc eve --cc mark --bcc john --prio 4"
+//	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
+//	,"ot msg rm alice 0"
+//	,"ot msg-out rm alice 0"
 	};
 	for (auto cmd : alltest) {
 		_mark("====== Testing command: " << cmd );
