@@ -110,8 +110,6 @@ namespace nUse {
 		const string TextDecrypt(const string & recipientNymName, const string & encryptedText);
 	};
 
-	extern cUseOT useOT; //TODO remove (class object creation in otcli::run)
-
 } // nUse
 } // namespace nOT
 

@@ -265,21 +265,15 @@ void cCmdProcessing::Parse() {
 	}
 }
 
-vector<string> cCmdProcessing::UseComplete(nUse::cUseOT &use) {
+vector<string> cCmdProcessing::UseComplete() {
 	vector<string> ret;
 	return ret;
 }
 
-void cCmdProcessing::UseExecute(nUse::cUseOT &use) {
+void cCmdProcessing::UseExecute() {
 	if (!mFormat) { _warn("Can not execute this command - mFormat is empty"); return; }
-
 	cCmdExecutable exec = mFormat->getExec();
-	exec( mData , use ); 
-	
-	// test case, first create both users using:
-	// ot nym new bob x
-	// ot nym register bob x
-	// use.MsgSend("alice", "bob", "from-code-1");
+	exec( mData , *mUse ); 
 }
 
 // ========================================================================================================================

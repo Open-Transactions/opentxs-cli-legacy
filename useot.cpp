@@ -772,7 +772,6 @@ const string cUseOT::TextDecrypt(const string & recipientNymName, const string &
 	return plainText;
 }
 
-cUseOT useOT; //TODO remove (class object creation in otcli::run)
 } // nUse
 }; // namespace OT
 

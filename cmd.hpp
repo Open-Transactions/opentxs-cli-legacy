@@ -75,8 +75,8 @@ class cCmdProcessing {
 
 		void Parse(); // parse into mData, mFormat
 
-		vector<string> UseComplete( nUse::cUseOT &use ); 
-		void UseExecute( nUse::cUseOT &use );
+		vector<string> UseComplete(); 
+		void UseExecute();
 };
 
 /** 

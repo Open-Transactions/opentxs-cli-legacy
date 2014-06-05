@@ -318,6 +318,11 @@ vector<string> cHintManager::AutoComplete(const string &sofar_str) const { // th
 
 
 vector<string> cHintManager::BuildTreeOfCommandlines(const string &sofar_str, bool show_all) const {
+
+	_erro("Not implemented currently (while refactoring)");
+
+#if 0 
+
 /*
 	nOT::nNewcli::cNew newcli;
 	newcli.assign(sofar_str);
@@ -869,6 +874,9 @@ TODO - planned new tree of commands using lambda
 	/*if (topic=="wallet") {
 		return WordsThatMatch(  current_word  ,  vector<string>{"status"} ) ;
 	}*/
+
+#endif
+
 	return vector<string>{};
 	//throw std::runtime_error("Unable to handle following completion: sofar_str='" + ToStr(sofar_str) + "' in " + OT_CODE_STAMP);
 }
