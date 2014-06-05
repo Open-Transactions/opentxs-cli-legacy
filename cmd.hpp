@@ -194,7 +194,7 @@ class cParamInfo {
 };
 
 
-void cmd_test();
+void cmd_test( shared_ptr<nUse::cUseOT> useOT );
 
 
 

@@ -36,6 +36,8 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 		throw std::runtime_error("Main program called with 0 arguments (not even program name).");
 	}
 
+	auto useOT = std::make_shared<nUse::cUseOT>("Normal");
+
 	size_t nr=0;
 	for(auto arg: args) {
 		if (arg=="--complete-shell") {
@@ -50,7 +52,7 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 					break;
 				case gRunOptions.eRunModeCurrent :
 					using namespace nOT::nNewcli;
-					nNewcli::cmd_test();
+					nNewcli::cmd_test(useOT);
 					break;
 			}
 		}
@@ -68,8 +70,6 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 		++nr;
 	}
 	_note("Finished main run of application, will clean up now");
-
-	nOT::nUse::useOT.Done();
 
 	_note("Exiting application with status="<<status);
 	return status;
