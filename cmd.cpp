@@ -122,8 +122,12 @@ void cCmdParser::Init() {
 				string from = data->Var(1);
 				string to = data->Var(2);
 				string subj = data->VarDef(3,"");
-				_note("from " << from << " to " << to << "subj=" << subj);
+				string prio = data->Opt1If("prio", "0");
+
+				_note("from " << from << " to " << to << " subj=" << subj << " prio="<<prio);
 				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
+
 				//use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
 				return 0;
 			}
@@ -134,6 +138,7 @@ void cCmdParser::Init() {
 		cCmdFormat::tVar varExt;
 			varExt.push_back( pSubject );
 		cCmdFormat::tOption opt;
+			opt.insert(std::make_pair("--dryrun" , pNymAny)); // TODO should be global option
 			opt.insert(std::make_pair("--cc" , pNymAny));
 			opt.insert(std::make_pair("--bcc" , pNymAny));
 			opt.insert(std::make_pair("--prio" , pOnceInt));
@@ -350,6 +355,18 @@ vector<string> cCmdData::OptIf(const string& name) const throw(cErrArgIllegal) {
 	return find->second;
 }
 
+string cCmdData::Opt1If(const string& name, const string &def) const throw(cErrArgIllegal) { // same but requires the 1st element; therefore we need def argument again
+	AssertLegalOptName(name);
+	auto find = mOption.find( name );
+	if (find == mOption.end()) { 
+		return def;
+	} 
+	const auto &vec = find->second;
+	if (vec.size()<1) { _warn("Not normalized opt for name="<<name); return def; }
+	return vec.at(0);
+}
+
+
 string cCmdData::VarDef(int nr, const string &def, bool doThrow) const throw(cErrArgIllegal) {
 	return VarAccess(nr, def, false);
 }
@@ -364,6 +381,15 @@ vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
 	auto find = mOption.find( name );
 	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); } 
 	return find->second;
+}
+
+string cCmdData::Opt1(const string& name) const throw(cErrArgNotFound) {
+	AssertLegalOptName(name);
+	auto find = mOption.find( name );
+	if (find == mOption.end()) {  throw cErrArgMissing("Option " + name + " was missing"); } 
+	const auto &vec = find->second;
+	if (vec.size()<1) { _warn("Not normalized opt for name="<<name); throw cErrArgMissing("Option " + name + " was missing (not-normalized empty vector)"); }
+	return vec.at(0);
 }
 
 bool cCmdData::IsOpt(const string &name) const throw(cErrArgIllegal) {
@@ -394,6 +420,7 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 //		,"ot msg ls"
 //		,"ot msg ls alice"
 //		,"ot msg ls alice"
+	"ot msg sendfrom alice bob --prio 1"
 	"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"

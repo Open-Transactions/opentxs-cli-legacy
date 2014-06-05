@@ -156,9 +156,11 @@ class cCmdData {
 
 		string VarDef(int nr, const string &def="",  bool doThrow=0) const throw(cErrArgIllegal); // see [nr] ; return def if this var was missing
 		vector<string> OptIf(const string& name) const throw(cErrArgIllegal); // returns option values, or empty vector if missing (if none)
+		string Opt1If(const string& name, const string &def="") const throw(cErrArgIllegal); // same but requires the 1st element; therefore we need def argument again
 
 		string Var(int nr) const throw(cErrArgNotFound); // see [nr] ; throws if this var was missing
 		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // returns option values, throws if missing (if none)
+		string Opt1(const string& name) const throw(cErrArgNotFound); // same but requires the 1st element
 		
 		bool IsOpt(const string &name) const throw(cErrArgIllegal);
 
