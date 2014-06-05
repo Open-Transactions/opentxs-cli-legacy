@@ -356,7 +356,7 @@ vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
 // ========================================================================================================================
 
 
-void cmd_test( shared_ptr<nUse::cUseOT> useOT ) {
+void cmd_test( shared_ptr<cUseOT> use ) {
 	_mark("TEST TREE");
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
@@ -372,7 +372,7 @@ void cmd_test( shared_ptr<nUse::cUseOT> useOT ) {
 	for (auto cmd : alltest) {
 		_mark("====== Testing command: " << cmd );
 		parser->Init();
-		auto processing = parser->StartProcessing(cmd, useOT);
+		auto processing = parser->StartProcessing(cmd, use);
 		processing.Parse();
 		processing.UseExecute();
 	}
