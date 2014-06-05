@@ -119,7 +119,12 @@ void cCmdParser::Init() {
 		cCmdExecutable exec(
 			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use) -> cCmdExecutable::tExitCode {
 				_mark("Sending from inside lambda!");
-				use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
+				string from = data->Var(1);
+				string to = data->Var(2);
+				string subj = data->VarDef(3,"");
+				_note("from " << from << " to " << to << "subj=" << subj);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				//use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
 				return 0;
 			}
 		);
@@ -329,7 +334,15 @@ string cCmdData::VarAccess(int nr, const string &def, bool doThrow) const throw(
 	return mVar.at(ix);
 }
 
+void cCmdData::AssertLegalOptName(const string &name) const throw(cErrArgIllegal) {
+	if (name.size()<1) throw cErrArgIllegal("option name can not be empty");
+	const size_t maxlen=100;
+	if (name.size()>maxlen) throw cErrArgIllegal("option name too long, over" + ToStr(maxlen));
+	// TODO test [a-zA-Z0-9_.-]*
+}
+
 vector<string> cCmdData::OptIf(const string& name) const throw(cErrArgIllegal) {
+	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) { 
 		return vector<string>{};
@@ -347,9 +360,25 @@ string cCmdData::Var(int nr) const throw(cErrArgNotFound) { // nr: 1,2,3,4 inclu
 }
 
 vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
+	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); } 
 	return find->second;
+}
+
+bool cCmdData::IsOpt(const string &name) const throw(cErrArgIllegal) {
+	AssertLegalOptName(name);
+	auto find = mOption.find( name );
+	if (find == mOption.end()) { 
+		return false; // no such option entry
+	} 
+	auto &vect = find->second;
+	if (vect.size()) {
+		return true; // yes, there is an option
+	}
+
+	_warn("Not normalized options for name="<<name<<" an empty vector exists there:" << DbgVector(vect));
+	return false; // there was a vector for this options but it's empty now (maybe deleted?)
 }
 
 // ========================================================================================================================
@@ -361,11 +390,11 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
 	auto alltest = vector<string>{ 
-		 "ot msg ls"
-		,"ot msg ls"
-		,"ot msg ls alice"
-		,"ot msg ls alice"
-//	,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+//		 "ot msg ls"
+//		,"ot msg ls"
+//		,"ot msg ls alice"
+//		,"ot msg ls alice"
+	"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"

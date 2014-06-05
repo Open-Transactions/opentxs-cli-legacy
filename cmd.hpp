@@ -138,10 +138,11 @@ class cCmdData {
 		cCmdData()=default;
 
 		/** USE CASES:
-		for options: --cc eve --cc mark --bcc zoidberg
+		for options: --cc eve --cc mark --bcc zoidberg --pivate
 			Opt("--cc") returns {"eve","mark"}
 			Opt("--subject") throws exception
 			OptIf(--subject") returns {}
+			IsOpt("--private") returns true, while IsOpt("--cc") is true too, and IsOpt("--foobar") is false
 		for variables: alice bob
 		  Var(1) returns "alice"
 			Var(3) throws exception
@@ -158,6 +159,10 @@ class cCmdData {
 
 		string Var(int nr) const throw(cErrArgNotFound); // see [nr] ; throws if this var was missing
 		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // returns option values, throws if missing (if none)
+		
+		bool IsOpt(const string &name) const throw(cErrArgIllegal);
+
+		void AssertLegalOptName(const string & name) const throw(cErrArgIllegal); // used internally to catch programming errors e.g. in binding lambdas
 }; 
 
 // ============================================================================
