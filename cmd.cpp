@@ -39,54 +39,76 @@ void cCmdParser::AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format 
 
 void cCmdParser::Init() {
 	_mark("Init tree");
+	/*
+	typedef function< bool ( cUseOT &, cCmdData &, int, const string &  ) > tFuncValid;
+	typedef function< vector<string> ( cUseOT &, cCmdData &, int, const string &  ) > tFuncHint;
+	cParamInfo(tFuncValid valid, tFuncHint hint);
+	*/
 
-	{
-		cCmdExecutable exec( Execute1 );
+	cParamInfo pNymFrom(
+		[] (cUseOT & use, cCmdData & data, int, const string &) -> bool { //FIXME 3 argument -> what for?
+			_dbg3("Sender Nym validation");
+			return use.NymCheckIfExists(data.Var(1));
+		} ,
+		[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+			_dbg3("Sender Nym hinting");
+			return use.NymGetAllNames();
+		}
+	);
+	cParamInfo pNymTo = pNymFrom; // TODO suggest not the same nym as was used already before
+	cParamInfo pNymAny = pNymFrom;
+
+	cParamInfo pOnceInt(
+		[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+			// TODO check if is any integer
+			// TODO check if not present in data
+			return true;
+		} ,
+		[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+			return vector<string> { "-1", "0", "1", "2", "100" };
+		}
+	);
+
+	cParamInfo pSubject(
+		[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+			return true;
+		} ,
+		[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+			return vector<string> { "hello","hi","test","subject" };
+		}
+	);
+
+//	Prepare format for all msg commands:
+//	 	 "ot msg ls"
+//		,"ot msg ls alice"
+//		,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+//		,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
+//		,"ot msg rm alice 0"
+//		,"ot msg-out rm alice 0"
+
+
+	{ // msg ls alice <-- alice is an extra variable. exec must call different exec function based on existance of extra argument.
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT use ) -> cCmdExecutable::tExitCode {
+//				if( data->VarDef(1,"") == "" ) {
+					_dbg3("Execute MsgGetAll()");
+					use.MsgGetAll();
+//				}else {
+//					_dbg3("Execute MsgGetforNym(" + data->Var(1) + ")");
+//					use.MsgGetForNym(data->Var(1));
+//				}
+				return 0;
+			}
+		);
 		cCmdFormat::tVar var;
 		cCmdFormat::tVar varExt;
+			varExt.push_back( pNymAny );
 		cCmdFormat::tOption opt;
 		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
 		AddFormat( cCmdName("msg ls") , format );
 	}
 
-		/*
-		typedef function< bool ( cUseOT &, cCmdData &, int, const string &  ) > tFuncValid;
-		typedef function< vector<string> ( cUseOT &, cCmdData &, int, const string &  ) > tFuncHint;
-		cParamInfo(tFuncValid valid, tFuncHint hint);
-		*/
-
-		cParamInfo pNymFrom(
-			[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
-				return true;
-			} , 
-			[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
-				return vector<string> {};
-			}
-		);
-		cParamInfo pNymTo = pNymFrom; // TODO suggest not the same nym as was used already before
-		cParamInfo pNymAny = pNymFrom; 
-
-		cParamInfo pOnceInt(
-			[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
-				// TODO check if is any integer
-				// TODO check if not present in data
-				return true;
-			} , 
-			[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
-				return vector<string> { "-1", "0", "1", "2", "100" };
-			}
-		);
-
-		cParamInfo pSubject(
-			[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
-				return true;
-			} , 
-			[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
-				return vector<string> { "hello","hi","test","subject" };
-			}
-		);
-
-	{ 
+	{
 		// ot msg sendfrom alice bob 
 		// ot msg sendfrom NYM_FROM NYM_TO 
 		cCmdExecutable exec(
@@ -100,7 +122,7 @@ void cCmdParser::Init() {
 			var.push_back( pNymFrom );
 			var.push_back( pNymTo );
 		cCmdFormat::tVar varExt;
-			var.push_back( pSubject );
+			varExt.push_back( pSubject );
 		cCmdFormat::tOption opt;
 			opt.insert(std::make_pair("--cc" , pNymAny));
 			opt.insert(std::make_pair("--bcc" , pNymAny));
@@ -197,7 +219,7 @@ void cCmdProcessing::Parse() {
 	_dbg3("Alloc data");  
 	mData = std::make_shared<cCmdData>();
 
-	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt    
+	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt  //FIXME How to check if variable is varExt?
 	try {
 		mFormat = mParser->FindFormat( name );
 		_info("Got format for name="<<name);
@@ -219,14 +241,13 @@ void cCmdProcessing::Parse() {
 				phase=3;
 				break; // continue to phase 3 - the options
 			}
-			
 
 			_dbg1("adding var "<<word);  mData->mVar.push_back( word ); 
 		} // parse var
 
 		_note("mVar parsed:    " + DbgVector(mData->mVar));
 		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
-//		_note("mOption prased  " + DbgMap(mData->mOption));  // TODO 
+		_note("mOption parsed  " + DbgMap(mData->mOption));
  
 	} catch (cErrCommandNotFound &e) {
 		_warn("Command not found: " << e.what());
@@ -291,7 +312,7 @@ string cCmdData::VarGetOrThrow(int nr, const string &def, bool doThrow) const th
 			if (doThrow) {
 				throw cErrArgMissing("Out of range number for var, nr="+ToStr(nr)+" ix_ext="+ToStr(ix_ext)+" size="+ToStr(mVarExt.size()));
 			}
-			return def; // just return the defaurl
+			return def; // just return the default
 		}
 		return mVarExt.at(ix_ext);
 	}
@@ -330,10 +351,12 @@ void cmd_test() {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
 	auto alltest = vector<string>{ 
-	"ot msg ls" , 
-	"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
-	"ot msg show", 
-	"ot msg show alice" 
+	 "ot msg ls"
+	,"ot msg ls alice"
+	,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
+	,"ot msg rm alice 0"
+	,"ot msg-out rm alice 0"
 	};
 	for (auto cmd : alltest) {
 		_mark("====== Testing command: " << cmd );

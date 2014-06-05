@@ -86,7 +86,6 @@ bool cUseOT::Init() {
 		OTAPI_error = true;
 		return false;
 	}
-
 	return OTAPI_loaded;
 }
 

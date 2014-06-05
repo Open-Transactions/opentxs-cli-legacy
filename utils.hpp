@@ -159,14 +159,23 @@ std::string DbgVector(const std::vector<T> &v, const std::string &delim="|") {
 	return oss.str();
 }
 
-template <class T, class T2>
-std::string DbgMap(const std::map<T, T2> &m, const std::string &delim="|") {
-	std::ostringstream oss;
-	oss << "[";
-	for(auto var : m) {
-		std::cerr << var.first << " - " << var.second << delim;
+template <class T>
+std::ostream & operator<<(std::ostream & os, const map< T, vector<T> > & obj){
+	os << "[";
+	for(auto mElement : obj) {
+		os << "[" << mElement.first << " - ";
+				for(auto vElement : mElement.second)
+					os << vElement << "|";
+		os << "] ";
 	}
-	oss << "]";
+	os << "]";
+  return os;
+}
+
+template <class T, class T2>
+std::string DbgMap(const map<T, T2> & map) {
+	std::ostringstream oss;
+		oss << map;
 	return oss.str();
 }
 
