@@ -312,14 +312,14 @@ const cCmdExecutable::tExitCode cCmdExecutable::sSuccess = 0;
 
 // ========================================================================================================================
 
-string cCmdData::VarGetOrThrow(int nr, const string &def, bool doThrow) const throw(cErrArgMissing) { // nr: 1,2,3,4 including both arg and argExt
-	if (nr <= 0) throw cErrArgMissing("Illegal number for var (1,2,3... is expected)");
+string cCmdData::VarAccess(int nr, const string &def, bool doThrow) const throw(cErrArgNotFound) { // see [nr] ; if doThrow then will throw on missing var, else returns def
+	if (nr <= 0) throw cErrArgIllegal("Illegal number for var, nr="+ToStr(nr)+" (1,2,3... is expected)");
 	const int ix = nr - 1;
 	if (ix >= mVar.size()) { // then this is an extra argument
 		const int ix_ext = ix - mVar.size();
 		if (ix_ext >= mVarExt.size()) { // then this var number does not exist - out of range
 			if (doThrow) {
-				throw cErrArgMissing("Out of range number for var, nr="+ToStr(nr)+" ix_ext="+ToStr(ix_ext)+" size="+ToStr(mVarExt.size()));
+				throw cErrArgMissing("Missing argument: out of range number for var, nr="+ToStr(nr)+" ix="+ToStr(ix)+" ix_ext="+ToStr(ix_ext)+" vs size="+ToStr(mVarExt.size()));
 			}
 			return def; // just return the default
 		}
@@ -328,7 +328,7 @@ string cCmdData::VarGetOrThrow(int nr, const string &def, bool doThrow) const th
 	return mVar.at(ix);
 }
 
-vector<string> cCmdData::OptIf(const string& name) const noexcept {
+vector<string> cCmdData::OptIf(const string& name) const throw(cErrArgIllegal) {
 	auto find = mOption.find( name );
 	if (find == mOption.end()) { 
 		return vector<string>{};
@@ -336,20 +336,16 @@ vector<string> cCmdData::OptIf(const string& name) const noexcept {
 	return find->second;
 }
 
-string cCmdData::VarDef(int nr, const string &def, bool doThrow) const noexcept {
-	try {
-		return VarGetOrThrow(nr, def, true);
-	} catch (cErrArgMissing &e) {
-		return def;
-	}
+string cCmdData::VarDef(int nr, const string &def, bool doThrow) const throw(cErrArgIllegal) {
+	return VarAccess(nr, def, true);
 }
 
-string cCmdData::Var(int nr) const throw(cErrArgMissing) { // nr: 1,2,3,4 including both arg and argExt
+string cCmdData::Var(int nr) const throw(cErrArgNotFound) { // nr: 1,2,3,4 including both arg and argExt
 	static string nothing;
-	return VarGetOrThrow(nr, nothing, true);
+	return VarAccess(nr, nothing, true);
 }
 
-vector<string> cCmdData::Opt(const string& name) const throw(cErrArgMissing) {
+vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
 	auto find = mOption.find( name );
 	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); } 
 	return find->second;
@@ -364,9 +360,9 @@ void cmd_test() {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 
 	auto alltest = vector<string>{ 
-	 "ot msg ls"
-	,"ot msg ls alice"
-//	"ot msg sendfrom alice bob \"hello bob\" --cc eve --cc mark --bcc john --prio 4"
+//	 "ot msg ls"
+//	"ot msg ls alice"
+	"ot msg sendfrom alice bob subject --dryrun --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"

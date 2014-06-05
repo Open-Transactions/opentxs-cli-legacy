@@ -28,7 +28,12 @@ class cCmdParser_pimpl;
 
 
 struct cErrCommandNotFound : public std::runtime_error { cErrCommandNotFound(const string &s) : runtime_error(s) { } };
-struct cErrArgMissing : public std::runtime_error { cErrArgMissing(const string &s) : runtime_error(s) { } };
+
+struct cErrArgNotFound : public std::runtime_error { cErrArgNotFound(const string &s) : runtime_error(s) { } }; // generally this arg was not found
+struct cErrArgMissing : public cErrArgNotFound { 
+	cErrArgMissing(const string &s) : cErrArgNotFound("Just missing : " + s) { } }; // more specificaly, the arg was not given, e.g. 3 out of 2
+struct cErrArgIllegal : public cErrArgNotFound { 
+	cErrArgIllegal(const string &s) : cErrArgNotFound("Illegal! : " + s) { } }; // more specificaly, such arg is illegal, e.g. number -1 or option name ""
 
 /**
 The parser (can be used many times), that should contain some tree of possible commands and format/validation/hint of each.
@@ -123,17 +128,35 @@ class cCmdData {
 
 		friend class cCmdProcessing; // it will fill-in this class fields directly
 
-		string VarGetOrThrow(int nr, const string &def, bool doThrow) const throw(cErrArgMissing); // nr: 1,2,3,4 including both arg and argExt
+		// [nr] REMARK: the argument "nr" is indexed like 1,2,3,4 (not from 0) and is including both arg and argExt.
+
+		string VarAccess(int nr, const string &def, bool doThrow) const throw(cErrArgNotFound); // see [nr] ; if doThrow then will throw on missing var, else returns def
 
 	public:
 		cCmdData()=default;
 
-		string VarDef(int nr, const string &def="",  bool doThrow=0) const noexcept; // nr: 1,2,3,4 including both arg and argExt
-		vector<string> OptIf(const string& name) const noexcept;
+		/** USE CASES:
+		for options: --cc eve --cc mark --bcc zoidberg
+			Opt("--cc") returns {"eve","mark"}
+			Opt("--subject") throws exception
+			OptIf(--subject") returns {}
+		for variables: alice bob
+		  Var(1) returns "alice"
+			Var(3) throws exception
+			VarDef(3) returns "" and VarDef(3,"unknown") returns "unknown"
 
-		string Var(int nr) const throw(cErrArgMissing); // nr: 1,2,3,4 including both arg and argExt
-		vector<string> Opt(const string& name) const throw(cErrArgMissing);
-};
+
+		Exceptions: please note, that the Var, Opt are throwing when the argument is not found normally, e.g. var nr=3 was requested but just 2 are present
+		the VarDef and OptIf avoid throwing usually - but they might throw cErrArgIllegal if the requested argument not just is not present but is totally illegal and can not be
+		ever present, e.g. if requestion var number -1 or option named "" or other illegal operation (so in programming error usually)
+		*/
+
+		string VarDef(int nr, const string &def="",  bool doThrow=0) const throw(cErrArgIllegal); // see [nr] ; return def if this var was missing
+		vector<string> OptIf(const string& name) const throw(cErrArgIllegal); // returns option values, or empty vector if missing (if none)
+
+		string Var(int nr) const throw(cErrArgNotFound); // see [nr] ; throws if this var was missing
+		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // returns option values, throws if missing (if none)
+}; 
 
 // ============================================================================
 
