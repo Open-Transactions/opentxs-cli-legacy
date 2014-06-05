@@ -49,7 +49,7 @@ void cCmdParser::Init() {
 	cParamInfo pNymFrom(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Sender Nym validation");
-			return use.NymCheckIfExists(data.Var(1));
+				return use.NymCheckIfExists(data.Var(curr_word_ix + 1));
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			_dbg3("Sender Nym hinting");
@@ -78,6 +78,16 @@ void cCmdParser::Init() {
 			return vector<string> { "hello","hi","test","subject" };
 		}
 	);
+
+	cParamInfo pMsgInIndex(
+			[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+				const int nr = curr_word_ix+1;
+				return use.MsgInCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ); //TOD check if integer
+			} ,
+			[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+				return vector<string> { "" };
+			}
+		);
 
 //	Prepare format for all msg commands:
 //	 	 "ot msg ls"
