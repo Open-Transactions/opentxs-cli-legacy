@@ -192,8 +192,18 @@ Info about Parameter: How to validate and how to complete this argument
 */
 class cParamInfo {
 	public:
-		typedef function< bool ( nUse::cUseOT &, cCmdData &, int, const string &  ) > tFuncValid;
-		typedef function< vector<string> ( nUse::cUseOT &, cCmdData &, int, const string &  ) > tFuncHint;
+
+		// bool validation_function ( otuse, partial_data, curr_word_ix )
+		// use: this function should validate the curr_word_ix out of data - data.ArgDef
+		// warning: the curr_word_ix might NOT exist
+		// ot msg sendfrom alice %%% hel<--validate --prio 4   ( use , data["alice", "%%%", "hel"  ], 2 ) 
+		typedef function< bool ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncValid;
+
+		// vector<string>   hint_function ( otuse, partial_data, curr_word_ix )
+		// warning: the curr_word_ix might NOT exist
+		// ot msg sendfrom alice bo<TAB> hello --prio 4   ( use , data["alice", "bo", "hello"  ], 1 ) 
+		// ot msg sendfrom alice bob hel<TAB> --prio 4   ( use , data["alice", "bob", "hel"  ], 2 ) 
+		typedef function< vector<string> ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncHint;
 
 	protected:
 		tFuncValid funcValid;

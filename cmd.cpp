@@ -47,11 +47,11 @@ void cCmdParser::Init() {
 	*/
 
 	cParamInfo pNymFrom(
-		[] (cUseOT & use, cCmdData & data, int, const string &) -> bool { //FIXME 3 argument -> what for?
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Sender Nym validation");
 			return use.NymCheckIfExists(data.Var(1));
 		} ,
-		[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			_dbg3("Sender Nym hinting");
 			return use.NymGetAllNames();
 		}
@@ -60,21 +60,21 @@ void cCmdParser::Init() {
 	cParamInfo pNymAny = pNymFrom;
 
 	cParamInfo pOnceInt(
-		[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			// TODO check if is any integer
 			// TODO check if not present in data
 			return true;
 		} ,
-		[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			return vector<string> { "-1", "0", "1", "2", "100" };
 		}
 	);
 
 	cParamInfo pSubject(
-		[] (cUseOT & use, cCmdData & data, int, const string &) -> bool {
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
-		[] ( cUseOT & use, cCmdData & data, int, const string &  ) -> vector<string> {
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			return vector<string> { "hello","hi","test","subject" };
 		}
 	);
@@ -310,6 +310,35 @@ void cCmdProcessing::Parse() {
 				_dbg1("adding var ext "<<word);  mData->mVarExt.push_back( word ); 
 			}
 		} // phase 2
+
+		if (phase==3) {
+		/*
+			while (true) { // parse options
+				if (var_nr >= words_count) { _dbg1("reached end, var_nr="<<var_nr);	phase=9; break;	}
+
+				string word = mCommandLine.at(pos);
+				_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
+				++pos;
+
+				if ( nUtils::CheckIfBegins("\"", word) ) { // TODO review memory access
+					_dbg1("Quotes detected in: " + word);
+					word.erase(0,1);
+					while ( !nUtils::CheckIfEnds("\"", word) ) {
+						word += " " + mCommandLine.at(pos);
+						++pos;
+					}
+					word.erase(word.end(), word.end()-1); // ease the closing " of last mCommandLine[..] that is not at end of word
+					_dbg1("Quoted word is:"<<word);
+				}
+				if (nUtils::CheckIfBegins("--", word)) { // --bcc foo
+					phase=3;
+					break; // continue to phase 3 - the options
+				}
+
+				_dbg1("adding var ext "<<word);  mData->mVarExt.push_back( word ); 
+			}
+			*/
+		} // phase 3
 
 		_note("mVar parsed:    " + DbgVector(mData->mVar));
 		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
