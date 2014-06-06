@@ -59,6 +59,39 @@ void cCmdParser::Init() {
 	cParamInfo pNymTo = pNymFrom; // TODO suggest not the same nym as was used already before
 	cParamInfo pNymAny = pNymFrom;
 
+	cParamInfo pAccount(
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			_dbg3("Account validation");
+				return use.AccountCheckIfExists(data.Var(curr_word_ix + 1));
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			_dbg3("Account hinting");
+			return use.AccountGetAllNames();
+		}
+	);
+
+	cParamInfo pAsset(
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			_dbg3("Asset validation");
+				return use.AssetCheckIfExists(data.Var(curr_word_ix + 1));
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			_dbg3("Asset hinting");
+			return use.AssetGetAllNames();
+		}
+	);
+
+	cParamInfo pServer(
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			_dbg3("Server validation");
+				return use.ServerCheckIfExists(data.Var(curr_word_ix + 1));
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			_dbg3("Server hinting");
+			return use.ServerGetAllNames();
+		}
+	);
+
 	cParamInfo pOnceInt(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			// TODO check if is any integer
@@ -80,14 +113,25 @@ void cCmdParser::Init() {
 	);
 
 	cParamInfo pMsgInIndex(
-			[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
-				const int nr = curr_word_ix+1;
-				return use.MsgInCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ); //TOD check if integer
-			} ,
-			[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-				return vector<string> { "" };
-			}
-		);
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			const int nr = curr_word_ix+1;
+			return use.MsgInCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ); //TODO check if integer
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			return vector<string> { "" }; //TODO hinting function for msg index
+		}
+	);
+
+	cParamInfo pMsgOutIndex(
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			const int nr = curr_word_ix+1;
+			return use.MsgOutCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ); //TODO check if integer
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			return vector<string> { "" }; //TODO hinting function for msg index
+		}
+	);
+
 
 //	Prepare format for all msg commands:
 //	 	 "ot msg ls"
@@ -98,20 +142,18 @@ void cCmdParser::Init() {
 //		,"ot msg-out rm alice 0"
 
 
-	{ // msg ls alice <-- FIXME alice is an extra variable. exec must call different exec function based on existance of extra argument.
+	{ // FORMAT: msg ls
 		cCmdExecutable exec(
 			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use ) -> cCmdExecutable::tExitCode {
 				_mark("Try vardef");
-				string s = data->VarDef(1,"");
-				_mark("... s="<<s);
-
-				
-				if ( data->VarDef(1,"") == "" ) {
+				string nymName = data->VarDef(1,"");
+				_mark("... s="<<nymName);
+				if ( nymName.empty() ) {
 					_dbg3("Execute MsgGetAll()");
 					use.MsgGetAll();
 				}else {
-					_dbg3("Execute MsgGetforNym(" + data->Var(1) + ")");
-					use.MsgGetForNym(data->Var(1));
+					_dbg3("Execute MsgGetforNym(" + nymName + ")");
+					use.MsgGetForNym(nymName);
 				}
 				return 0;
 			}
@@ -124,7 +166,7 @@ void cCmdParser::Init() {
 		AddFormat( cCmdName("msg ls") , format );
 	}
 
-	{
+	{ // FORMAT: msg sendfrom
 		// ot msg sendfrom alice bob subj
 		// ot msg sendfrom NYM_FROM NYM_TO SUBJ
 		cCmdExecutable exec(
@@ -524,11 +566,9 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 	parser->Init();
 
 	auto alltest = vector<string>{ 
-//		 "ot msg ls"
-//		,"ot msg ls"
-//		,"ot msg ls alice"
-//		,"ot msg ls alice"
-	"ot msg sendfrom alice bob --prio 1"
+		 "ot msg ls"
+		,"ot msg ls alice"
+//	"ot msg sendfrom alice bob --prio 1"
 	, "ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"

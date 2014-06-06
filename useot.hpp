@@ -80,9 +80,8 @@ namespace nUse {
 		void MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex);
 
 		void NymCheck(const string & hisNymID);
-		bool NymCheckByName(const string & nymName);
-		void NymCreate(const string & nymName);
 		bool NymCheckIfExists(const string & nymName);
+		void NymCreate(const string & nymName);
 		void NymGetAll();
 		const vector<string> NymGetAllIDs();
 		const vector<string> NymGetAllNames();
