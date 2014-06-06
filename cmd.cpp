@@ -194,17 +194,11 @@ void cCmdParser::Init() {
 		// ot msg sendfrom alice bob subj
 		// ot msg sendfrom NYM_FROM NYM_TO SUBJ
 		cCmdExecutable exec(
-			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
-				_fact("Sending (msg sendfrom) inside lambda!");
-				string from = data->Var(1);
-				string to = data->Var(2);
-				string subj = data->VarDef(3,"");
-				string prio = data->Opt1If("prio", "0");
-
-				_note("from " << from << " to " << to << " subj=" << subj << " prio="<<prio);
-				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
-					for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
-						use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
+			[] ( shared_ptr<cCmdData> d, nUse::cUseOT & U) -> cCmdExecutable::tExitCode { auto &D=*d;
+				vector<string> to(1,D.Var(2)); for(auto r:D.OptIf("cc")) to.push_back(r);
+				string msg=D.VarDef(3);
+				U.MsgSend(D.Var(1), to, msg, D.VarDef(4,"nosubject"), std::stoi(D.Opt1If("--prio","0")), D.IsOpt("--dryrun"));
+				// void MsgSend(const string & nymSender, vector<string> nymRecipient, const string & msg, const string & subject, int prio, bool dryrun);
 				return 0;
 			}
 		);
@@ -212,6 +206,7 @@ void cCmdParser::Init() {
 			var.push_back( pNymFrom );
 			var.push_back( pNymTo );
 		cCmdFormat::tVar varExt;
+			varExt.push_back( pSubject );
 			varExt.push_back( pSubject );
 		cCmdFormat::tOption opt;
 			opt.insert(std::make_pair("--dryrun" , pNymAny)); // TODO should be global option
@@ -991,11 +986,11 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
 
-	auto alltest = vector<string>{ 
+	auto alltest = vector<string>{ ""
 //	"ot msg ls"
 //	,"ot msg ls alice"
-//	,"ot msg sendfrom alice bob --prio 1"
-//	,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+	,"ot msg sendfrom alice bob --prio 1"
+	,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
 //	,"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"
@@ -1021,6 +1016,7 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 
 	};
 	for (auto cmd : alltest) {
+		if (!cmd.length()) continue;
 		_mark("====== Testing command: " << cmd );
 		auto processing = parser->StartProcessing(cmd, use);
 		processing.Parse();
