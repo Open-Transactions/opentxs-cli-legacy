@@ -145,52 +145,63 @@ const string cUseOT::AccountGetName(const string & accountID) {
 	return OTAPI_Wrap::GetAccountWallet_Name(accountID);
 }
 
-string cUseOT::AccountDelete(const string & accountName) { ///<
+void cUseOT::AccountRemove(const string & accountName) { ///<
 	if(!Init())
-	return "";
+	return;
 
-	if(!OTAPI_Wrap::Wallet_CanRemoveAccount (AccountGetId(accountName))) {
-		// inBox and OutBox must be get from server because without it account not work properly
-		// example if you can't delete account without inbox and outbox
-		int32_t  inBoxInt = OTAPI_Wrap::getInbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),AccountGetId(accountName));
-		int32_t outBoxInt = OTAPI_Wrap::getOutbox 	(mDefaultIDs.at("ServerID"),mDefaultIDs.at("UserID"),AccountGetId(accountName));
+	if(OTAPI_Wrap::Wallet_CanRemoveAccount (AccountGetId(accountName))) {
+		_erro("Account cannot be deleted: doesn't have a zero balance?/outstanding receipts?");
+		return;
 	}
 
-	if(OTAPI_Wrap::deleteAssetAccount(mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), AccountGetId(accountName))==-1)
-		return "Error while deleting account";
-	else
-		return "";
+	if( OTAPI_Wrap::deleteAssetAccount( mDefaultIDs.at("ServerID"), mDefaultIDs.at("UserID"), AccountGetId(accountName) ) ) { //FIXME should be
+		_erro("Failure deleting account: " + accountName);
+		return;
+	}
+	_info("Account: " + accountName + " was successfully removed");
+}
+
+void cUseOT::AccountRefresh(const string & accountName) {
+	if(!Init())
+		return;
+
+	OT_ME madeEasy;
+
+	ID accountID = AccountGetId(accountName);
+
+	ID acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
+	ID acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+
+	if ( madeEasy.retrieve_account(acctSvrID, acctNymID, accountID, true) ){ // forcing download
+		_info("Account " + accountName + "(" + accountID +  ")" + " retrieval success");
+		return;
+	}
+	_warn("Account " + accountName + "(" + accountID +  ")" + " retrieval failure");
 }
 
 void cUseOT::AccountRefreshAll() {
 	if(!Init())
 		return;
 
-	// Retrieve Accounts based on Moneychanger
-
 	OT_ME madeEasy;
 
 	int32_t nymCount = OTAPI_Wrap::GetAccountCount();
-
 	int32_t serverCount = OTAPI_Wrap::GetServerCount();
 
-	for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
-	{
-		string serverId = OTAPI_Wrap::GetServer_ID(serverIndex);
+	for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex){
+		ID serverId = OTAPI_Wrap::GetServer_ID(serverIndex);
 
-		for (int32_t accountIndex = 0; accountIndex < nymCount; ++accountIndex)
-		{
-			std::string accountId = OTAPI_Wrap::GetAccountWallet_ID(accountIndex);
+		for (int32_t accountIndex = 0; accountIndex < nymCount; ++accountIndex){
+			ID accountID = OTAPI_Wrap::GetAccountWallet_ID(accountIndex);
 
-			std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountId);
-			std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
+			ID acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+			ID acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
-			bool bRetrievalAttempted = false;
-			bool bRetrievalSucceeded = false;
-			{
-				bRetrievalAttempted = true;
-				bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true); // forcing download
+			if ( madeEasy.retrieve_account(acctSvrID, acctNymID, accountID, true) ){ // forcing download
+				_info("Account " + AccountGetName(accountID) + "(" + accountID +  ")" + " retrieval success");
+				return;
 			}
+			_warn("Account " + AccountGetName(accountID) + "(" + accountID +  ")" + " retrieval failure");
 		}
 	}
 }
@@ -521,17 +532,16 @@ void cUseOT::NymGetAll() {
 	if(!Init())
 		return;
 
-	try {
+	if (mNyms.size() != OTAPI_Wrap::GetNymCount()) { //TODO optimize?
 		mNyms.clear();
 
 		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount();i++) {
 			string nym_ID = OTAPI_Wrap::GetNym_ID (i);
 			string nym_Name = OTAPI_Wrap::GetNym_Name (nym_ID);
 
-			mNyms[nym_ID] = nym_Name;
+			mNyms.insert( std::make_pair(nym_ID, nym_Name) );
 		}
 	}
-	catch(...) { }
 }
 
 const vector<string> cUseOT::NymGetAllIDs() {
@@ -598,38 +608,51 @@ const string cUseOT::NymGetName(const string & nymID) {
 	return OTAPI_Wrap::GetNym_Name(nymID);
 }
 
-void cUseOT::NymRefresh() {
+void cUseOT::NymRefresh(const string & nymName) { //TODO arguments for server, all servers
 	if(!Init())
 		return;
 
-	// Retrieve Nyms based on Moneychanger
+	OT_ME madeEasy;
+	int32_t serverCount = OTAPI_Wrap::GetServerCount();
+
+	ID nymID = AccountGetId(nymName);
+
+	for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex){ // Working for all available servers!
+		ID serverID = OTAPI_Wrap::GetServer_ID(serverIndex);
+		if (OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, serverID)){
+			if ( madeEasy.retrieve_nym(nymID, serverID, true) ){ // forcing download
+				_info("Nym " + nymName + "(" + nymID +  ")" + " retrieval success");
+				return;
+			}
+			_warn("Nym " + nymName + "(" + nymID +  ")" + " retrieval failure");
+		}
+	}
+}
+
+void cUseOT::NymRefreshAll() {
+	if(!Init())
+		return;
 
 	OT_ME madeEasy;
 
 	int32_t nymCount = OTAPI_Wrap::GetNymCount();
-
 	int32_t serverCount = OTAPI_Wrap::GetServerCount();
 
-	for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
-	{
-		string serverId = OTAPI_Wrap::GetServer_ID(serverIndex);
+	for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex){
+		ID serverID = OTAPI_Wrap::GetServer_ID(serverIndex);
 
-		for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
-		{
-			string nymId = OTAPI_Wrap::GetNym_ID(nymIndex);
+		for (int32_t accountIndex = 0; accountIndex < nymCount; ++accountIndex){
+			ID nymID = OTAPI_Wrap::GetNym_ID(accountIndex);
 
-			bool bRetrievalAttempted = false;
-			bool bRetrievalSucceeded = false;
-
-			if (OTAPI_Wrap::IsNym_RegisteredAtServer(nymId, serverId))
-			{
-
-				bRetrievalAttempted = true;
-				bRetrievalSucceeded = madeEasy.retrieve_nym(serverId, nymId, true);
+			if (OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, serverID)){
+				if ( madeEasy.retrieve_nym(nymID, serverID, true) ){ // forcing download
+					_info("Nym " + NymGetName(nymID) + "(" + nymID +  ")" + " retrieval success");
+					return;
+				}
+				_warn("Nym " + NymGetName(nymID) + "(" + nymID +  ")" + " retrieval failure");
 			}
 		}
 	}
-
 }
 
 void cUseOT::NymRegister(const string & nymName) {

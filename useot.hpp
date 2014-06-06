@@ -14,11 +14,14 @@ namespace nUse {
 
 	INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
+	using ID = string;
+	using name = string;
+
 	class cUseOT {
 
 		string mDbgName;
 
-		map<string, string> mDefaultIDs;
+		map<string, ID> mDefaultIDs;
 		const string mDataFolder;
 		const string mDefaultIDsFile;
 
@@ -26,9 +29,8 @@ namespace nUse {
 
 		public:
 
-		map<string, string> mNyms;
-		vector<string> mNymsMy_str; // TODO optimize/share memory? or convert on usage
-
+		map<ID, name> mNyms; // TODO optimize/share memory? or convert on usage
+//		TODO make cache for accounts, assets etc
 		bool mNymsMy_loaded;
 		bool OTAPI_loaded;
 		bool OTAPI_error;
@@ -48,9 +50,10 @@ namespace nUse {
 		const string AccountGetId(const string & accountName);
 		const string AccountGetDefault();
 		const string AccountGetName(const string & accountID);
-		string AccountDelete(const string & accountName);
+		void AccountRemove(const string & accountName);
 		const vector<string> AccountGetAllNames();
 		const vector<string> AccountGetAllIds();
+		void AccountRefresh(const string & accountName);
 		void AccountRefreshAll();
 		const string AccountRename(const string & oldAccountName, const string & newAccountName);
 		void AccountSetDefault(const string & accountName);
@@ -89,7 +92,8 @@ namespace nUse {
 		const string NymGetId(const string & nymName);
 		const string NymGetInfo(const string & nymName);
 		const string NymGetName(const string & nymID);
-		void NymRefresh();
+		void NymRefresh(const string & nymName);
+		void NymRefreshAll();
 		void NymRegister(const string & nymName);
 		void NymRegister(const string & nymName, const string & serverName);
 		void NymRemove(const string & nymName);

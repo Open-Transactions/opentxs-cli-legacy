@@ -46,7 +46,7 @@ void cCmdParser::Init() {
 	cParamInfo(tFuncValid valid, tFuncHint hint);
 	*/
 
-	cParamInfo pNymFrom(
+	cParamInfo pNym(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Sender Nym validation");
 				return use.NymCheckIfExists(data.Var(curr_word_ix + 1));
@@ -56,8 +56,9 @@ void cCmdParser::Init() {
 			return use.NymGetAllNames();
 		}
 	);
-	cParamInfo pNymTo = pNymFrom; // TODO suggest not the same nym as was used already before
-	cParamInfo pNymAny = pNymFrom;
+	cParamInfo pNymFrom = pNym;
+	cParamInfo pNymTo = pNym; // TODO suggest not the same nym as was used already before
+	cParamInfo pNymAny = pNym;
 
 	cParamInfo pAccount(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
@@ -199,6 +200,61 @@ void cCmdParser::Init() {
 		AddFormat( cCmdName("msg sendfrom") , format );
 	}
 	
+	{ // FORMAT: msg sendto
+		// ot msg sendto bob subj
+		// ot msg sendto NYM_TO SUBJ
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string to = data->Var(1);
+				string subj = data->VarDef(2,"");
+				string prio = data->Opt1If("prio", "0");
+
+				_note(" to " << to << " subj=" << subj << " prio="<<prio);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
+				//use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNymTo );
+		cCmdFormat::tVar varExt;
+			varExt.push_back( pSubject );
+		cCmdFormat::tOption opt;
+			opt.insert(std::make_pair("--dryrun" , pNymAny)); // TODO should be global option
+			opt.insert(std::make_pair("--cc" , pNymAny));
+			opt.insert(std::make_pair("--bcc" , pNymAny));
+			opt.insert(std::make_pair("--prio" , pOnceInt));
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("msg sendto") , format );
+	}
+
+	{ // FORMAT: msg rm
+		// ot msg rm alice 	0
+		// ot msg rm NYM 		INDEX
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+				string index = data->Var(2);
+
+				_note(" rm message from " << nym << " mailbox, with index=" << index );
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				//use.MsgInRemoveByIndex(nym, std::stoi(index)); //TODO check if integer
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+			var.push_back( pOnceInt );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+			opt.insert(std::make_pair("--all" , pOnceInt)); // FIXME proper handle option without parameter!
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("msg rm") , format );
+	}
+
 	//mI->tree.emplace( cCmdName("msg send") , msg_send_format );
 	
 //	mI->tree[ cCmdName("msg send") ] = msg_send_format;
@@ -566,12 +622,12 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 	parser->Init();
 
 	auto alltest = vector<string>{ 
-		 "ot msg ls"
-		,"ot msg ls alice"
+//		 "ot msg ls"
+//		,"ot msg ls alice"
 //	"ot msg sendfrom alice bob --prio 1"
-	, "ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
-//	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
-//	,"ot msg rm alice 0"
+//	, "ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+//	"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
+	"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"
 	};
 	for (auto cmd : alltest) {
