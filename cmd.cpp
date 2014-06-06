@@ -48,17 +48,28 @@ void cCmdParser::Init() {
 
 	cParamInfo pNym(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
-			_dbg3("Sender Nym validation");
+			_dbg3("Nym validation");
 				return use.NymCheckIfExists(data.Var(curr_word_ix + 1));
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			_dbg3("Sender Nym hinting");
+			_dbg3("Nym hinting");
 			return use.NymGetAllNames();
 		}
 	);
 	cParamInfo pNymFrom = pNym;
 	cParamInfo pNymTo = pNym; // TODO suggest not the same nym as was used already before
 	cParamInfo pNymAny = pNym;
+
+	cParamInfo pNymNewName(
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			_dbg3("Nym name validation");
+				return true; // Takes all input TODO check if Nym with tis name exists
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			_dbg3("Nym name hinting");
+			return vector<string> {}; // No hinting for new Nym name
+		}
+	);
 
 	cParamInfo pAccount(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
@@ -70,6 +81,18 @@ void cCmdParser::Init() {
 			return use.AccountGetAllNames();
 		}
 	);
+
+	cParamInfo pAccountNewName(
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			_dbg3("Account name validation");
+				return true; // Takes all input TODO check if Account with tis name exists
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			_dbg3("Account name hinting");
+			return vector<string> {}; // No hinting for new Nym name
+		}
+	);
+
 
 	cParamInfo pAsset(
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
@@ -180,8 +203,8 @@ void cCmdParser::Init() {
 
 				_note("from " << from << " to " << to << " subj=" << subj << " prio="<<prio);
 				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
-				for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
-				//use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
+					for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
+						use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
 				return 0;
 			}
 		);
@@ -211,8 +234,8 @@ void cCmdParser::Init() {
 
 				_note(" to " << to << " subj=" << subj << " prio="<<prio);
 				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
-				for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
-				//use.MsgSend( data->Var(1), data->Var(2), data->VarDef(3,"no_subject") );
+					for(auto cc : data->OptIf("cc")) _note("--cc to " << cc);
+					use.MsgSend( data->Var(1), data->VarDef(2,"no_subject") );
 				return 0;
 			}
 		);
@@ -240,7 +263,7 @@ void cCmdParser::Init() {
 
 				_note(" rm message from " << nym << " mailbox, with index=" << index );
 				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
-				//use.MsgInRemoveByIndex(nym, std::stoi(index)); //TODO check if integer
+				use.MsgInRemoveByIndex(nym, std::stoi(index)); //TODO check if integer
 				return 0;
 			}
 		);
@@ -254,6 +277,353 @@ void cCmdParser::Init() {
 		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
 		AddFormat( cCmdName("msg rm") , format );
 	}
+
+	{ // FORMAT: msg-out rm
+		// ot msg-out rm alice 	0
+		// ot msg-out rm NYM 		INDEX
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+				string index = data->Var(2);
+
+				_note(" rm message from " << nym << " mailbox, with index=" << index );
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.MsgOutRemoveByIndex(nym, std::stoi(index)); //TODO check if integer
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+			var.push_back( pOnceInt );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+			opt.insert(std::make_pair("--all" , pOnceInt)); // FIXME proper handle option without parameter!
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("msg rm-out") , format );
+	}
+
+	//	,"ot nym check alice"
+	//	,"ot nym info alice"
+	//	,"ot nym register alice"
+	//	,"ot nym rm alice"
+	//	,"ot nym new alice"
+	//	,"ot nym set-default alice"
+	//	,"ot nym refresh"
+	//	,"ot nym refresh alice"
+	//	,"ot nym ls"
+
+	{ // FORMAT: nym check
+		// ot nym check alice
+		// ot nym check NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+
+				_note("check nym " << nym );
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.NymCheck(nym);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym check") , format );
+	}
+
+	{ // FORMAT: nym info
+		// ot nym info alice
+		// ot nym info NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+
+				_note("info for nym " << nym );
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.NymGetInfo(nym);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym info") , format );
+	}
+
+	{ // FORMAT: nym register
+		// ot nym register alice
+		// ot nym register NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+				string server = data->VarDef( 2, use.ServerGetName( use.ServerGetDefault() ) ); //TODO do it simpler
+				_note("registering nym=" << nym << " on server=" << server);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.NymRegister(nym, server);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+		cCmdFormat::tVar varExt;
+			var.push_back( pServer );
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym register") , format );
+	}
+
+	{ // FORMAT: nym rm
+		// ot nym rm alice
+		// ot nym rm NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+
+				_note("remove nym=" << nym );
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.NymRemove(nym);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym rm") , format );
+	}
+
+	{ // FORMAT: nym new
+		// ot nym new alice
+		// ot nym new NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+
+				_note("new nym=" << nym );
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.NymCreate(nym);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNymNewName );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym new") , format );
+	}
+
+	{ // FORMAT: nym set-default
+		// ot nym set-default alice
+		// ot nym set-default NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->Var(1);
+				_note("Set default nym=" << nym);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.NymSetDefault(nym);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym set-default") , format );
+	}
+
+	{ // FORMAT: nym refresh
+		// ot nym refresh alice
+		// ot nym refresh NYM
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string nym = data->VarDef( 1, use.NymGetName( use.NymGetDefault() ) );
+				_note("refresh nym=" << nym);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				if (nym.empty())
+					use.NymRefreshAll();
+				else
+					use.NymRefresh(nym);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pNym );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym refresh") , format );
+	}
+
+	{ // FORMAT: nym ls
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use ) -> cCmdExecutable::tExitCode {
+				_note("nym ls");
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				nUtils::DisplayVector(cout, use.NymGetAllNames() );
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("nym ls") , format );
+	}
+
+	//	,"ot account new assetname accountname"
+	//	,"ot account refresh"
+	//	,"ot account refresh accountname"
+	//	,"ot account set-default accountname"
+	//	,"ot account rm accountname"
+	//	,"ot account ls"
+	//	,"ot account mv accountname newaccountname"
+
+	{ // FORMAT: account new
+		// ot account new assetname accountname
+		// ot account new assetName accountName
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string asset = data->Var(1);
+				string account = data->Var(2);
+				_note("New nym=" << account);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.AccountCreate(asset, account);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pAccount );
+			var.push_back( pAsset );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("account new") , format );
+	}
+
+	{ // FORMAT: account refresh
+		// ot account refresh alice
+		// ot account refresh account
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string account = data->VarDef( 1, use.AccountGetName( use.AccountGetDefault() ) );
+				_note("refresh account=" << account);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				if (account.empty())
+					use.AccountRefreshAll();
+				else
+					use.AccountRefresh(account);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pAccount );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("account refresh") , format );
+	}
+
+	{ // FORMAT: account set-default
+		// ot account set-default accountname
+		// ot account set-default account
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string account = data->Var(1);
+				_note("Set default account=" << account);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.AccountSetDefault(account);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pAccount );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("account set-default") , format );
+	}
+
+	{ // FORMAT: account rm
+		// ot account rm accountname
+		// ot account rm account
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string account = data->Var(1);
+				_note("Remove account=" << account);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.AccountRemove(account);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+			var.push_back( pAccount );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("account rm") , format );
+	}
+
+	{ // FORMAT: account ls
+		// ot account ls accountname
+		// ot account ls account
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				_note("ls account");
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				nUtils::DisplayVector( cout, use.AccountGetAllNames() );
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("account ls") , format );
+	}
+
+	{ // FORMAT: account mv
+		// ot account ls accountname
+		// ot account ls account
+		cCmdExecutable exec(
+			[] ( shared_ptr<cCmdData> data, nUse::cUseOT & use) -> cCmdExecutable::tExitCode {
+				string accountName = data->Var(1);
+				string accountNewName = data->Var(2);
+				_note("mv account=" << accountName << "to new=" << accountNewName);
+				if (data->IsOpt("dryrun")) _note("Option dryrun is set");
+				use.AccountRename(accountName, accountNewName);
+				return 0;
+			}
+		);
+		cCmdFormat::tVar var;
+		var.push_back( pAccount );
+		var.push_back( pAccountNewName );
+		cCmdFormat::tVar varExt;
+		cCmdFormat::tOption opt;
+
+		auto format = std::make_shared< cCmdFormat >( exec , var, varExt, opt );
+		AddFormat( cCmdName("account mv") , format );
+	}
+
 
 	//mI->tree.emplace( cCmdName("msg send") , msg_send_format );
 	
@@ -622,13 +992,33 @@ void cmd_test( shared_ptr<cUseOT> use ) {
 	parser->Init();
 
 	auto alltest = vector<string>{ 
-//		 "ot msg ls"
-//		,"ot msg ls alice"
-//	"ot msg sendfrom alice bob --prio 1"
-//	, "ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
-//	"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
-	"ot msg rm alice 0"
+//	"ot msg ls"
+//	,"ot msg ls alice"
+//	,"ot msg sendfrom alice bob --prio 1"
+//	,"ot msg sendfrom alice bob hello --cc eve --cc mark --bcc john --prio 4"
+//	,"ot msg sendto bob hello --cc eve --cc mark --bcc john --prio 4"
+//	,"ot msg rm alice 0"
 //	,"ot msg-out rm alice 0"
+		// to be tested
+//	,"ot nym check alice"
+//	,"ot nym info alice"
+//	,"ot nym register alice"
+//	,"ot nym rm alice"
+//	,"ot nym new alice"
+//	,"ot nym set-default alice"
+//	,"ot nym refresh"
+//	,"ot nym refresh alice"
+//	,"ot nym ls"
+
+//	,"ot account new assetname accountname"
+//	,"ot refresh"
+//	,"ot refresh accountname"
+//	,"ot set-default accountname"
+//	,"ot rm accountname"
+//	,"ot ls"
+//	,"ot mv accountname newaccountname"
+
+
 	};
 	for (auto cmd : alltest) {
 		_mark("====== Testing command: " << cmd );

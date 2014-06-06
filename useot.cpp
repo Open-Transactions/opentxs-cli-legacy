@@ -655,7 +655,7 @@ void cUseOT::NymRefreshAll() {
 	}
 }
 
-void cUseOT::NymRegister(const string & nymName) {
+void cUseOT::NymRegister(const string & nymName, const string & serverName) {
 	if(!Init())
 	return ;
 
@@ -663,24 +663,19 @@ void cUseOT::NymRegister(const string & nymName) {
 
 	_warn("Checking for default server only");
 
-	string nymID = NymGetId(nymName);
+	ID nymID = NymGetId(nymName);
+	ID serverID = ServerGetId(serverName);
 
-	bool isReg = OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, mDefaultIDs.at("ServerID"));
+	bool isReg = OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, serverID);
 
 	if (!isReg)
 	{
-		string response = madeEasy.register_nym(mDefaultIDs.at("ServerID"), nymID);
+		string response = madeEasy.register_nym(serverID, nymID);
 		nOT::nUtils::DisplayStringEndl(cout, response);
-		nOT::nUtils::DisplayStringEndl(cout, "Nym " + nymName + "(" + nymID + ")" + " was registered successfully");
+		nOT::nUtils::DisplayStringEndl(cout, "Nym " + nymName + "(" + nymID + ")" + " was registered successfully on server");
 	}
 	else
 		cout << "Nym " << nymName << "(" << nymID << ")" << " was already registered" << endl;
-}
-
-void cUseOT::NymRegister(const string & nymName, const string & serverName) {
-	if(!Init())
-	return ;
-	//TODO: Make work with servers aliases
 }
 
 void cUseOT::NymRemove(const string & nymName) {

@@ -58,7 +58,7 @@ namespace nUse {
 		const string AccountRename(const string & oldAccountName, const string & newAccountName);
 		void AccountSetDefault(const string & accountName);
 		const string AccountSetName(const string & accountID, const string & NewAccountName);
-		void AccountCreate(const string & MsgName, const string & newAccountName);
+		void AccountCreate(const string & AssetName, const string & newAccountName);
 
 
 		bool AssetCheckIfExists(const string & assetName);
@@ -94,7 +94,6 @@ namespace nUse {
 		const string NymGetName(const string & nymID);
 		void NymRefresh(const string & nymName);
 		void NymRefreshAll();
-		void NymRegister(const string & nymName);
 		void NymRegister(const string & nymName, const string & serverName);
 		void NymRemove(const string & nymName);
 		void NymSetDefault(const string & nymName);
