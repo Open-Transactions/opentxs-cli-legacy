@@ -492,10 +492,13 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		string word_sofar = mCommandLine.at(word_ix - mData->mFirstWord);  // the current word that we need to complete. e.g. "--dryr" (and we will complete "--dryrun")
 		long int word_previous_ixtab = word_ix - mData->mFirstWord - 1;
 		const string word_previous = (word_previous_ixtab>=0) ? mCommandLine.at(word_previous_ixtab) : "";
-		_dbg1("word_sofar="<<word_sofar<<", and previous word="<<word_previous);
+		_dbg1("word_sofar="<<word_sofar<<", and previous word="<<word_previous<<" char_pos="<<char_pos);
 
 		cParseEntity entity =  mData->mWordIx2Entity.at(word_ix);
-		_mark("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity<<" word_sofar="<<word_sofar);
+		char sofar_last_char = mCommandLineString.at(char_pos-1); // the character after which we are now completing e.g. "g" for "msg~" or " " for "msg ~"
+		const bool after_word = sofar_last_char==' ' ; // are we now after (e.g. 1st) word, e.g. because we stand on space like in  "ot msg ~"  (instead "ot msg~")
+		_mark("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity
+			<<" word_sofar=["<<word_sofar<<"] sofar_last_char=["<<sofar_last_char<<"] after_word="<<after_word);
 
 		if (entity.mKind == cParseEntity::tKind::option_name) {
 			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"
@@ -528,15 +531,17 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		}
 		else if (entity.mKind == cParseEntity::tKind::cmdname) {
 			const int cmd_word_nr = entity.mSub;
-			_mark("Completing command name, cmd_word_nr="<<cmd_word_nr);
-			if (cmd_word_nr==1) {
+			_fact("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word);
+			if ( (cmd_word_nr==1) && (!after_word) ) { // "ms~" or "msg~"
 				vector<string> matching = WordsThatMatch( word_sofar , mParser->GetCmdNamesWord1() );
 				return matching; // <---
-			} else if (cmd_word_nr==2) {
-				const string word1 = word_previous;
-				vector<string> matching = WordsThatMatch( word_sofar , mParser->GetCmdNamesWord2( word1 ) );
+			} else if ( (cmd_word_nr==1) && (after_word) )  { // "msg ~"
+				vector<string> matching = WordsThatMatch( "" , mParser->GetCmdNamesWord2( word_sofar ) );
 				return matching; // <---
-			} else throw cErrInternalParse("Bad cmd_word_nr="+ToStr(cmd_word_nr)+" in completion");
+			} else if ( (cmd_word_nr==2))  { // "msg se~"
+				vector<string> matching = WordsThatMatch( word_sofar , mParser->GetCmdNamesWord2( word_previous ) );
+				return matching; // <---
+			} else throw cErrInternalParse("Bad cmd_word_nr="+ToStr(cmd_word_nr)+", after_word="+ToStr(after_word)+" in completion");
 			return vector<string>{};
 		}
 		else if (entity.mKind == cParseEntity::tKind::pre) {
