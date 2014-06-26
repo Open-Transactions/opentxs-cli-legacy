@@ -932,25 +932,27 @@ Caller: you must free the returned char* memory if not NULL! (this will be done 
 */
 static char* CompletionReadlineWrapper(const char *sofar , int number) {
 	// sofar - current word,  number - number of question / of word to be returned
-	// rl_line_buffer - current ENTIER line
+	// rl_line_buffer - current ENTIER line (or more - with trailing trash after rl_end)
+	// rl_end - position to which rl_line_buffer should be read
 	// rl_point - current CURSOR position
+	// http://www.delorie.com/gnu/docs/readline/rlman_28.html
 
 	bool dbg = my_rl_wrapper_debug;
 	dbg=true; // XXX
 	ASRT( !(gReadlineHandleParser == nullptr) ); // must be set before calling this function
 	ASRT( !(gReadlineHandlerUseOT == nullptr) ); // must be set before calling this function
-	if (dbg||1) _mark("sofar="<<sofar<<" number="<<number<<" rl_line_buffer="<<rl_line_buffer<<endl);
 
 	// rl_line_buffer, rl_point not in WinEditLine API TODO should be possible to get this
 
 	string line_all;
-	if (rl_line_buffer) line_all = rl_line_buffer; // <<<
+	if (rl_line_buffer) line_all = string(rl_line_buffer).substr(0,rl_end); // <<<
 	string line = line_all.substr(0, rl_point); // Complete from cursor position
+	if (dbg||1) _mark("sofar="<<sofar<<" number="<<number<<" rl_line_buffer="<<rl_line_buffer<<" and line="<<line<<endl);
 
 
 	static vector <string> completions;
 	if (number == 0) {
-		if (dbg) _dbg3("Start autocomplete (during first callback, number="<<number<<")");
+		if (dbg) _dbg3("Start autocomplete (during first callback, number="<<number<<") of line="<<line);
 		auto processing = gReadlineHandleParser->StartProcessing(line_all, gReadlineHandlerUseOT);
 		completions = processing.UseComplete( rl_point );
 		_mark( DbgVector(completions) );
@@ -989,6 +991,7 @@ void cInteractiveShell::runEditline(shared_ptr<nUse::cUseOT> use) {
 }
 
 void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
+	_mark("Running editline loop");
 	// nOT::nUse::useOT.Init(); // Init OT on the beginning // disabled to avoid some problems and delay (and valgrid complain)
 
 	char *buf = NULL;
@@ -1010,7 +1013,9 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 
 	while (true) {
 		try {
+			_info("Using readline at time="<<time(NULL));
 			buf  = readline("ot command> "); // <=== READLINE
+			_info("Readline returned");
 			if (buf==NULL) break;
 
 			std::string word;
@@ -1023,7 +1028,7 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 			if (rl_line_buffer) cmd = rl_line_buffer; // save the full command into string
 			cmd = cmd.substr(0, cmd.length()-1); // remove \n
 
-			if (dbg) cout << "Command was: " << cmd << endl;
+			_info("Command is: " << cmd );
 			auto cmd_trim = nOT::nUtils::trim(cmd);
 			if (cmd_trim=="exit") break;
 			if (cmd_trim=="quit") break;
@@ -1035,7 +1040,9 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 
 				bool all_ok=false;
 				try {
+					_dbg1("Processing command");
 					auto processing = parser->StartProcessing(cmd, use); // <---
+					_dbg1("Executing command");
 					processing.UseExecute(); // <--- ***
 					all_ok=true;
 				}
@@ -1048,6 +1055,7 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 				catch (const std::exception &e) {
 					cerr<<"ERROR: Could not execute your command ("<<cmd<<") - it triggered internal error: " << e.what() << endl;
 				}
+
 				if (!all_ok) { // if there was a problem
 					if ((!said_help) || (!(help_needed % opt_repeat_help_each_nth_time))) { cerr<<"If lost, type command 'ot help'."<<endl; ++said_help; }
 					++help_needed;

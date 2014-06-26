@@ -57,15 +57,15 @@ extern cNullstream g_nullstream; // a stream that does nothing (eats/discards da
 
 // _dbg_ignore is moved to global namespace (on purpose)
 
-#define _dbg3(X) do { if (_dbg_ignore< 20) gCurrentLogger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
-#define _dbg2(X) do { if (_dbg_ignore< 30) gCurrentLogger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0)
-#define _dbg1(X) do { if (_dbg_ignore< 40) gCurrentLogger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // details
-#define _info(X) do { if (_dbg_ignore< 50) gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // more boring info
-#define _note(X) do { if (_dbg_ignore< 70) gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // info
-#define _fact(X) do { if (_dbg_ignore< 75) gCurrentLogger.write_stream( 75) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
-#define _mark(X) do { if (_dbg_ignore< 80) gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // marked action
-#define _warn(X) do { if (_dbg_ignore< 90) gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // some problem
-#define _erro(X) do { if (_dbg_ignore<100) gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // error - report
+#define _dbg3(X) do { if (_dbg_ignore< 20) gCurrentLogger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0)
+#define _dbg2(X) do { if (_dbg_ignore< 30) gCurrentLogger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0)
+#define _dbg1(X) do { if (_dbg_ignore< 40) gCurrentLogger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // details
+#define _info(X) do { if (_dbg_ignore< 50) gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // more boring info
+#define _note(X) do { if (_dbg_ignore< 70) gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // info
+#define _fact(X) do { if (_dbg_ignore< 75) gCurrentLogger.write_stream( 75) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // interesting event
+#define _mark(X) do { if (_dbg_ignore< 80) gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // marked action
+#define _warn(X) do { if (_dbg_ignore< 90) gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // some problem
+#define _erro(X) do { if (_dbg_ignore<100) gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // error - report
 
 const char* DbgShortenCodeFileName(const char *s);
 
