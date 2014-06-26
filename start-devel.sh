@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pidfile_cli=/home/rafalot/.ot/client_data/ot.pid
+pidfile_cli=$HOME/.ot/client_data/ot.pid
 if [ -r $pidfile_cli ] ; then
 	echo "Deleting the client flag $pidfile_cli"
 	rm "$pidfile_cli"
