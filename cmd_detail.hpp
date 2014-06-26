@@ -32,5 +32,5 @@ class cCmdParser_pimpl {
 
 };
 
-} // namespace 
-} // namespace 
+} // namespace
+} // namespace

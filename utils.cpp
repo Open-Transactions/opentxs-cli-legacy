@@ -1,8 +1,8 @@
 /* See other files here for the LICENCE that applies here. */
 /* See header file .hpp for info */
 
-#include <algorithm> 
-#include <functional> 
+#include <algorithm>
+#include <functional>
 #include <cctype>
 #include <locale>
 
@@ -19,11 +19,11 @@ namespace nUtils {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
-myexception::myexception(const char * what) 
+myexception::myexception(const char * what)
 	: std::runtime_error(what)
 { }
 
-myexception::myexception(const std::string &what) 
+myexception::myexception(const std::string &what)
 	: std::runtime_error(what)
 { }
 
@@ -45,13 +45,13 @@ std::string & ltrim(std::string &s) {
 std::string & rtrim(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
   return s;
-} 
+}
 
 std::string & trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
 
-cNullstream::cNullstream() { } 
+cNullstream::cNullstream() { }
 
 cNullstream g_nullstream; // extern a stream that does nothing (eats/discards data)
 
@@ -74,8 +74,8 @@ const char* DbgShortenCodeFileName(const char *s) {
 // ====================================================================
 
 std::ostream & cLogger::write_stream(int level) {
-	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; } 
-	return g_nullstream; 
+	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; }
+	return g_nullstream;
 }
 
 template<typename T, typename ...Args>
@@ -427,7 +427,7 @@ const string cEnvUtils::ReadFromFile(const string path) {
 
 const extern int _dbg_ignore = 0; // see description in .hpp
 
-std::string GetObjectName() {	
+std::string GetObjectName() {
 	//static std::string * name=nullptr;
 	//if (!name) name = new std::string("(global)");
 	return "";

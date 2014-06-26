@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int mmm() { 
+int mmm() {
 
 	int *x;
 	*x = 42;

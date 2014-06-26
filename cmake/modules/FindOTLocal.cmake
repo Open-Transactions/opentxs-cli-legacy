@@ -9,7 +9,7 @@ find_library(OTLocal_ot
 	NAMES ot
 	PATHS "$ENV{HOME}/.local/lib"
 	)
-	
+
 find_library(OTLocal_otapi
 	NAMES otapi
 	PATHS "$ENV{HOME}/.local/lib"

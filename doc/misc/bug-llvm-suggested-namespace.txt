@@ -52,6 +52,6 @@ it is inside
 
 namespace nOT { namespace nUtils {
 std::string cSpaceFromEscape(const std::string &s);
-} } 
+} }
 
 

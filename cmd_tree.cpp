@@ -21,7 +21,7 @@ void cCmdParser::_AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format
 }
 
 void cCmdParser::AddFormat(
-			const string &name, 
+			const string &name,
 			const vector<cParamInfo> &var,
 			const vector<cParamInfo> &varExt,
 			const map<string, cParamInfo> &opt,
@@ -170,7 +170,7 @@ void cCmdParser::Init() {
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			return vector<string> { "" }; // this should be empty option, let's continue
 		}
-		, 0  
+		, 0
 	);
 
 	cParamInfo pBoolBoring( "yes-no", "true-false",
@@ -188,9 +188,9 @@ void cCmdParser::Init() {
 	);
 
 	// sendmoney alice gold 1000
-	// sendmsgto alice hi    --addmoney 1000 --addmoney 2000  
+	// sendmsgto alice hi    --addmoney 1000 --addmoney 2000
 	//           arg=1 arg=2           arg=3           arg=4
-	// TODO 
+	// TODO
 
 	cParamInfo pMsgInIndex( "msg-index-inbox", "index of message in our inbox",
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
@@ -252,7 +252,7 @@ void cCmdParser::Init() {
 	//======== special, test, developer: ========
 
 	AddFormat("help", {}, {}, {},
-		[this_weak] (tData d, tUse U) -> tExit { auto &D=*d; 
+		[this_weak] (tData d, tUse U) -> tExit { auto &D=*d;
 			shared_ptr<cCmdParser> this_lock( this_weak );
 			this_lock->PrintUsage();
 			return true;
@@ -275,13 +275,13 @@ void cCmdParser::Init() {
 
 	AddFormat("defaults", {}, {}, { },
 		LAMBDA { auto &D=*d; return U.DisplayAllDefaults(D.has("--dryrun") ); } );
-		
+
 	AddFormat("refresh", {}, {} ,{ },
 		LAMBDA { auto &D=*d; return	U.Refresh( D.has("--dryrun") ); } ) ;
-		
+
 	AddFormat("test complete", {}, {}, {},
 		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); cmd_test_EndingCmdNames(Utmp); return true; } );
-	
+
 
 	//======== ot account ========
 
@@ -444,25 +444,25 @@ void cCmdParser::Init() {
 			LAMBDA { auto &D=*d; return U.TextDecrypt(D.V(1), D.v(2, ""), D.has("--dryrun") ); } );
 
 	//mI->tree.emplace( cCmdName("msg send") , msg_send_format );
-	
+
 //	mI->tree[ cCmdName("msg send") ] = msg_send_format;
 
 	// msg send-from bob alice
 	// msg send-from bob alice HelloThisIsATest // TODO, other call to OTUse, just pass the message
 	// msg send-from bob alice "Hello This Is A Test" // TODO, need parser+editline support for quotes
 
-/*	mI->tree[ cCmdName("msg send") ] = cCmdFormat( 
+/*	mI->tree[ cCmdName("msg send") ] = cCmdFormat(
 			vector<cParamInfo>{ ARG_STR, ARG_STR, ARG_STR }, map<string,cParamInfo>{{"subject",ARG_STR}}, map<string,cParamInfo>{{"cc",ARG_STR}} ,
-			[]( nUse::cUseOT &useOt , cCmdData &data ) { 
-				string msg=data.arg(3,""); if (0==msg.length()) msg=nUtils::GetMultiline(); 
+			[]( nUse::cUseOT &useOt , cCmdData &data ) {
+				string msg=data.arg(3,""); if (0==msg.length()) msg=nUtils::GetMultiline();
 				useOt->msgSend( data.arg(1), data.arg(2), msg ); }
 			);
 
-	
+
 	typedef vector<cParamInfo> vpar;
 	typedef map<string,cParamInfo> mopt;
 
-	mI->tree[ cCmdName("msg send") ] = cCmdFormat( useOt::msgList, 
+	mI->tree[ cCmdName("msg send") ] = cCmdFormat( useOt::msgList,
 		vpar{ ARG_STR, ARG_STR, ARG_STR },  vpar{},  vopt{{"subject",ARG_STR}},  mopt{{"cc",ARG_STR}, {"bcc",ARG_STR}} );
 */
 
@@ -472,6 +472,6 @@ void cCmdParser::Init() {
 
 
 
-} // namespace 
-} // namespace 
+} // namespace
+} // namespace
 

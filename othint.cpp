@@ -320,7 +320,7 @@ vector<string> cHintManager::BuildTreeOfCommandlines(const string &sofar_str, bo
 
 	_erro("Not implemented currently (while refactoring)");
 
-#if 0 
+#if 0
 
 /*
 	nOT::nNewcli::cNew newcli;
@@ -348,7 +348,7 @@ TODO - planned new tree of commands using lambda
 	NYM_FROM = argument_type { validate_nym_my() , suggest_nym_my() };
 	NYM_TO   = argument_type { validate_nym_any() , suggest_nym_recipient_any() };
 	ASSET_ANY  = argument_type { validate_asset_any() ,... };
-	
+
   add("msg", "sendfrom", vars{ NYM_FROM, NYM_TO }, vars{ TEXT_SHORT }, opts{opt_priority}, opts{opt_cc, opt_bcc},
   		[](){ useOT.msgSendAdvanced(arg(1), arg(2), get_multiline(), arg(3), map<string>{{"cc",opt("cc")} ); } );
   add("msg", "sendto", vars{ NYM_TO }, vars{ TEXT_SHORT }, opts{opt_priority}, opts{opt_cc, opt_bcc},
@@ -926,7 +926,7 @@ bool my_rl_wrapper_debug; // external
 shared_ptr<nNewcli::cCmdParser> gReadlineHandleParser;
 shared_ptr<nUse::cUseOT> gReadlineHandlerUseOT;
 
-/** 
+/**
 Caller: before calling this function gReadlineHandleParser and gReadlineHandlerUseOT must be set!
 Caller: you must free the returned char* memory if not NULL! (this will be done by readline lib implementation that calls us)
 */
@@ -1000,7 +1000,7 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 	gReadlineHandleParser = parser;
 	gReadlineHandlerUseOT = use;
 	parser->Init();
-	
+
 	int said_help=0, help_needed=0;
 	const int opt_repeat_help_each_nth_time = 5; // how often to remind user to run ot help on error
 
@@ -1035,16 +1035,16 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 					auto processing = parser->StartProcessing(cmd, use); // <---
 					processing.UseExecute(); // <--- ***
 					all_ok=true;
-				} 
-				catch (const myexception &e) { 
+				}
+				catch (const myexception &e) {
 					cerr<<"ERROR: Could not execute your command ("<<cmd<<")"<<endl;
 					cerr << e.what() << endl;
-					//e.Report();  
+					//e.Report();
 					cerr<<endl;
-				} 
-				catch (const std::exception &e) { 
-					cerr<<"ERROR: Could not execute your command ("<<cmd<<") - it triggered internal error: " << e.what() << endl; 
-				} 
+				}
+				catch (const std::exception &e) {
+					cerr<<"ERROR: Could not execute your command ("<<cmd<<") - it triggered internal error: " << e.what() << endl;
+				}
 				if (!all_ok) { // if there was a problem
 					if ((!said_help) || (!(help_needed % opt_repeat_help_each_nth_time))) { cerr<<"If lost, type command 'ot help'."<<endl; ++said_help; }
 					++help_needed;
@@ -1052,10 +1052,10 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 			} // length
 
 		} // try an editline turn
-		catch (const std::exception &e) { 
+		catch (const std::exception &e) {
 			cerr << "Problem while reading your command: " << e.what() << endl;
 			_erro("Error while reading command: " << e.what() );
-		} 
+		}
 	} // while
 	int maxHistory = 100; //TODO move this to settings
 	history_truncate_file("otcli-history.txt", maxHistory);

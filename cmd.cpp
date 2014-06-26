@@ -18,7 +18,7 @@ using namespace nUse;
 
 ostream& operator<<(ostream &stream , const cParseEntity & obj) {
 	stream << "{" << obj.KindIcon() << "," << obj.mCharPos << "," << obj.mSub << "}" ;
-	return stream;	
+	return stream;
 }
 
 // ========================================================================================================================
@@ -29,7 +29,7 @@ void cCmdParser_pimpl::BuildCache_CmdNames() {
 	mCache_CmdNames.clear();
 
 	for(const auto &elem : mTree) {
-		const string & cmdName = elem.first; 
+		const string & cmdName = elem.first;
 		auto space_pos = cmdName.find(' ');
 
 		_dbg2("Caching cmdName="<<cmdName<<" space at: " << (long long int)space_pos);
@@ -40,7 +40,7 @@ void cCmdParser_pimpl::BuildCache_CmdNames() {
 
 
 		if (space_pos == string::npos) { // 1word command
-			mCache_CmdNames[ word1 ].insert(""); // add 
+			mCache_CmdNames[ word1 ].insert(""); // add
 		} else { // 2word command
 			const string word2 = cmdName.substr(space_pos+1);
 			_dbg3("word2="<<word2);
@@ -49,14 +49,14 @@ void cCmdParser_pimpl::BuildCache_CmdNames() {
 	}
 
 	for (const auto & elem : mCache_CmdNames) {
-		const string & word1 = elem.first; // "msg"	
+		const string & word1 = elem.first; // "msg"
 		mCache_CmdNamesVect1.push_back(word1); // write down possible word1
 		_dbg2("word1: " << word1);
 		for (const auto & elem2 : elem.second) {
 			const string & word2 = elem2; // "msg send"
 			_dbg3("word2 in " <<word1<< " is: " << word2);
 			mCache_CmdNamesVect2[word1].push_back(word2);
-		} 
+		}
 	}
 
 }
@@ -65,9 +65,9 @@ void cCmdParser_pimpl::BuildCache_CmdNames() {
 
 // *** cCmdParser ***
 
-const vector<string> cCmdParser::mNoWords; 
+const vector<string> cCmdParser::mNoWords;
 
-cCmdParser::cCmdParser() 
+cCmdParser::cCmdParser()
 : mI( new cCmdParser_pimpl )
 { }
 
@@ -98,14 +98,14 @@ cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse:
 	return cCmdProcessing( shared_from_this() , words , use );
 }
 
-shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name ) 
+shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name )
 	throw(cErrParseName)
 {
 	auto it = mI->mTree.find( name );
 	if (it == mI->mTree.end()) {
 		throw cErrParseName("No such ot command="+(string)name);
 	}
-	
+
 	return it->second;
 }
 
@@ -140,19 +140,19 @@ cCmdName::operator std::string() const { return mName; }
 // ========================================================================================================================
 
 cCmdProcessing::cCmdProcessing(shared_ptr<cCmdParser> parser, const string &commandLineString, shared_ptr<nUse::cUseOT> use )
-: 
+:
 mStateParse(tState::never), mStateValidate(tState::never), mStateExecute(tState::never),
 mFailedAfterBadCmdname(false),
 mParser(parser), mCommandLineString(commandLineString), mUse(use)
-{ 
+{
 	mCommandLine = vector<string>{}; // will be set in Parse()
 	_dbg2("Creating processing from (" << mCommandLineString <<") " << " with use=" << use->DbgName() );
 }
 
-cCmdProcessing::~cCmdProcessing() 
+cCmdProcessing::~cCmdProcessing()
 { }
 
-void cCmdProcessing::Validate() { 
+void cCmdProcessing::Validate() {
 	if (mStateValidate != tState::never) { _dbg1("Validation was done already"); return; }
 	mStateValidate = tState::failed; // assumed untill succeed below
 	try {
@@ -162,7 +162,7 @@ void cCmdProcessing::Validate() {
 	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
 }
 
-void cCmdProcessing::_Validate() { 
+void cCmdProcessing::_Validate() {
 	if (mStateParse != tState::succeeded) Parse();
 	if (mStateParse != tState::succeeded) { _dbg1("Failed to parse."); }
 
@@ -171,14 +171,14 @@ void cCmdProcessing::_Validate() {
 
 	const auto sizeAll = mData->SizeAllVar();
 	_dbg2("Will validate all variables, size=" << sizeAll );
-	
-	for (size_t nr=1; nr<=sizeAll; ++nr) { // TODO:nrix 
+
+	for (size_t nr=1; nr<=sizeAll; ++nr) { // TODO:nrix
 		auto var = mData->Var(nr); // get the var
 		const cParamInfo & info = mFormat->GetParamInfo(nr);
 		auto func = info.GetFuncValid();
 		bool ok = func( *mUse, *mData, nr-1 ); // ***
-		if (!ok) { 
-			const string err = ToStr("Validation failed at nr=") + ToStr(nr) + " for var=" + ToStr(var); 
+		if (!ok) {
+			const string err = ToStr("Validation failed at nr=") + ToStr(nr) + " for var=" + ToStr(var);
 			_warn(err);
 			throw myexception(err);
 		}
@@ -193,8 +193,8 @@ void cCmdProcessing::Parse(bool allowBadCmdname) {
 		_Parse(allowBadCmdname);
 		if (mFailedAfterBadCmdname) { _info("Parsed partially"); mStateParse = tState::succeeded_partial; }
 		else { _info("Parsed ok (fully ok)"); mStateParse = tState::succeeded; }
-	} 
-	catch (const myexception &e) { e.Report(); throw ; } 
+	}
+	catch (const myexception &e) { e.Report(); throw ; }
 	catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
 }
 
@@ -206,7 +206,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 	mData->mOrginalCommand = mCommandLineString;
 
 	// will be used to calculate offsets (e.g. words) between orginal string suppied (eg from user) and the upgraded string we store later (after addig pre "ot" etc)
-	int namepart_words = 0; // how many words are in name SINCE BEGINING (including ot), "ot msg send"=3, "ot help"=2", "ot"=1 
+	int namepart_words = 0; // how many words are in name SINCE BEGINING (including ot), "ot msg send"=3, "ot help"=2", "ot"=1
 	int prepart_words = 0; // simillary, how many words are the begining, usually there is 1 (for "ot")
 
 	if (mCommandLineString.empty()) { const string s="Command for processing was empty (string)"; _warn(s);  throw cErrParseSyntax(s); } // <--- THROW
@@ -227,7 +227,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 		// Opt("--color")                              red,                    blue
 		// Opt("--reload")                                    ""
 		// Arg(1)                   bob
-		// vector     =ot,msg,ls 
+		// vector     =ot,msg,ls
 		// mWordIx2CharIx [0]=2, [1]=6, [2]=11 (or so)
 		string curr_word="";
 		size_t curr_word_pos=0; // at which pos(at which char) that current word had started
@@ -301,7 +301,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 				}
 			}
 		}
-		
+
 		const string name = name_tmp;
 		_mark("command name = " << name);
 
@@ -315,12 +315,12 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 		for (int i=1; i<=namepart_words; ++i) mData->mWordIx2Entity.at(i).SetKind( cParseEntity::tKind::cmdname , i ); // mark this words as part of cmdname
 		_mark("Words position mWordIx2Entity=" << DbgVector(mData->mWordIx2Entity));
-		
+
 		try {
-			mFormat = mParser->FindFormat( name ); // <--- 
-		} 
+			mFormat = mParser->FindFormat( name ); // <---
+		}
 		catch(cErrParseName &e) {
-			if (allowBadCmdname) { 
+			if (allowBadCmdname) {
 				mFailedAfterBadCmdname=true;  return;  // <=== RETURN.  exit, but report that we given up early  <===========================
 			}
 			else { throw ; } // else just panic - throw // <======
@@ -371,7 +371,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 					break; // continue to phase 3 - the options
 				}
 
-				_dbg1("adding var "<<word);  mData->mVar.push_back( word ); 
+				_dbg1("adding var "<<word);  mData->mVar.push_back( word );
 			}
 		} // parse var phase 1
 
@@ -406,7 +406,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 					break; // continue to phase 3 - the options
 				}
 
-				_dbg1("adding var ext "<<word);  mData->mVarExt.push_back( word ); 
+				_dbg1("adding var ext "<<word);  mData->mVarExt.push_back( word );
 			}
 		} // phase 2
 
@@ -457,7 +457,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 		_note("mVar parsed:    " + DbgVector(mData->mVar));
 		_note("mVarExt parsed: " + DbgVector(mData->mVarExt));
 		_note("mOption parsed  " + DbgMap(mData->mOption));
-	} 
+	}
 	catch (cErrParse &e) {
 		_warn("Command can not be parsed " << e.what());
 		throw ;
@@ -476,7 +476,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	if (mStateParse == tState::never) Parse( true );
-	if (mStateParse != tState::succeeded) { 
+	if (mStateParse != tState::succeeded) {
 		if (mStateParse == tState::succeeded_partial) _dbg3("Failed to fully parse.");  // can be ok - maybe we want to comlete cmd name like "ot msg sendfr~"
 		else _dbg1("Failed to parse (even partially)");
 	}
@@ -498,34 +498,34 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		_mark("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity<<" word_sofar="<<word_sofar);
 
 		if (entity.mKind == cParseEntity::tKind::option_name) {
-			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"  
+			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"
 			if (!format) return vector<string>{}; // if we did not understood command name, then return empty vector
 			vector<string> matching = WordsThatMatch( word_sofar ,  format->GetPossibleOptionNames() );
 			return matching;
 		}
 		else if (entity.mKind == cParseEntity::tKind::option_value) {
 			string option_name = mCommandLine.at(word_ix - mData->mFirstWord  -1); // the corresponding name of option like "--cc"
-			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"  
+			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"
 			if (!format) return vector<string>{}; // if we did not understood command name, then return empty vector
 			try {
 				const cParamInfo &info = format->mOption.at(option_name);
 				auto funcHint = info.GetFuncHint();   // typedef function< bool ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncValid;
 				auto hint = (funcHint)( *mUse , *mData  , word_ix );
-				vector<string> matching = WordsThatMatch( word_sofar , hint); 
+				vector<string> matching = WordsThatMatch( word_sofar , hint);
 				// TODO check if the word_ix here is correct
 				return matching;
 			} catch(std::exception &e) { } // something failed probaly the option name was not known
 			return vector<string>{}; // the name of option seems unknown, so we can not offer any completion for the value for that option
 		}
 		else if (entity.mKind == cParseEntity::tKind::variable) {
-			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"  
+			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"
 			ASRT( format );
 			cParamInfo param_info = format->GetParamInfo( arg_nr ); // eg. pNymFrom  <--- info about kind (completion function etc) of argument that we now are tab-completing
 			vector<string> completions = param_info.GetFuncHint()  ( *mUse , *mData , arg_nr );
 			_fact("Completions: " << DbgVector(completions));
 			vector<string> matching = WordsThatMatch( mData->V( arg_nr ) ,  completions );
 			return matching;
-		} 
+		}
 		else if (entity.mKind == cParseEntity::tKind::cmdname) {
 			const int cmd_word_nr = entity.mSub;
 			_mark("Completing command name, cmd_word_nr="<<cmd_word_nr);
@@ -537,14 +537,14 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 				vector<string> matching = WordsThatMatch( word_sofar , mParser->GetCmdNamesWord2( word1 ) );
 				return matching; // <---
 			} else throw cErrInternalParse("Bad cmd_word_nr="+ToStr(cmd_word_nr)+" in completion");
-			return vector<string>{}; 
+			return vector<string>{};
 		}
 		else if (entity.mKind == cParseEntity::tKind::pre) {
 			return vector<string>{"ot"}; // TODO
 		}
 		else {
 			_erro("Unimplemented entity type in completion");
-			return vector<string>{}; 
+			return vector<string>{};
 		}
 
 		_erro("DEAD CODE");
@@ -552,7 +552,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		return ret;
 	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
 
-	_erro("Dead code hit?");	return vector<string>(); // should not happen 
+	_erro("Dead code hit?");	return vector<string>(); // should not happen
 }
 
 void cCmdProcessing::UseExecute() { // TODO write as a template for all the 3 wrappres that set state ??
@@ -572,19 +572,19 @@ void cCmdProcessing::UseExecute() { // TODO write as a template for all the 3 wr
 void cCmdProcessing::_UseExecute() {
 	if (!mFormat) { _warn("Can not execute this command - mFormat is empty"); return; }
 	cCmdExecutable exec = mFormat->getExec();
-	exec( mData , *mUse ); 
+	exec( mData , *mUse );
 }
 
 // ========================================================================================================================
 
 void cValidateError::Print() const {
-	//cout << 
-	
+	//cout <<
+
 }
 
 // ========================================================================================================================
 
-cParamInfo::cParamInfo(const string &name, const string &descr, tFuncValid valid, tFuncHint hint, tFlags mFlags) 
+cParamInfo::cParamInfo(const string &name, const string &descr, tFuncValid valid, tFuncHint hint, tFlags mFlags)
 	: mName(name), mDescr(descr), funcValid(valid), funcHint(hint), mFlags(mFlags)
 { }
 
@@ -608,7 +608,7 @@ bool cParamInfo::IsValid() const {
 
 // ========================================================================================================================
 
-// cCmdFormat::cCmdFormat(cCmdExecutable exec, tVar var, tVar varExt, tOption opt) 
+// cCmdFormat::cCmdFormat(cCmdExecutable exec, tVar var, tVar varExt, tOption opt)
 cCmdFormat::cCmdFormat(const cCmdExecutable &exec, const tVar &var, const tVar &varExt, const tOption &opt)
 	:	mExec(exec), mVar(var), mVarExt(varExt), mOption(opt)
 {
@@ -627,7 +627,7 @@ bool cCmdFormat::IsValid() const {
 vector<string> cCmdFormat::GetPossibleOptionNames() const {
 	vector<string> ret;
 	for(auto elem : mOption) {
-		ret.push_back( elem.first ); // add eg "--cc" 
+		ret.push_back( elem.first ); // add eg "--cc"
 	}
 	return ret;
 }
@@ -664,30 +664,30 @@ void cCmdFormat::Debug() const {
 void cCmdFormat::PrintUsageShort(ostream &out) const {
 	using namespace zkr;
 	bool written=false;
-	{ 
+	{
 		out << cc::fore::lightyellow;
 		size_t nr=0;  for(auto var : mVar) { if (nr) out<<" ";  out << (string)var;  ++nr; written=true; }
 	}
 	if (written) out<<" ";
 
 	written=false;
-	{ 
+	{
 		auto color1 = cc::fore::lightcyan;
 		out << color1;
 		size_t nr=0;  for(auto var : mVarExt) { if (nr) out<<" ";  out << '[' << (string)var <<']';  ++nr; written=true; }
 	}
 	if (written) out<<" ";
 
-	for (int sort=0; sort<=1; ++sort) { 
+	for (int sort=0; sort<=1; ++sort) {
 		size_t nr=0;
-		for(auto opt : mOption) { 
+		for(auto opt : mOption) {
 			const string &name = opt.first;
 			const cParamInfo &info = opt.second;
 			bool boring = (info.getFlags().n.isBoring);
 			auto color1 = boring  ?  cc::fore::lightblack  :  cc::fore::lightblue;
 			if ((int)sort != boring) continue; // first 0 then 1
 
-			out << color1 << "[" << name ; // --cc 
+			out << color1 << "[" << name ; // --cc
 			if (info.getTakesValue()) out << " " << cc::fore::lightcyan << info.getName() << color1 ; // username
 			out << "] ";
 		}
@@ -706,7 +706,7 @@ cCmdExecutable::tExitCode cCmdExecutable::operator()( shared_ptr<cCmdData> data,
 
 cCmdExecutable::cCmdExecutable(tFunc func) : mFunc(func) { }
 
-const cCmdExecutable::tExitCode cCmdExecutable::sSuccess = 0; 
+const cCmdExecutable::tExitCode cCmdExecutable::sSuccess = 0;
 
 // ========================================================================================================================
 
@@ -740,18 +740,18 @@ void cCmdData::AssertLegalOptName(const string &name) const throw(cErrArgIllegal
 vector<string> cCmdData::OptIf(const string& name) const throw(cErrArgIllegal) {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
-	if (find == mOption.end()) { 
+	if (find == mOption.end()) {
 		return vector<string>{};
-	} 
+	}
 	return find->second;
 }
 
 string cCmdData::Opt1If(const string& name, const string &def) const throw(cErrArgIllegal) { // same but requires the 1st element; therefore we need def argument again
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
-	if (find == mOption.end()) { 
+	if (find == mOption.end()) {
 		return def;
-	} 
+	}
 	const auto &vec = find->second;
 	if (vec.size()<1) { _warn("Not normalized opt for name="<<name); return def; }
 	return vec.at(0);
@@ -770,14 +770,14 @@ string cCmdData::Var(int nr) const throw(cErrArgNotFound) { // nr: 1,2,3,4 inclu
 vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
-	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); } 
+	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); }
 	return find->second;
 }
 
 string cCmdData::Opt1(const string& name) const throw(cErrArgNotFound) {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
-	if (find == mOption.end()) {  throw cErrArgMissing("Option " + name + " was missing"); } 
+	if (find == mOption.end()) {  throw cErrArgMissing("Option " + name + " was missing"); }
 	const auto &vec = find->second;
 	if (vec.size()<1) { _warn("Not normalized opt for name="<<name); throw cErrArgMissing("Option " + name + " was missing (not-normalized empty vector)"); }
 	return vec.at(0);
@@ -786,9 +786,9 @@ string cCmdData::Opt1(const string& name) const throw(cErrArgNotFound) {
 bool cCmdData::IsOpt(const string &name) const throw(cErrArgIllegal) {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
-	if (find == mOption.end()) { 
+	if (find == mOption.end()) {
 		return false; // no such option entry
-	} 
+	}
 	auto &vect = find->second;
 	if (vect.size()) {
 		return true; // yes, there is an option
@@ -802,24 +802,24 @@ void cCmdData::AddOpt(const string &name, const string &value) throw(cErrArgIlle
 	_dbg3("adding option ["<<name<<"] with value="<<value);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) {
-		mOption.insert( std::make_pair( name , vector<string>{ value } ) );	
+		mOption.insert( std::make_pair( name , vector<string>{ value } ) );
 	} else {
 		find->second.push_back( value );
-	}	
+	}
 }
 
 // ========================================================================================================================
 
 cCmdDataParse::cCmdDataParse()
 	: mFirstArgAfterWord(0), mFirstWord(0), mCharShift(0)
-{ 
+{
 }
 
 
 int cCmdDataParse::CharIx2WordIx(int char_ix) const {
 	cParseEntity goal( cParseEntity::tKind::unknown , char_ix );
 	int word_ix = RangesFindPosition( mWordIx2Entity , goal );
-	ASRT(  (word_ix >= 0) ); 
+	ASRT(  (word_ix >= 0) );
 	// TODO assert versus number of known words?
 	return word_ix;
 }

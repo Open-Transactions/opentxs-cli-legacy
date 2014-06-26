@@ -22,8 +22,8 @@ int main(int argc, const char **argv) {
 			args_full.push_back( argv[i] );
 		}
 
-		vector<string> args_clear = nOT::gRunOptions.ExecuteRunoptionsAndRemoveThem(args_full); 
-		// eg: args_clear: ot msg sendfrom rafal piotr +thisisplussign 
+		vector<string> args_clear = nOT::gRunOptions.ExecuteRunoptionsAndRemoveThem(args_full);
+		// eg: args_clear: ot msg sendfrom rafal piotr +thisisplussign
 		// +debug +debugfile <-- this will be Executed by gRunOptions
 
 		gCurrentLogger.setOutStream();
@@ -32,7 +32,7 @@ int main(int argc, const char **argv) {
 		#define COMPILER_VERSION "(unknown)"
 		#ifdef __GNUC__
 			#undef COMPILER_VERSION
-			#define COMPILER_VERSION __VERSION__ 
+			#define COMPILER_VERSION __VERSION__
 		#endif
 		#ifdef __CLANG__
 			#undef COMPILER_VERSION

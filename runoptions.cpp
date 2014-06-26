@@ -61,7 +61,7 @@ void cRunOptions::Normalize() {
 	}
 }
 
-		
+
 cRunOptions gRunOptions; // (extern)
 
 }; // namespace OT

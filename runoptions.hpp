@@ -19,7 +19,7 @@ class cRunOptions {
 		enum tRunMode { ///< Type of run mode - is this normal, or demonstration etc.
 			eRunModeCurrent=1, ///< currently developed version
 			eRunModeDemo, ///< best currently available Demo of something nice
-			eRunModeNormal, ///< do the normal things that the program should do 
+			eRunModeNormal, ///< do the normal things that the program should do
 		};
 
 	private:
@@ -29,7 +29,7 @@ class cRunOptions {
 		bool mDebugSendToFile; // send to file, Eg: for +debugfile ; also turns on debug
 		bool mDebugSendToCerr; // send to cerr, Eg: for +debugcerr ; also turns on debug
 		// if debug is set but not any other DebugSend* then we will default to sending to debugcerr
-		
+
 		bool mDoRunDebugshow;
 
 	public:

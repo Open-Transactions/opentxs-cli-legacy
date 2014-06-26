@@ -7,7 +7,7 @@ BUGS IMPORTANT
 BUGS SECURITY TO DEBUG
 ====================================================================
 
-* medium,backlog: error fixed in fd9dff63aa273a3e80df5f28a398215288eb2629 related to OT API init/close was causing a SIGSEGV (on all boxes testes, 
+* medium,backlog: error fixed in fd9dff63aa273a3e80df5f28a398215288eb2629 related to OT API init/close was causing a SIGSEGV (on all boxes testes,
 always when started the ./start-shell.sh and then issued command ot nym ls and then quit). This should be debugged to make sure
 that for in case of this error (or hitting any similar invalid conditions) we would get an exception or assert instead of SIGSEGV or corruption.
 

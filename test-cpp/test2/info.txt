@@ -1,4 +1,4 @@
-$CXX -v ; $CXX a.cpp -o a.bin -g3  && ./a.bin 
+$CXX -v ; $CXX a.cpp -o a.bin -g3  && ./a.bin
 clang version 3.3 (tags/RELEASE_33/final)
 Target: x86_64-unknown-linux-gnu
 Thread model: posix

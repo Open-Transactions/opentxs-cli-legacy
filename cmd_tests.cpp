@@ -15,9 +15,9 @@ vector<string> cCmdParser::EndingCmdNames (const string sofar) {
 	vector<string> CmdNames;
 	for(auto var : mI->mTree) {
 		bool Begin=nUtils::CheckIfBegins(sofar,std::string(var.first));
-		if(Begin==true) {	// if our word begins some kind of command     
-			std:: string propose=var.first;  
-			size_t pos = sofar.find(" "); 
+		if(Begin==true) {	// if our word begins some kind of command
+			std:: string propose=var.first;
+			size_t pos = sofar.find(" ");
 			if(pos==std::string::npos ) {	// if we haven't " " in our word
 
 				string str=" ";
@@ -32,9 +32,9 @@ vector<string> cCmdParser::EndingCmdNames (const string sofar) {
 				if(ifexists==false) {	// if it not exists we can push back
 					CmdNames.push_back(propose);
 					}
-				}	
+				}
 			else if(pos!=std::string::npos) {	// if we have " " in our word
-				size_t pos2 = propose.find(" "); 
+				size_t pos2 = propose.find(" ");
 				std::string formated_propose = propose.substr (pos2);
 				CmdNames.push_back(formated_propose);
 			}
@@ -84,7 +84,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 				_erro("Bad example - no TAB position given!");
 				continue; // <---
 			}
-			auto cmd = cmd_raw; 
+			auto cmd = cmd_raw;
 			cmd.erase( pos , 1 );
 
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
@@ -92,8 +92,8 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			vector<string> completions = processing.UseComplete( pos  );
 			_note("Completions: " << DbgVector(completions));
 
-		} 
-		catch (const myexception &e) { e.Report(); } 
+		}
+		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
 		// continue anyway
 	}
@@ -126,12 +126,12 @@ void cCmdParser::_cmd_test_tree( shared_ptr<cUseOT> use ) {
 			_mark("====== Testing command: " << cmd );
 			auto processing = parser->StartProcessing(cmd, use);
 			processing.UseExecute();
-		} 
-		catch (const myexception &e) { e.Report();  
-			if (panic_on_throw) throw ; 
 		}
-		catch (const std::exception &e) { _erro("Exception " << e.what()); 
-			if (panic_on_throw) throw ; 
+		catch (const myexception &e) { e.Report();
+			if (panic_on_throw) throw ;
+		}
+		catch (const std::exception &e) { _erro("Exception " << e.what());
+			if (panic_on_throw) throw ;
 		}
 	}
 
@@ -151,7 +151,7 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
 	auto alltest = vector<string> {
-	 "msg s~" 
+	 "msg s~"
 	,"m~"
 	,"~"
 	};
@@ -164,7 +164,7 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 				_erro("Bad example - no TAB position given!");
 				continue; // <---
 			}
-			auto cmd = cmd_raw; 
+			auto cmd = cmd_raw;
 			cmd.erase( pos , 1 );
 
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
@@ -172,15 +172,15 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 			vector<string> completions = parser->EndingCmdNames( cmd  );
 			_note("Completions: " << DbgVector(completions));
 
-		} 
-		catch (const myexception &e) { e.Report(); } 
+		}
+		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
 		// continue anyway
 	}
 }
 
 
-} // namespace 
-} // namespace 
+} // namespace
+} // namespace
 
 

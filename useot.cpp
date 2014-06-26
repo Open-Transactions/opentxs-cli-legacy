@@ -28,7 +28,7 @@ namespace nUse {
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_3; // <=== namespaces
 
 cUseOT::cUseOT(const string &mDbgName)
-: 
+:
 	mDbgName(mDbgName)
 , mNymsMy_loaded(false)
 , mDataFolder( OTPaths::AppDataFolder().Get() )
@@ -123,7 +123,7 @@ bool cUseOT::Refresh(bool dryrun){
 	_fact("refresh all");
 	if(dryrun) return true;
 	if(!Init()) return false;
-	bool StatusAccountRefresh=AccountRefresh(AccountGetName(AccountGetDefault()), true, false  ); 
+	bool StatusAccountRefresh=AccountRefresh(AccountGetName(AccountGetDefault()), true, false  );
 	bool StatusNymRefresh=NymRefresh("^" + NymGetDefault(), true, false  );
 	if( StatusAccountRefresh==true &&  StatusNymRefresh==true) {
 		_info("Succesfull refresh");

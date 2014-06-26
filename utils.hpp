@@ -16,8 +16,8 @@ we find helpful in coding this project.
 	#error "You requested to turn off terminal colors (CFG_WITH_TERMCOLORS), however currently they are hardcoded (this option to turn them off is not yet implemented)."
 #endif
 
-#define MAKE_CLASS_NAME(NAME) private: static std::string GetObjectName() { return #NAME; } 
-#define MAKE_STRUCT_NAME(NAME) private: static std::string GetObjectName() { return #NAME; } public: 
+#define MAKE_CLASS_NAME(NAME) private: static std::string GetObjectName() { return #NAME; }
+#define MAKE_STRUCT_NAME(NAME) private: static std::string GetObjectName() { return #NAME; } public:
 
 namespace nOT {
 
@@ -63,7 +63,7 @@ extern cNullstream g_nullstream; // a stream that does nothing (eats/discards da
 #define _info(X) do { if (_dbg_ignore< 50) gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // more boring info
 #define _note(X) do { if (_dbg_ignore< 70) gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // info
 #define _fact(X) do { if (_dbg_ignore< 75) gCurrentLogger.write_stream( 75) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // interesting event
-#define _mark(X) do { if (_dbg_ignore< 80) gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // marked action 
+#define _mark(X) do { if (_dbg_ignore< 80) gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // marked action
 #define _warn(X) do { if (_dbg_ignore< 90) gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // some problem
 #define _erro(X) do { if (_dbg_ignore<100) gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline(); } while(0) // error - report
 
@@ -324,7 +324,7 @@ int RangesFindPosition(const vector<T> &R, const T &pos) {
 			if (pos < R.at(middle+1)) { // compare objects
 				return middle;
 		}
-			else left=middle+1;			
+			else left=middle+1;
 		}
 		else if(pos<x) { // compare objects
 			if(pos > R.at(middle-1)) { // compare object
@@ -338,7 +338,7 @@ int RangesFindPosition(const vector<T> &R, const T &pos) {
 }
 
 
-}; // namespace nUtils 
+}; // namespace nUtils
 
 }; // namespace nOT
 

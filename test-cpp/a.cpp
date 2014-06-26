@@ -12,9 +12,9 @@ class cLine {
 
 		vector<string> words;
 
-		cLine(vector<string> _words) : words(_words) { } 
+		cLine(vector<string> _words) : words(_words) { }
 
-		string cmd_string() const { 
+		string cmd_string() const {
 			return words[0] + " " + words[1];
 		}
 };
@@ -36,12 +36,12 @@ class cCommand {
 		}
 };
 
-void hint_from(const cLine& line) { 
+void hint_from(const cLine& line) {
 	cout << "FUNCTION: VALIDATING from, on current line:";
 	for(auto x:line.words) cout<<x<<" ";
 	cout <<"." << endl;
 }
-void exec_sendfrom() { 
+void exec_sendfrom() {
 	cout << "FUNCTION: sending from..." << endl;
 }
 
@@ -53,8 +53,8 @@ class cParser {
 	public:
 
 	void BuildTree() {
-		tree["msg sendfrom"] = cCommand(hint_from, exec_sendfrom);	
-		tree["msg help"] = cCommand(hint_from, []{ cout<<"This is the HELP for msg: ........... ." << endl; } );	
+		tree["msg sendfrom"] = cCommand(hint_from, exec_sendfrom);
+		tree["msg help"] = cCommand(hint_from, []{ cout<<"This is the HELP for msg: ........... ." << endl; } );
 	}
 
 	void Run(const cLine &line) {
@@ -62,7 +62,7 @@ class cParser {
 	}
 };
 
-int main() {	
+int main() {
 
 	// int *xxx;	*xxx = 42;
 

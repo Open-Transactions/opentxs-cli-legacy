@@ -50,7 +50,7 @@ The otcli part is not currently delivered as separate program, use othint instea
 ========================================================================
 COOL THINGS TO DEMO
 
-You can try or demonstrate following things: 
+You can try or demonstrate following things:
 * try adding server example_data/ot-servers/DigitalisOTserver.otc
 ------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ How to building/compile otcli from source code:
 
 ---------------------------------------
 1) Build othint - choosing compiler
-Project otcli does use C++11, and therefore requires clang >= 3.3, or gcc >= 4.7 , MSVC12 (2013). 
+Project otcli does use C++11, and therefore requires clang >= 3.3, or gcc >= 4.7 , MSVC12 (2013).
 Maybe some older versions could work too, or other compiler with good enough C++11 support.
 Even if Open-Transactions main project builded correctly, it is possible that you will need
 to set up newer compiler for this otcli sub-project.
@@ -95,7 +95,7 @@ Dependencies installation (Debian):
 	* Download OpenTransactions and build it, using instructions from  ../../docs/INSTALL-linux-modern.txt or other suitable
 	* Get, build and install latest editline locally (editline in debian 7 has bugs)
 		wget http://thrysoee.dk/editline/libedit-20130712-3.1.tar.gz
-         	sha256sum libedit-20130712-3.1.tar.gz 
+		sha256sum libedit-20130712-3.1.tar.gz
 		echo "THE CHECKSUM ABOVE SHOULD BE: 5d9b1a9dd66f1fe28bbd98e4d8ed1a22d8da0d08d902407dcc4a0702c8d88a37  press enter if ok. "
 		read ok
 		tar -xzf libedit-20130712-3.1.tar.gz
@@ -132,7 +132,7 @@ TODO @vyrly - Windows cmake + MSVC short description.
 
 More about FATAL_ERROR_COMPILER:
 to disable this check, you can use
-	cmake  -DCHECK_COMPILER_VERSION=OFF . 
+	cmake  -DCHECK_COMPILER_VERSION=OFF .
 or use the gui tools to switch it.
 
 ========================================================================

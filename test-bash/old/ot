@@ -43,15 +43,15 @@ _ot()
             COMPREPLY=( $(compgen -W "${option}" -- ${cur}) )
             return 0
             ;;
-        *)  
+        *)
         ;;
 	esac
-    
+
 	if [[ ${prev} == ot ]] ; then # if opentxs
 		all_commands=$(_opentxs_list_all_commands)
 		COMPREPLY=($(compgen -W "${all_commands}" -- ${cur}))
 		return 0
-	fi  
+	fi
 }
 
 complete -F _ot ot

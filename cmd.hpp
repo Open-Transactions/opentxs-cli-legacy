@@ -39,9 +39,9 @@ struct cErrParseName : public cErrParse { cErrParseName(const string &s) : cErrP
 struct cErrParseSyntax : public cErrParse { cErrParseSyntax(const string &s) : cErrParse("syntax error: "+s) { } };
 
 struct cErrArgNotFound : public std::runtime_error { cErrArgNotFound(const string &s) : runtime_error(s) { } }; // generally this arg was not found
-struct cErrArgMissing : public cErrArgNotFound { 
+struct cErrArgMissing : public cErrArgNotFound {
 	cErrArgMissing(const string &s) : cErrArgNotFound("Just missing : " + s) { } }; // more specificaly, the arg was not given, e.g. 3 out of 2
-struct cErrArgIllegal : public cErrArgNotFound { 
+struct cErrArgIllegal : public cErrArgNotFound {
 	cErrArgIllegal(const string &s) : cErrArgNotFound("Illegal! : " + s) { } }; // more specificaly, such arg is illegal, e.g. number -1 or option name ""
 
 struct cErrInternalParse : public std::runtime_error { cErrInternalParse(const string &s) : runtime_error("Assert related to parsing: " + s) { } }; // some assert/internal problem related to parsing
@@ -55,15 +55,15 @@ class cParseEntity {
 		int mCharPos; // at which character does this word start in command line (e.g. in orginal command)
 
 		int mSub; // additional number
-	
-		enum class tKind { 
+
+		enum class tKind {
 			unknown, // yet-unknown. but mWordNr is valid here
 			pre, // "ot", mWordNr is 0 usually
 			cmdname, // "msg" or "sendfrom", mWordNr=1,2,3,... usually; mSub=0,1 number of part of command name
 			variable, // positional argument; mSub == arg_nr (numbered from 1)
 			variable_ext, // same, but the extra (optional, not required) variables
 			option_name, // an option, the name part; mSub is the occurance of the option, e.g. mSub==3 for 4th use of --x in "--x --x --x --x"
-			option_value // an option, the value part; mSub is same as for corresponding option_name  --color red  --color green 
+			option_value // an option, the value part; mSub is same as for corresponding option_name  --color red  --color green
 		};
 
 		tKind mKind;
@@ -79,7 +79,7 @@ class cParseEntity {
 		bool operator>(const cParseEntity & other) const { return mCharPos > other.mCharPos; }
 		bool operator<=(const cParseEntity & other) const { return mCharPos <= other.mCharPos; }
 		bool operator>=(const cParseEntity & other) const { return mCharPos >= other.mCharPos; }
-		operator int() const { return mCharPos; } 
+		operator int() const { return mCharPos; }
 
 		const char * KindIcon() const {
 			switch (mKind) {
@@ -92,7 +92,7 @@ class cParseEntity {
 				case tKind::option_value: return "ov";
 			}
 			string msg="Unexpected type of Kind!";
-			_erro(msg); 
+			_erro(msg);
 			throw std::runtime_error("msg");
 			return "!";
 		}
@@ -102,7 +102,7 @@ ostream& operator<<(ostream &stream , const cParseEntity & obj);
 
 // ============================================================================
 
-/** 
+/**
 A function to be executed that will do some actuall OT call <- e.g. execute this on "ot msg ls"
 */
 class cCmdExecutable {  MAKE_CLASS_NAME("cCmdExecutable");
@@ -128,7 +128,7 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 		void _AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format); // warning, will not do certain things like adding common defaults
 
 		void AddFormat(
-			const string &name, 
+			const string &name,
 			const vector<cParamInfo> &var,
 			const vector<cParamInfo> &varExt,
 			const map<string, cParamInfo> &opt,
@@ -164,7 +164,7 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 };
 
 /**
-Particular instance of process of parsing one input. 
+Particular instance of process of parsing one input.
 E.g. parsing the input "msg sendfrom rafal dorota 5000" and pointing to standard parser
 */
 class cCmdProcessing : public enable_shared_from_this<cCmdProcessing> { MAKE_CLASS_NAME("cCmdProcessing");
@@ -228,7 +228,7 @@ class cCmdFormat {  MAKE_CLASS_NAME("cCmdFormat");
 
 		size_t SizeAllVar() const ; // return size of required mVar + optional mVarExt
 
-		cParamInfo GetParamInfo(int nr) const;		
+		cParamInfo GetParamInfo(int nr) const;
 };
 
 /**
@@ -238,7 +238,7 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 	public:
 		typedef vector<string> tVar;
 		typedef map<string, vector<string> > tOption; // even single (not-multi) options will be placed in vector (1-element)
-		
+
 	protected:
 
 		friend class cCmdProcessing; // it will fill-in this class fields directly
@@ -279,11 +279,11 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 		string Var(int nr) const throw(cErrArgNotFound); // see [nr] ; throws if this var was missing
 		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // --cc bob --bob alice returns option values, throws if missing (if none)
 		string Opt1(const string& name) const throw(cErrArgNotFound); // --prio 100 same but requires the 1st element
-		
+
 		bool IsOpt(const string &name) const throw(cErrArgIllegal); // --dryrun
 
 		size_t SizeAllVar() const ; // return size of required mVar + optional mVarExt
-		
+
 	public: // aliases ; I hope it will be fully optimized out/elided (TODO if not then copy/paste code of above methods)
 	// public? compiler bug? would prefer to have it as private, but lambdas made in cCmdProcessing should access this fields
 		string v(int nr, const string &def="",  bool doThrow=0) const throw(cErrArgIllegal) { return VarDef(nr,def,doThrow); }
@@ -293,7 +293,7 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 		string V(int nr) const throw(cErrArgNotFound) { return Var(nr); }
 		vector<string> O(const string& name) const throw(cErrArgNotFound) { return Opt(name); }
 		string O1(const string& name) const throw(cErrArgNotFound) { return Opt1(name); }
-		
+
 		bool has(const string &name) const throw(cErrArgIllegal) { return IsOpt(name); }
 
 //		virtual const cCmdProcessing* MetaGetProcessing() const; // return optional pointer to the processing information
@@ -301,7 +301,7 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 
 	protected:
 		void AssertLegalOptName(const string & name) const throw(cErrArgIllegal); // used internally to catch programming errors e.g. in binding lambdas
-}; 
+};
 
 // ============================================================================
 
@@ -338,9 +338,9 @@ class cCmdName {  MAKE_CLASS_NAME("cCmdName");
 		string mName;
 	public:
 		cCmdName(const string &name);
-		
+
 		bool operator<(const cCmdName &other) const;
-		operator std::string() const;	
+		operator std::string() const;
 };
 
 
@@ -351,11 +351,11 @@ class cCmdName {  MAKE_CLASS_NAME("cCmdName");
 //                           ^^^^^^^^^^^^^         ^^^^^^^^^^  warning excluding options
 //
 // ot msg sendfrom alice bob --prio 4 --cc dave --prio 8
-//                           ^^^^^^^^           ^^^^^^^^ warning: there can be just one --prio 
+//                           ^^^^^^^^           ^^^^^^^^ warning: there can be just one --prio
 
 class cValidateError {
 	public:
-		enum class tKind { 
+		enum class tKind {
 			w_syntax, // problem detectable just by seeing the strings of arguments (warning)
 			e_syntax, // same - but error
 			w_data, // problem when working on the data, e.g. after checking the address-book we know this operation seems strange
@@ -364,7 +364,7 @@ class cValidateError {
 
 		enum class tGuess {
 			none, // this problem exists alwas, no guessing, e.g. "10AAA1" is never a valid amount of currency (float)
-			cached, // this problem exists (with data) as we checked the cached data (cache, local address book etc) perhaps it would work 
+			cached, // this problem exists (with data) as we checked the cached data (cache, local address book etc) perhaps it would work
 			now  // we checked with authoritative source now (e.g. the server) and still there is a problem (user dosn't exist on server)
 		};
 
@@ -374,7 +374,7 @@ class cValidateError {
 		string mMessage;
 
 		vector<int> argpos; // TODO:nrix at which position of argument did the error occured
-		
+
 	public:
 		cValidateError(const string &message, tKind exit, tGuess guess) : mMessage(message), mKind(exit), mGuess(guess) { }  // inline
 
@@ -393,13 +393,13 @@ class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 		// bool validation_function ( otuse, partial_data, curr_word_ix )
 		// use: this function should validate the curr_word_ix out of data - data.ArgDef
 		// warning: the curr_word_ix might NOT exist
-		// ot msg sendfrom alice %%% hel<--validate --prio 4   ( use , data["alice", "%%%", "hel"  ], 2 ) 
+		// ot msg sendfrom alice %%% hel<--validate --prio 4   ( use , data["alice", "%%%", "hel"  ], 2 )
 		typedef function< bool ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncValid;
 
 		// vector<string>   hint_function ( otuse, partial_data, curr_word_ix )
 		// warning: the curr_word_ix might NOT exist
-		// ot msg sendfrom alice bo<TAB> hello --prio 4   ( use , data["alice", "bo", "hello"  ], 1 ) 
-		// ot msg sendfrom alice bob hel<TAB> --prio 4   ( use , data["alice", "bob", "hel"  ], 2 ) 
+		// ot msg sendfrom alice bo<TAB> hello --prio 4   ( use , data["alice", "bo", "hello"  ], 1 )
+		// ot msg sendfrom alice bob hel<TAB> --prio 4   ( use , data["alice", "bob", "hel"  ], 2 )
 		typedef function< vector<string> ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncHint;
 
 		enum eFlags {
@@ -412,9 +412,9 @@ class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 		};
 
 		typedef std::underlying_type<eFlags>::type tFlags_bits;
-		union tFlags { tFlags_bits bits; sFlags n; 
+		union tFlags { tFlags_bits bits; sFlags n;
 			tFlags() { bits = 0 | eFlags::takesValue ; } // defaults
-			tFlags(tFlags_bits _bits) { bits=_bits; } 
+			tFlags(tFlags_bits _bits) { bits=_bits; }
 		}; // now you can access the data both ways
 
 	protected:
@@ -424,7 +424,7 @@ class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 		tFuncValid funcValid;
 		tFuncHint funcHint;
 
-		tFlags mFlags; 
+		tFlags mFlags;
 	public:
 		cParamInfo()=default;
 		cParamInfo(const string &name, const string &descr, tFuncValid valid, tFuncHint hint, tFlags mFlags = tFlags());

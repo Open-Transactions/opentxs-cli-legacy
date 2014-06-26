@@ -7,7 +7,7 @@ if [ -r $pidfile_cli ] ; then
 fi
 
 export MALLOC_CHECK_=3
-# gdb -silent -batch -x run.gdb  --args ./othint +debugcerr --complete-shell   
-gdb -return-child-result -ex run -ex "thread apply all bt" -ex "quit" --args ./othint   +debugcerr   +normal --complete-shell 
+# gdb -silent -batch -x run.gdb  --args ./othint +debugcerr --complete-shell
+gdb -return-child-result -ex run -ex "thread apply all bt" -ex "quit" --args ./othint   +debugcerr   +normal --complete-shell
 
 

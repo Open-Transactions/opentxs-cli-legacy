@@ -2,7 +2,7 @@ echo "This will do full rebuild, using default settings, and assuming you config
 echo "as explained in README.txt. If you did not, or if you need speciall cmake or other settings then it will not work correctly."
 
 if false ; then
-	read  -p "Are you sure? (y=yes) "  -r  ; echo 
+	read  -p "Are you sure? (y=yes) "  -r  ; echo
 	if [[ ! $REPLY =~ ^[Yy]$ ]]
 	then
 		echo "Exiting then." ; exit 1

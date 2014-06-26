@@ -2,17 +2,17 @@
 
 *** If you are a user then start with reading README.txt instead. ***
 
-This file here is primarly for core developers of otcli 
+This file here is primarly for core developers of otcli
 (how ever it could include some information that you can find interesting too).
 
 === PROGRAM STRUCTURE ===
 
-main() 
--> cOTCli::Run() 
+main()
+-> cOTCli::Run()
 --> shell.runEditline(useOT); - main loop that is a shell that reads commands
 ---> on ENTER: cCmdParser() - Parse(), Validate(), UseExecute()
 
----> on TAB: 
+---> on TAB:
 ----> CompletionReadlineWrapper()
 -----> current_completion = gReadlineHandleParser -> StartProcessing (on nr==0)
 ------> current_completion->UseComplete() + save results (on nr==0)
@@ -26,7 +26,7 @@ strings candidates are built by calling currently-edited-parameter
 === TEST CASE ===
 
 Sending/receiving message
-A: ot nym new alice 
+A: ot nym new alice
 A: ot nym new bob
 A: ot nym register alice
 A: ot nym register bob
@@ -47,7 +47,7 @@ TODO/bugs:
 
 Other format - more readable:
 B: ot msg send to alice
-B: ot msg send to alice from bob amount 51343 asset xgold1 
+B: ot msg send to alice from bob amount 51343 asset xgold1
 B: ot msg sendfrom bob alice
 
 === GIT BRANCH ===
@@ -118,5 +118,5 @@ http://www.parashift.com/c++-faq/macros-with-multi-stmts.html
 
 
 
- 
+
 

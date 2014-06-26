@@ -6,7 +6,7 @@ using namespace std;
 
 int main () {
 	auto ptr = make_shared<S>();
-	cout << "Done" << endl;	
+	cout << "Done" << endl;
   return 0;
 }
 
