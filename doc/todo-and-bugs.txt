@@ -1,0 +1,51 @@
+
+====================================================================
+BUGS IMPORTANT
+====================================================================
+
+====================================================================
+BUGS SECURITY TO DEBUG
+====================================================================
+
+* medium,backlog: error fixed in fd9dff63aa273a3e80df5f28a398215288eb2629 related to OT API init/close was causing a SIGSEGV (on all boxes testes, 
+always when started the ./start-shell.sh and then issued command ot nym ls and then quit). This should be debugged to make sure
+that for in case of this error (or hitting any similar invalid conditions) we would get an exception or assert instead of SIGSEGV or corruption.
+
+====================================================================
+BUGS MISC
+====================================================================
+
+* ot msg send - in OUTBOX - 'to' parameter is accually from
+* editline is not detected as missing (in cmake)
+* cmake wrongly detects the .hpp files only .h files
+* ... and also cmake detects dirs so that main.cpp must skip the dir name in #include... (see git diff of this message for details)
+
+====================================================================
+TODO
+====================================================================
+
+* TODO:nrix write conversion between numbers (1,2,3) and indexes (0,1,2) based on classes, with assert for over/under-flow and versusi int and size_t sizes
+* debug: configurable debug level (from autostart)
+* debug: testcases should use this debug level
+* implement more commands for othint + execution
+* new_tree
+* genereate help/usage page using new_tree
+* split main.cpp
+
+
+====================================================================
+TODO OT
+====================================================================
+
+* Error. If program was ended whit ^Z. In next instance of othint function  OTAPI_Wrap::AppInit()
+return true but init is not successed
+* nym must be registered to send him a message
+
+
+====================================================================
+IDEAS - possible TODO
+====================================================================
+
+* leave otclid service in background and make other clients use that one to skip loading time (init/wallet open time)
+
+
