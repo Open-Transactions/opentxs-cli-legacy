@@ -2,9 +2,8 @@
 
 #include "lib_common2.hpp"
 
-#include "otcli.hpp"
 #include "othint.hpp"
-#include "useot.hpp"
+#include "otcli.hpp"
 
 #include "tests.hpp" // TODO Not needed
 
@@ -888,11 +887,17 @@ cInteractiveShell::cInteractiveShell()
 :dbg(false)
 { }
 
-void cInteractiveShell::runOnce(const string line) { // used with bash autocompletion
+void cInteractiveShell::_runOnce(const string line) { // used with bash autocompletion
 	gCurrentLogger.setDebugLevel(100);
 	nOT::nOTHint::cHintManager hint;
 	vector<string> out = hint.AutoCompleteEntire(line);
 	nOT::nUtils::DisplayVectorEndl(std::cout, out);
+}
+
+void cInteractiveShell::runOnce(const string line) { // used with bash autocompletion
+	try {
+		runOnce(line);
+	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
 }
 
 extern bool my_rl_wrapper_debug; // external
@@ -918,20 +923,38 @@ bool my_rl_wrapper_debug; // external
 // (done with number=0) is an error (at least currently, in future we might cache various completion
 // arrays, or recalculate on change)
 
+shared_ptr<nNewcli::cCmdParser> gReadlineHandleParser;
+shared_ptr<nUse::cUseOT> gReadlineHandlerUseOT;
 
-static char* completionReadlineWrapper(const char *sofar , int number) {
+/** 
+Caller: before calling this function gReadlineHandleParser and gReadlineHandlerUseOT must be set!
+Caller: you must free the returned char* memory if not NULL! (this will be done by readline lib implementation that calls us)
+*/
+static char* CompletionReadlineWrapper(const char *sofar , int number) {
+	// sofar - current word,  number - number of question / of word to be returned
+	// rl_line_buffer - current ENTIER line
+	// rl_point - current CURSOR position
+
 	bool dbg = my_rl_wrapper_debug;
-	if (dbg) _dbg3("sofar="<<sofar<<" number="<<number<<" rl_line_buffer="<<rl_line_buffer<<endl);
-	string line;
-	if (rl_line_buffer) line = rl_line_buffer;
-	line = line.substr(0, rl_point); // Complete from cursor position
-	nOT::nOTHint::cHintManager hint;
+	dbg=true; // XXX
+	ASRT( !(gReadlineHandleParser == nullptr) ); // must be set before calling this function
+	ASRT( !(gReadlineHandlerUseOT == nullptr) ); // must be set before calling this function
+	if (dbg||1) _mark("sofar="<<sofar<<" number="<<number<<" rl_line_buffer="<<rl_line_buffer<<endl);
+
+	// rl_line_buffer, rl_point not in WinEditLine API TODO should be possible to get this
+
+	string line_all;
+	if (rl_line_buffer) line_all = rl_line_buffer; // <<<
+	string line = line_all.substr(0, rl_point); // Complete from cursor position
+
+
 	static vector <string> completions;
 	if (number == 0) {
 		if (dbg) _dbg3("Start autocomplete (during first callback, number="<<number<<")");
-		completions = hint.AutoCompleteEntire(line); // <--
-		if (dbg)nOT::nUtils::DbgDisplayVectorEndl(completions); //TODO: display in debug
-		if (dbg) _dbg3("Done autocomplete (during first callback, number="<<number<<")");
+		auto processing = gReadlineHandleParser->StartProcessing(line_all, gReadlineHandlerUseOT);
+		completions = processing.UseComplete( rl_point );
+		_mark( DbgVector(completions) );
+		if (dbg) _dbg3("Done autocomplete (during first callback, number="<<number<<"); completions="<<DbgVector(completions));
 	}
 
 	auto completions_size = completions.size();
@@ -949,46 +972,97 @@ static char* completionReadlineWrapper(const char *sofar , int number) {
 }
 
 char ** completion(const char* text, int start, int end __attribute__((__unused__))) {
+	rl_attempted_completion_over = 0;
 	char **matches;
 	matches = (char **)NULL;
-	matches = rl_completion_matches (text, completionReadlineWrapper);
+	matches = rl_completion_matches (text, CompletionReadlineWrapper);
+	if ( matches == (char **)NULL ) // Disable filename autocompletion
+		rl_attempted_completion_over = 1;
 	return (matches);
 }
 
-void cInteractiveShell::runEditline() {
+void cInteractiveShell::runEditline(shared_ptr<nUse::cUseOT> use) {
+	try {
+		_runEditline(use);
+
+	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
+}
+
+void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 	// nOT::nUse::useOT.Init(); // Init OT on the beginning // disabled to avoid some problems and delay (and valgrid complain)
 
 	char *buf = NULL;
 	my_rl_wrapper_debug = dbg;
 	rl_attempted_completion_function = completion;
 	rl_bind_key('\t',rl_complete);
-	while((buf = readline("> "))!=NULL) { // <--- readline()
-		std::string word;
-		if (buf) word=buf; // if not-null buf, then assign
-		if (buf) { free(buf); buf=NULL; }
-		// do NOT use buf variable below.
 
-		if (dbg) cout << "Word was: " << word << endl;
-		std::string cmd;
-		if (rl_line_buffer) cmd = rl_line_buffer; // save the full command into string
-		cmd = cmd.substr(0, cmd.length()-1); // remove \n
+	auto parser = make_shared<nNewcli::cCmdParser>();
+	gReadlineHandleParser = parser;
+	gReadlineHandlerUseOT = use;
+	parser->Init();
+	
+	int said_help=0, help_needed=0;
+	const int opt_repeat_help_each_nth_time = 5; // how often to remind user to run ot help on error
 
-		if (dbg) cout << "Command was: " << cmd << endl;
-		auto cmd_trim = nOT::nUtils::trim(cmd);
-		if (cmd_trim=="exit") break;
-		if (cmd_trim=="quit") break;
-		if (cmd_trim=="q") break;
+	cout << endl << "For help type: ot help" << endl;
 
-		if (cmd.length()) {
-		add_history(cmd.c_str()); // TODO (leaks memory...) but why
+	read_history("otcli-history.txt");
 
-		//Execute in BuildTreeOfCommandlines:
-		nOT::nOTHint::cHintManager hint;
-		hint.AutoCompleteEntire(cmd);
-		}
-	}
+	while ((buf = readline("ot command> "))!=NULL) { // <--- readline()
+		try {
+			std::string word;
+			if (buf) word=buf; // if not-null buf, then assign
+			if (buf) { free(buf); buf=NULL; }
+			// do NOT use buf variable below.
+
+			if (dbg) cout << "Word was: " << word << endl;
+			std::string cmd;
+			if (rl_line_buffer) cmd = rl_line_buffer; // save the full command into string
+			cmd = cmd.substr(0, cmd.length()-1); // remove \n
+
+			if (dbg) cout << "Command was: " << cmd << endl;
+			auto cmd_trim = nOT::nUtils::trim(cmd);
+			if (cmd_trim=="exit") break;
+			if (cmd_trim=="quit") break;
+			if (cmd_trim=="q") break;
+
+			if (cmd.length()) {
+				add_history(cmd.c_str()); // TODO (leaks memory...) but why
+				write_history("otcli-history.txt"); // Save new history line to file
+
+				bool all_ok=false;
+				try {
+					auto processing = parser->StartProcessing(cmd, use); // <---
+					processing.UseExecute(); // <--- ***
+					all_ok=true;
+				} 
+				catch (const myexception &e) { 
+					cerr<<"ERROR: Could not execute your command ("<<cmd<<")"<<endl;
+					cerr << e.what() << endl;
+					//e.Report();  
+					cerr<<endl;
+				} 
+				catch (const std::exception &e) { 
+					cerr<<"ERROR: Could not execute your command ("<<cmd<<") - it triggered internal error: " << e.what() << endl; 
+				} 
+				if (!all_ok) { // if there was a problem
+					if ((!said_help) || (!(help_needed % opt_repeat_help_each_nth_time))) { cerr<<"If lost, type command 'ot help'."<<endl; ++said_help; }
+					++help_needed;
+				}
+			} // length
+
+		} // try an editline turn
+		catch (const std::exception &e) { 
+			cerr << "Problem while reading your command: " << e.what() << endl;
+			_erro("Error while reading command: " << e.what() );
+		} 
+	} // while
+	int maxHistory = 100; //TODO move this to settings
+	history_truncate_file("otcli-history.txt", maxHistory);
 	if (buf) { free(buf); buf=NULL; }
 	clear_history(); // http://cnswww.cns.cwru.edu/php/chet/readline/history.html#IDX11
+
+	gReadlineHandlerUseOT->CloseApi(); // Close OT_API at the end of shell runtime
 }
 
 }; // namespace nOTHint

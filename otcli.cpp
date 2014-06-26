@@ -14,6 +14,12 @@ namespace nNewcli {
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
 int cOTCli::Run(const vector<string> args_without_programname) { 
+	try {
+		return _Run(args_without_programname);
+	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
+}
+
+int cOTCli::_Run(const vector<string> args_without_programname) { 
 	LoadScript("autostart-dev.local", "autostart script"); // todo depending on execution mode? +devel ?
 
 	if (nOT::gRunOptions.getDoRunDebugshow()) {
@@ -40,20 +46,20 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 	auto useOT = std::make_shared<nUse::cUseOT>("Normal");
 
 	size_t nr=0;
-	for(auto arg: args) {
+	for(auto arg : args) {
 		if (arg=="--complete-shell") {
 			nOT::nOTHint::cInteractiveShell shell;
 
 			switch ( gRunOptions.getTRunMode() ){
 				case gRunOptions.eRunModeNormal :
-					shell.runEditline();
+					shell.runEditline(useOT);
 					break;
 				case gRunOptions.eRunModeDemo :
-					shell.runEditline();
+					shell.runEditline(useOT);
 					break;
 				case gRunOptions.eRunModeCurrent :
 					using namespace nOT::nNewcli;
-					nNewcli::cmd_test(useOT);
+					nNewcli::cCmdParser::cmd_test(useOT);
 					break;
 			}
 		}

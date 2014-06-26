@@ -17,6 +17,9 @@ namespace nNewcli {
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
 class cOTCli {
+	private:
+		int _Run(const vector<string> args_without_programname); 
+
 	public:
 		int Run(const vector<string> args_without_programname); 
 
