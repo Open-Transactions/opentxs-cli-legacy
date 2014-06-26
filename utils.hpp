@@ -324,7 +324,7 @@ int RangesFindPosition(const vector<T> &R, const T &pos) {
 			if (pos < R.at(middle+1)) { // compare objects
 				return middle;
 		}
-			else left=middle+1;
+			else left=middle+1;			
 		}
 		else if(pos<x) { // compare objects
 			if(pos > R.at(middle-1)) { // compare object
