@@ -1,5 +1,6 @@
 
 Project otcli for Open-Transactions: main documentation.
+See directory doc/ and doc/doc.txt for advanced documentation too.
 
 
 ========================================================================
@@ -162,5 +163,11 @@ For example this can be used in command ot msg sendfrom bob %aaa12345
 This options are not yet fully implemented. TODO
 
 
+
+========================================================================
+MORE DOCUMENTATION - ADVANCED - DEVELOPERS - HACKING - ETC
+------------------------------------------------------------------------
+
+See directory doc/ and doc/doc.txt for advanced documentation too.
 
 
