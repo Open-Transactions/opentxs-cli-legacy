@@ -6,8 +6,12 @@ Template for new files, replace word "template" and later delete this line here.
 #ifndef INCLUDE_OT_NEWCLI_USEOT
 #define INCLUDE_OT_NEWCLI_USEOT
 
-#include "lib_common2.hpp"
-#include "othint.hpp"
+#include "lib_common3.hpp"
+
+// Use this to mark methods
+#define	EXEC
+#define	HINT
+#define	VALID
 
 namespace nOT {
 namespace nUse {
@@ -18,24 +22,34 @@ namespace nUse {
 	using name = string;
 
 	class cUseOT {
-
-		string mDbgName;
-
-		map<string, ID> mDefaultIDs;
-		const string mDataFolder;
-		const string mDefaultIDsFile;
-
-		void LoadDefaults();
-
-		public:
+	public:
 
 		map<ID, name> mNyms; // TODO optimize/share memory? or convert on usage
 //		TODO make cache for accounts, assets etc
 		bool mNymsMy_loaded;
-		bool OTAPI_loaded;
-		bool OTAPI_error;
+		static bool OTAPI_loaded;
+		static bool OTAPI_error;
 
-		public:
+	private:
+
+		string mDbgName;
+
+		OT_ME mMadeEasy;
+
+		map<nUtils::eSubjectType, ID> mDefaultIDs; ///< Default IDs are saved to file after changing any default ID
+		const string mDataFolder;
+		const string mDefaultIDsFile;
+
+		typedef const ID ( cUseOT::*FPTR ) (const string &);
+
+		map<nUtils::eSubjectType, FPTR> subjectGetIDFunc; ///< Map to store pointers to GetID functions
+		map<nUtils::eSubjectType, FPTR> subjectGetNameFunc; ///< Map to store pointers to GetName functions
+
+	private:
+
+		void LoadDefaults(); ///< Defaults are loaded when initializing OTAPI
+
+	public:
 
 		cUseOT(const string &mDbgName);
 		~cUseOT();
@@ -45,74 +59,119 @@ namespace nUse {
 		bool Init();
 		void CloseApi();
 
-		bool AccountCheckIfExists(const string & accountName);
+		VALID bool CheckIfExists(const nUtils::eSubjectType type, const string & subject);
+		EXEC bool DisplayDefaultSubject(const nUtils::eSubjectType type, bool dryrun);
+		bool DisplayAllDefaults(bool dryrun);
+		EXEC bool DisplayHistory(bool dryrun);
+		bool Refresh(bool dryrun);
+		//================= account =================
+
+		const vector<ID> AccountGetAllIds();
 		const int64_t AccountGetBalance(const string & accountName);
-		const string AccountGetId(const string & accountName);
 		const string AccountGetDefault();
-		const string AccountGetName(const string & accountID);
-		void AccountRemove(const string & accountName);
-		const vector<string> AccountGetAllNames();
-		const vector<string> AccountGetAllIds();
-		void AccountRefresh(const string & accountName);
-		void AccountRefreshAll();
-		const string AccountRename(const string & oldAccountName, const string & newAccountName);
-		void AccountSetDefault(const string & accountName);
-		const string AccountSetName(const string & accountID, const string & NewAccountName);
-		void AccountCreate(const string & AssetName, const string & newAccountName);
+		const ID AccountGetId(const string & account); ///< Gets account ID both from name and ID with prefix
+		const string AccountGetName(const ID & accountID);
+		bool AccountSetName(const string & accountID, const string & NewAccountName);
 
+		HINT const vector<string> AccountGetAllNames();
 
-		bool AssetCheckIfExists(const string & assetName);
-		const string AssetGetId(const string & assetName);
-		const vector<string> AssetGetAllNames();
-		const string AssetIssue(const std::string & serverID, const std::string & nymID, const std::string & signedContract);
-		const string AssetNew(const std::string & nymID, const std::string & xmlContents);
-		const string AssetGetContract(const std::string & assetID);
-		const string AssetGetDefault(); // Also known as purse
-		void AssetRemove(const string & assetName);
-		void AssetSetDefault(const std::string & assetName); // Also known as purse
+		EXEC bool AccountCreate(const string & nym, const string & asset, const string & newAccountName, bool dryrun);
+		EXEC bool AccountDisplay(const string & account, bool dryrun);
+		EXEC bool AccountDisplayAll(bool dryrun);
+		EXEC bool AccountRefresh(const string & accountName, bool all, bool dryrun);
+		EXEC bool AccountRemove(const string & account, bool dryrun) ;
+		EXEC bool AccountRename(const string & account, const string & newAccountName, bool dryrun);
+		EXEC bool AccountSetDefault(const string & account, bool dryrun);
+		EXEC bool AccountTransfer(const string & accountFrom, const string & accountTo, const int64_t & amount, const string & note, bool dryrun);
+
+		//================= account-in =================
+
+		EXEC bool AccountInDisplay(const string & account, bool dryrun);
+		EXEC bool AccountInAccept(const string & account, const int index, bool all, bool dryrun);
+
+		//================= account-out =================
+
+		EXEC bool AccountOutCancel(const string & account, const int index, bool all, bool dryrun);
+		EXEC bool AccountOutDisplay(const string & account, bool dryrun);
+
+		//================= asset =================
+
+		const ID AssetGetId(const string & asset); ///< Gets asset ID both from name and ID with prefix
+		const string AssetGetName(const ID & accountID);
+		const string AssetGetContract(const string & asset);
+		const string AssetGetDefault(); // Get default asset, also known as purse
+
+		HINT const vector<string> AssetGetAllNames();
+
+		EXEC bool AssetSetDefault(const std::string & asset, bool dryrun); // Set default asset, also known as purse
+		EXEC bool AssetDisplayAll(bool dryrun);
+		EXEC bool AssetIssue(const string & serverID, const string & nymID, bool dryrun) ;
+		EXEC bool AssetNew(const string & nym, bool dryrun);
+		EXEC bool AssetRemove(const string & asset, bool dryrun);
+
+		//================= cash =================
+
+		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun);
+
+		//================= ?contract =================
 
 		const string ContractSign(const std::string & nymID, const std::string & contract);
 
-		const vector<string> MsgGetAll();
-		const vector<string> MsgGetForNym(const string & nymName);
-		void MsgSend(const string & nymSender, vector<string> nymRecipient, const string & msg, const string & subject, int prio, bool dryrun);
-		void MsgSend(const string & nymSender, const string & nymRecipient, const string & msg);
-		void MsgSend(const string & nymRecipient, const string & msg);
-		const bool MsgInCheckIndex(const string & nymName, const int32_t & nIndex);
-		const bool MsgOutCheckIndex(const string & nymName, const int32_t & nIndex);
-		void MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex);
-		void MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex);
+		//================= msg =================
 
-		void NymCheck(const string & hisNymID);
-		bool NymCheckIfExists(const string & nymName);
-		void NymCreate(const string & nymName);
+		const vector<string> MsgGetAll();
+		bool MsgSend(const string & nymSender, const string & nymRecipient, const string & msg);
+
+		VALID bool MsgInCheckIndex(const string & nymName, const int32_t & nIndex);
+		VALID bool MsgOutCheckIndex(const string & nymName, const int32_t & nIndex);
+
+		EXEC bool MsgDisplayForNym(const string & nymName, bool dryrun);
+		EXEC bool MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, bool dryrun);
+		EXEC bool MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex, bool dryrun);
+		EXEC bool MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex, bool dryrun);
+
+		//================= nym =================
+
 		void NymGetAll();
 		const vector<string> NymGetAllIDs();
-		const vector<string> NymGetAllNames();
 		const string NymGetDefault();
-		const string NymGetId(const string & nymName);
-		const string NymGetInfo(const string & nymName);
+		const ID NymGetId(const string & nym); ///< Gets Nym ID both from name and ID with prefix
 		const string NymGetName(const string & nymID);
-		void NymRefresh(const string & nymName);
-		void NymRefreshAll();
-		void NymRegister(const string & nymName, const string & serverName);
-		void NymRemove(const string & nymName);
-		void NymSetDefault(const string & nymName);
+		bool NymSetName(const string & nymID, const string & newNymName);
 
-		void ServerAdd(const std::string & contract);
-		void ServerCheck();
-		bool ServerCheckIfExists(const string & serverName);
-		const string ServerGetDefault();
-		const string ServerGetId(const string & serverName);
-		const string ServerGetName(const string & serverID);
-		void ServerRemove(const string & serverName);
-		void ServerSetDefault(const string & serverName);
-		const vector<string> ServerGetAllNames();
+		HINT const vector<string> NymGetAllNames();
 
-		const string TextEncode(const string & plainText);
-		const string TextEncrypt(const string & recipientNymName, const string & plainText);
-		const string TextDecode(const string & encodedText);
-		const string TextDecrypt(const string & recipientNymName, const string & encryptedText);
+		EXEC bool NymCheck(const string & nymName, bool dryrun);
+		EXEC bool NymCreate(const string & nymName, bool registerOnServer, bool dryrun);
+		EXEC bool NymDisplayAll(bool dryrun);
+		EXEC bool NymDisplayInfo(const string & nymName, bool dryrun);
+		EXEC bool NymRefresh(const string & nymName, bool all, bool dryrun);
+		EXEC bool NymRegister(const string & nymName, const string & serverName, bool dryrun);
+		EXEC bool NymRemove(const string & nymName, bool dryrun);
+		EXEC bool NymRename(const string & oldNymName, const string & newNymName, bool dryrun);
+		EXEC bool NymSetDefault(const string & nymName, bool dryrun);
+
+		//================= server =================
+
+		void ServerCheck(); ///< Check server availability (ping server)
+		const ID ServerGetDefault(); ///< Gets ID of default server
+		const ID ServerGetId(const string & server); ///< Gets server ID both from name and ID with prefix
+		const string ServerGetName(const string & serverID); ///< Gets Name of default server
+
+		HINT const vector<string> ServerGetAllNames();
+
+		EXEC bool ServerAdd(bool dryrun); ///< Add new server contract
+		EXEC bool ServerCreate(const string & nymName, bool dryrun); ///< Create new server contract
+		EXEC bool ServerRemove(const string & serverName, bool dryrun);
+		EXEC bool ServerSetDefault(const string & serverName, bool dryrun);
+		EXEC bool ServerDisplayAll(bool dryrun);
+
+		//================= text =================
+
+		EXEC bool TextEncode(const string & plainText, bool dryrun);
+		EXEC bool TextEncrypt(const string & recipientNymName, const string & plainText, bool dryrun);
+		EXEC bool TextDecode(const string & encodedText, bool dryrun);
+		EXEC bool TextDecrypt(const string & recipientNymName, const string & encryptedText, bool dryrun);
 	};
 
 } // nUse
