@@ -26,9 +26,12 @@
 #define INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 \
 	using std::string; \
 	using std::vector; \
+	using std::vector; \
 	using std::list; \
 	using std::set; \
 	using std::map; \
+	using std::ostream; \
+	using std::istream; \
 	using std::cin; \
 	using std::cerr; \
 	using std::cout; \

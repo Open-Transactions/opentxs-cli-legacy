@@ -8,6 +8,9 @@ we find helpful in coding this project.
 #define INCLUDE_OT_NEWCLI_UTILS
 
 #include "lib_common1.hpp"
+#ifdef __unix
+	#include <unistd.h>
+#endif
 
 #ifndef CFG_WITH_TERMCOLORS
 	#error "You requested to turn off terminal colors (CFG_WITH_TERMCOLORS), however currently they are hardcoded (this option to turn them off is not yet implemented)."
@@ -19,6 +22,14 @@ we find helpful in coding this project.
 namespace nOT {
 
 namespace nUtils {
+
+class myexception : public std::runtime_error {
+	public:
+		myexception(const char * what);
+		myexception(const std::string &what);
+		virtual ~myexception();
+		virtual void Report() const;
+};
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
@@ -190,9 +201,9 @@ std::string DbgMap(const map<T, T2> & map) {
 
 // ASRT - assert. Name like ASSERT() was too long, and ASS() was just... no.
 // Use it like this: ASRT( x>y );  with the semicolon at end, a clever trick forces this syntax :)
-#define ASRT(x) do { if (!(x)) Assert(false, OT_CODE_STAMP); } while(0)
+#define ASRT(x) do { if (!(x)) Assert(false, OT_CODE_STAMP, #x); } while(0)
 
-void Assert(bool result, const std::string &stamp);
+void Assert(bool result, const std::string &stamp, const std::string &condition);
 
 // ====================================================================
 // advanced string
@@ -201,16 +212,38 @@ const std::string GetMultiline(string endLine = "~");
 vector<string> SplitString(const string & str);
 
 const bool checkPrefix(const string & str, char prefix = '^');
+
+// ====================================================================
+// nUse utils
+
+enum class eSubjectType {Account, Asset, User, Server, Unknown};
+
+string SubjectType2String(const eSubjectType & type);
+eSubjectType String2SubjectType(const string & type);
+
 // ====================================================================
 // operation on files
 
-class ConfigManager {
+class cConfigManager {
 public:
-	bool Load(const string & fileName, map<string, string> & configMap);
-	void Save(const string & fileName, const map<string, string> & configMap);
+	bool Load(const string & fileName, map<eSubjectType, string> & configMap);
+	void Save(const string & fileName, const map<eSubjectType, string> & configMap);
 };
 
-extern ConfigManager configManager;
+extern cConfigManager configManager;
+
+class cEnvUtils {
+	int fd;
+	string mFilename;
+
+	void GetTmpTextFile();
+	void CloseFile();
+	void OpenEditor();
+	const string ReadFromTmpFile();
+public:
+	const string Compose();
+	const string ReadFromFile(const string path);
+};
 
 // ====================================================================
 
@@ -229,13 +262,81 @@ vector<T> operator+(const vector<T> &a, const vector<T> &b) {
 }
 
 template <class T>
-vector<T> & operator+=(vector<T> &a, const vector<T> &b) {
-	return a.insert( a.end() , b.begin(), b.end() );
+vector<T> operator+(const T &a, const vector<T> &b) {
+	vector<T> ret(1,a);
+	ret.insert( ret.end() , b.begin(), b.end() );
+	return ret;
 }
+
+template <class T>
+vector<T> operator+(const vector<T> &a, const T &b) {
+	vector<T> b_vector(1,a);
+	return a + b_vector;
+}
+
+template <class T>
+vector<T>& operator+=(vector<T> &a, const vector<T> &b) {
+	a.insert( a.end() , b.begin(), b.end() );
+	return a;
+}
+
+// map
+template <class TK,class TV>
+map<TK,TV> operator+(const map<TK,TV> &a, const map<TK,TV> &b) {
+	map<TK,TV> ret = a;
+	for (const auto & elem : b) {
+		ret.insert(elem);
+	}
+	return ret;
+}
+
 
 } // nOT::nUtils::nOper
 
 // ====================================================================
+
+// ====================================================================
+
+// algorthms
+/**
+returns 0 if R is empty; else, number of R[i] before which the position is
+*/
+template <class T>
+int RangesFindPosition(const vector<T> &R, const T &pos) {
+	int left=0;
+	int right=R.size()-1;
+
+	while (left<=right) {
+		int middle=(left+right)/2;
+
+		const auto &x = R.at(middle);
+
+		if(pos>R.at(right)) { // compare objects
+			return right;
+		}
+		else if(pos==x) { // compare objects
+			return middle;
+		}
+		else if(pos<=R.at(left)) { // compare objects
+			return left;
+		}
+		else if( pos>x) { // compare objects
+			if (pos < R.at(middle+1)) { // compare objects
+				return middle;
+		}
+			else left=middle+1;
+		}
+		else if(pos<x) { // compare objects
+			if(pos > R.at(middle-1)) { // compare object
+				return middle-1;
+		}
+			else right=middle+1;
+		}
+
+	}	// end while
+	return 0; // empty, not found (?)
+}
+
 
 }; // namespace nUtils 
 
@@ -251,6 +352,8 @@ const extern int _dbg_ignore; // the global _dbg_ignore, but local code (blocks,
 // or to make it runtime by providing a class normal member and editing it in runtime
 
 #define OT_CODE_STAMP ( nOT::nUtils::ToStr("[") + nOT::nUtils::DbgShortenCodeFileName(__FILE__) + nOT::nUtils::ToStr("+") + nOT::nUtils::ToStr(__LINE__) + nOT::nUtils::ToStr(" ") + (GetObjectName()) + nOT::nUtils::ToStr("::") + nOT::nUtils::ToStr(__FUNCTION__) + nOT::nUtils::ToStr("]"))
+
+
 
 
 #endif

@@ -19,6 +19,22 @@ namespace nUtils {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
+myexception::myexception(const char * what) 
+	: std::runtime_error(what)
+{ }
+
+myexception::myexception(const std::string &what) 
+	: std::runtime_error(what)
+{ }
+
+void myexception::Report() const {
+	_erro("Error: " << what());
+}
+
+myexception::~myexception() { }
+
+// ====================================================================
+
 // text trimming
 // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
 std::string & ltrim(std::string &s) {
@@ -207,12 +223,11 @@ std::string GetLastCharIf(const std::string & str) { // TODO unicode?
 
 // ASRT - assert. Name like ASSERT() was too long, and ASS() was just... no.
 // Use it like this: ASRT( x>y );  with the semicolon at end, a clever trick forces this syntax :)
-#define ASRT(x) do { if (!(x)) Assert(false, OT_CODE_STAMP); } while(0)
 
-void Assert(bool result, const std::string &stamp) {
+void Assert(bool result, const std::string &stamp, const std::string &condition) {
 	if (!result) {
-		_erro("Assert failed at "+stamp);
-		throw std::runtime_error("Assert failed at "+stamp);
+		_erro("Assert failed at "+stamp+": ASSERT( " << condition << ")");
+		throw std::runtime_error("Assert failed at "+stamp+": ASSERT( " + condition + ")");
 	}
 }
 
@@ -260,11 +275,49 @@ const bool checkPrefix(const string & str, char prefix){
 		return true;
 	return false;
 }
+
+// ====================================================================
+// nUse utils
+
+string SubjectType2String(const eSubjectType & type) {
+	using subject = eSubjectType;
+
+	switch (type) {
+	case subject::Account:
+		return "Account";
+	case subject::Asset:
+			return "Asset";
+	case subject::User:
+			return "User";
+	case subject::Server:
+			return "Server";
+	case subject::Unknown:
+				return "Unknown";
+	}
+	return "";
+}
+
+eSubjectType String2SubjectType(const string & type) {
+	using subject = eSubjectType;
+
+	if (type == "Account")
+		return subject::Account;
+	if (type == "Asset")
+			return subject::Asset;
+	if (type == "User")
+			return subject::User;
+	if (type == "Server")
+			return subject::Server;
+
+	return subject::Unknown;
+}
+
 // ====================================================================
 // operation on files
 
-bool ConfigManager::Load(const string & fileName, map<string, string> & configMap){
+bool cConfigManager::Load(const string & fileName, map<eSubjectType, string> & configMap){
 	_dbg1("Loading defaults.");
+
 	std::ifstream inFile(fileName.c_str());
 	if( inFile.good() && !(inFile.peek() == std::ifstream::traits_type::eof()) ) {
 		string line;
@@ -273,11 +326,11 @@ bool ConfigManager::Load(const string & fileName, map<string, string> & configMa
 			vector<string> vec = SplitString(line);
 			if (vec.size() == 2) {
 			_dbg3("config2:"<<vec.at(0)<<","<<vec.at(1));
-				configMap.insert ( std::pair<string, string>( vec.at(0), vec.at(1) ) );
+				configMap.insert ( std::pair<eSubjectType, string>( String2SubjectType( vec.at(0) ), vec.at(1) ) );
 			}
 			else {
 			_dbg3("config1:"<<vec.at(0));
-				configMap.insert ( std::pair<string, string>( vec.at(0), "-" ) );
+				configMap.insert ( std::pair<eSubjectType, string>( String2SubjectType( vec.at(0) ), "-" ) );
 			}
 		}
 		_dbg1("Finished loading");
@@ -287,12 +340,13 @@ bool ConfigManager::Load(const string & fileName, map<string, string> & configMa
 	return false;
 }
 
-void ConfigManager::Save(const string & fileName, const map<string, string> & configMap) {
+void cConfigManager::Save(const string & fileName, const map<eSubjectType, string> & configMap) {
 	_dbg1("Will save config");
+
 	std::ofstream outFile(fileName.c_str());
 	for (auto pair : configMap) {
-		_dbg2("Got: "<<pair.first<<","<<pair.second);
-		outFile << pair.first << " ";
+		_dbg2("Got: "<<SubjectType2String(pair.first)<<","<<pair.second);
+		outFile << SubjectType2String(pair.first) << " ";
 		outFile << pair.second;
 		outFile << endl;
 		_dbg3("line saved");
@@ -300,7 +354,69 @@ void ConfigManager::Save(const string & fileName, const map<string, string> & co
 	_dbg1("All saved");
 }
 
-ConfigManager configManager;
+cConfigManager configManager;
+
+#ifdef __unix
+
+void cEnvUtils::GetTmpTextFile() {
+	char filename[] = "/tmp/otcli_text.XXXXXX";
+	fd = mkstemp(filename);
+	if (fd == -1) {
+		_erro("Can't create the file: " << filename);
+		return;
+	}
+	mFilename = filename;
+}
+
+void cEnvUtils::CloseFile() {
+	close(fd);
+	unlink( mFilename.c_str() );
+}
+
+void  cEnvUtils::OpenEditor() {
+	char* editor = std::getenv("OT_EDITOR"); //TODO Read editor from configuration file
+	if (editor == NULL)
+		editor = std::getenv("VISUAL");
+	if (editor == NULL)
+		editor = std::getenv("EDITOR");
+
+	string command;
+	if (editor != NULL)
+		command = ToStr(editor) + " " + mFilename;
+	else
+		command = "/usr/bin/editor " + mFilename;
+	_dbg3("Opening editor with command: " << command);
+	if ( system( command.c_str() ) == -1 )
+		_erro("Cannot execute system command: " << command);
+}
+
+const string cEnvUtils::ReadFromTmpFile() {
+	std::ifstream ifs(mFilename);
+	string msg((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	return msg;
+}
+
+const string cEnvUtils::Compose() {
+	GetTmpTextFile();
+	OpenEditor();
+	string input = ReadFromTmpFile();
+	CloseFile();
+	return input;
+}
+
+#endif
+
+const string cEnvUtils::ReadFromFile(const string path) {
+	std::ifstream ifs(path);
+	string msg((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	return msg;
+}
+
+
+
+// ====================================================================
+// algorthms
+
 
 }; // namespace nUtil
 
