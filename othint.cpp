@@ -1008,8 +1008,11 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 
 	read_history("otcli-history.txt");
 
-	while ((buf = readline("ot command> "))!=NULL) { // <--- readline()
+	while (true) {
 		try {
+			buf  = readline("ot command> "); // <=== READLINE
+			if (buf==NULL) break;
+
 			std::string word;
 			if (buf) word=buf; // if not-null buf, then assign
 			if (buf) { free(buf); buf=NULL; }

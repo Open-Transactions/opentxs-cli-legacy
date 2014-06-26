@@ -62,6 +62,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 //	,"ot msg send ali~"
 	,"ot a~"
 	,"ot msg s~"
+	,"ot help help~"
 //  ,"msg send-from al~"
 //  ,"ot msg sen~ alice"
 //	,"ot msg sen~ alice bob"
