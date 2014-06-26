@@ -482,9 +482,18 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	}
 	ASRT(nullptr != mData);
 
+	vector<string> mCommandLine = this->mCommandLine ; // XXX wee are on purpose shadowing this->mCommandLine.
+
+	using namespace nOper;
 
 	try {
 		int word_ix = mData->CharIx2WordIx( char_pos  );
+		bool fake_empty=false; // are we adding fake word "" at end for purpose of completion at end of string?
+		if (mCommandLineString.at(char_pos-1) == ' ') {
+			word_ix++; // jump to next word XXX
+			if (word_ix >= mCommandLine.size()) { fake_empty=true; mCommandLine.push_back(""); } // fake word
+		}
+
 		_dbg1("word_ix=" << word_ix);
 		int arg_nr = mData->WordIx2ArgNr( word_ix );
 
@@ -494,16 +503,57 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		const string word_previous = (word_previous_ixtab>=0) ? mCommandLine.at(word_previous_ixtab) : "";
 		_dbg1("word_sofar="<<word_sofar<<", and previous word="<<word_previous<<" char_pos="<<char_pos);
 
-		cParseEntity entity =  mData->mWordIx2Entity.at(word_ix);
+		cParseEntity entity = (!fake_empty) ? mData->mWordIx2Entity.at(word_ix) : cParseEntity( cParseEntity::tKind::fake_empty , char_pos );
+		_dbg3("entity="<<entity);
 		char sofar_last_char = mCommandLineString.at(char_pos-1); // the character after which we are now completing e.g. "g" for "msg~" or " " for "msg ~"
 		const bool after_word = sofar_last_char==' ' ; // are we now after (e.g. 1st) word, e.g. because we stand on space like in  "ot msg ~"  (instead "ot msg~")
 		_mark("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity
 			<<" word_sofar=["<<word_sofar<<"] sofar_last_char=["<<sofar_last_char<<"] after_word="<<after_word);
 
+		vector<string> matching; // <--- the completions what seem to fit
+
+
+		if (entity.mKind == cParseEntity::tKind::fake_empty) { // we are finishg an empty word - we are now creating a new word
+
+			// *** DUAL: handling DUAL choice, where user might be starting now an option or something else ***
+			// try to make an --option out of the DUAL
+
+			cParseEntity entity_previous = mData->mWordIx2Entity.at(word_ix-1);
+			_fact("checking DUAL vs entity_previous="<<entity_previous<<" at mFormat:" << ( (mFormat!=nullptr) ? "yes":"null") );
+			if ((entity_previous.mKind == cParseEntity::tKind::cmdname) && (entity_previous.mSub==1) && (mFormat!=nullptr)) {
+				// "msg ~" (or maybe... "msg -~" or "msg ad~") and "msg" is a valid command, so we add all options here, like "msg --dryrun"
+				// yes obviously "msg a~" will not be an option but this is ok e.g. code will add 0 options here and continue
+				matching += WordsThatMatch( word_sofar ,  mFormat->GetPossibleOptionNames() );
+			}
+
+			// now finish the normal (not-options) part of DUAL:
+
+			if (entity_previous.mKind == cParseEntity::tKind::cmdname) {
+				// nym --> cmd (has 1-word variant)   [we assumed there will never be "nym arg1 ..." no args after 1-word cmd]
+				// msg     (has no 1-word variant)  --> cmd
+				// nym ls --> arg
+				// msg ls --> arg
+
+				if (entity_previous.mSub==1) { // "nym" "msg"
+					if (mFormat!=nullptr) { // "nym"
+						entity = cParseEntity(cParseEntity::tKind::cmdname, char_pos, 2); // now continue to parse this empty as command, word 2
+					} else { // "msg"
+						entity = cParseEntity(cParseEntity::tKind::cmdname, char_pos, 2); // now continue to parse this empty as command, word 2
+					}
+				}
+				else if (entity_previous.mSub==2) { // "nym ls" "msg ls"
+					entity = cParseEntity(cParseEntity::tKind::variable, char_pos, 1);
+				}
+		} // after a command
+
+	} // fake empty
+
+		_fact("matching after DUAL: " << DbgVector(matching) << " and now entity="<<entity );
+
 		if (entity.mKind == cParseEntity::tKind::option_name) {
 			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"
 			if (!format) return vector<string>{}; // if we did not understood command name, then return empty vector
-			vector<string> matching = WordsThatMatch( word_sofar ,  format->GetPossibleOptionNames() );
+			matching += WordsThatMatch( word_sofar ,  format->GetPossibleOptionNames() );
 			return matching;
 		}
 		else if (entity.mKind == cParseEntity::tKind::option_value) {
@@ -514,7 +564,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 				const cParamInfo &info = format->mOption.at(option_name);
 				auto funcHint = info.GetFuncHint();   // typedef function< bool ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncValid;
 				auto hint = (funcHint)( *mUse , *mData  , word_ix );
-				vector<string> matching = WordsThatMatch( word_sofar , hint);
+				matching += WordsThatMatch( word_sofar , hint);
 				// TODO check if the word_ix here is correct
 				return matching;
 			} catch(std::exception &e) { } // something failed probaly the option name was not known
@@ -526,26 +576,29 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			cParamInfo param_info = format->GetParamInfo( arg_nr ); // eg. pNymFrom  <--- info about kind (completion function etc) of argument that we now are tab-completing
 			vector<string> completions = param_info.GetFuncHint()  ( *mUse , *mData , arg_nr );
 			_fact("Completions: " << DbgVector(completions));
-			vector<string> matching = WordsThatMatch( mData->V( arg_nr ) ,  completions );
+			matching += WordsThatMatch( mData->V( arg_nr ) ,  completions );
 			return matching;
 		}
 		else if (entity.mKind == cParseEntity::tKind::cmdname) {
 			const int cmd_word_nr = entity.mSub;
 			_fact("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word);
 			if ( (cmd_word_nr==1) && (!after_word) ) { // "ms~" or "msg~"
-				vector<string> matching = WordsThatMatch( word_sofar , mParser->GetCmdNamesWord1() );
+				matching += WordsThatMatch( word_sofar , mParser->GetCmdNamesWord1() );
 				return matching; // <---
 			} else if ( (cmd_word_nr==1) && (after_word) )  { // "msg ~"
-				vector<string> matching = WordsThatMatch( "" , mParser->GetCmdNamesWord2( word_sofar ) );
+				matching += WordsThatMatch( "" , mParser->GetCmdNamesWord2( word_sofar ) );
 				return matching; // <---
 			} else if ( (cmd_word_nr==2))  { // "msg se~"
-				vector<string> matching = WordsThatMatch( word_sofar , mParser->GetCmdNamesWord2( word_previous ) );
+				matching += WordsThatMatch( word_sofar , mParser->GetCmdNamesWord2( word_previous ) );
 				return matching; // <---
 			} else throw cErrInternalParse("Bad cmd_word_nr="+ToStr(cmd_word_nr)+", after_word="+ToStr(after_word)+" in completion");
 			return vector<string>{};
 		}
 		else if (entity.mKind == cParseEntity::tKind::pre) {
-			return vector<string>{"ot"}; // TODO
+			return matching + vector<string>{"ot"}; // TODO
+		}
+		else if (entity.mKind == cParseEntity::tKind::fake_empty) {
+			return matching; // TODO
 		}
 		else {
 			_erro("Unimplemented entity type in completion");

@@ -19,6 +19,7 @@ BUGS MISC
 * editline is not detected as missing (in cmake)
 * cmake wrongly detects the .hpp files only .h files
 * ... and also cmake detects dirs so that main.cpp must skip the dir name in #include... (see git diff of this message for details)
+* "ot nym inf~" does not complete 
 
 ====================================================================
 TODO

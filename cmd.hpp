@@ -54,16 +54,17 @@ class cParseEntity {
 
 		int mCharPos; // at which character does this word start in command line (e.g. in orginal command)
 
-		int mSub; // additional number
+		int mSub; // additional number - e.g. number of word in command or argument; see tKind
 
 		enum class tKind {
 			unknown, // yet-unknown. but mWordNr is valid here
 			pre, // "ot", mWordNr is 0 usually
-			cmdname, // "msg" or "sendfrom", mWordNr=1,2,3,... usually; mSub=0,1 number of part of command name
+			cmdname, // "msg" or "sendfrom", mWordNr=1,2,3,... usually; mSub=1,2 number of part of command name: word1, word2
 			variable, // positional argument; mSub == arg_nr (numbered from 1)
 			variable_ext, // same, but the extra (optional, not required) variables
 			option_name, // an option, the name part; mSub is the occurance of the option, e.g. mSub==3 for 4th use of --x in "--x --x --x --x"
-			option_value // an option, the value part; mSub is same as for corresponding option_name  --color red  --color green
+			option_value, // an option, the value part; mSub is same as for corresponding option_name  --color red  --color green
+			fake_empty // empty word e.g. at end of string (when user is completing)
 		};
 
 		tKind mKind;
@@ -90,6 +91,7 @@ class cParseEntity {
 				case tKind::variable_ext: return "ve";
 				case tKind::option_name: return "on";
 				case tKind::option_value: return "ov";
+				case tKind::fake_empty: return "_";
 			}
 			string msg="Unexpected type of Kind!";
 			_erro(msg);
