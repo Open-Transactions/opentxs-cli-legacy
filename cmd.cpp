@@ -523,7 +523,12 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		bool fake_empty=false; // are we adding fake word "" at end for purpose of completion at end of string?
 		if (mCommandLineString.at(char_pos-1) == ' ') {
 			word_ix++; // jump to next word XXX
-			if (word_ix >= mCommandLine.size()) { fake_empty=true; mCommandLine.push_back(""); } // fake word
+			if (word_ix >= mCommandLine.size()) { fake_empty=true;
+				int add_empty_at_word = mData->CharIx2WordIx(char_pos-1); // choose the word-index after which we should insert the "" new word (if we're completing in middle of string)
+				_mark("will add in add_empty_at_word=" << add_empty_at_word);
+				mCommandLine.insert( mCommandLine.begin() + add_empty_at_word , "");
+				_dbg2("mCommandLine="<<DbgVector(mCommandLine));
+			} // fake word
 		}
 
 		//_dbg1("word_ix=" << word_ix);
@@ -633,7 +638,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		}
 		else if (entity.mKind == cParseEntity::tKind::cmdname) {
 			const int cmd_word_nr = entity.mSub;
-			_info("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word);
+			_info("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word<<" word_sofar="<<word_sofar);
 			if ( (cmd_word_nr==1) && (!after_word) ) { // "ms~" or "msg~"
 				matching += WordsThatMatch( word_sofar , mParser->GetCmdNamesWord1() );
 				return matching; // <---
@@ -641,11 +646,9 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 				matching += WordsThatMatch( "" , mParser->GetCmdNamesWord2( word_sofar ) );
 				return matching; // <---
 			} else if ( (cmd_word_nr==2))  { // "msg se~"
-				auto match2 = mParser->GetCmdNamesWord2( word_previous );
-				_mark("match2="<<DbgVector(match2));
+				auto match2 = mParser->GetCmdNamesWord2( word_previous ); // skip ignore for the "" word2 of command (so to not add it e.g. to options --dryrun from DUAL condition)
 				match2.erase( std::remove_if( match2.begin() , match2.end(),   [](const string &v){ return (v=="") ; }    )  ,  match2.end() );
-				_mark("match2="<<DbgVector(match2));
-
+				_dbg2("match2="<<DbgVector(match2));
 				matching += WordsThatMatch( word_sofar , match2 );
 				return matching; // <---
 			} else throw cErrInternalParse("Bad cmd_word_nr="+ToStr(cmd_word_nr)+", after_word="+ToStr(after_word)+" in completion");
