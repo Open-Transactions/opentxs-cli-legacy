@@ -267,6 +267,9 @@ void cCmdParser::Init() {
 	AddFormat("test tab", {}, {}, {},
 		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _cmd_test_completion(Utmp); return true; } );
 
+	AddFormat("test completion", {}, {}, {},
+		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _cmd_test_safe_completion(Utmp); return true; } );
+
 	AddFormat("test tree", {}, {}, {},
 		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _cmd_test_tree(Utmp); return true; } );
 

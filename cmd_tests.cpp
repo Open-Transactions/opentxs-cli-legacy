@@ -10,6 +10,48 @@ namespace nNewcli {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
+/*
+ * expected output - saved (previously) and expected results of unit tests
+ * current output - what program generates NOW
+ */
+
+void HintingToTxtTest(string path, string command, vector <string> &completions, std::ifstream & file) {
+	bool test_ok=true;		//if he have all the same
+	if(file.good()) {
+		bool cmdexists=false; //if you command exists in file of expected output
+		string line;
+		getline(file,line);
+		if(line==command) {
+			cmdexists=true;
+			string nextline;
+			getline(file,nextline);
+			vector <string>	proposals=SplitString(nextline); // current line is splited to expected outputs
+			for(auto a: proposals) {// looking for a words which is not in completions but we have this in Hinting.txt
+				std::vector<string>::iterator it;
+				it = find (completions.begin(), completions.end(), a);
+				if(it==completions.end()) {
+					_erro("You don't have "<<a<<" in completions");
+					test_ok=false;
+				}
+			}
+			for(auto a: completions){	// looking for a words which is not in Hinting.txt but we have this in completions
+				std::vector<string>::iterator it;
+				it = find (proposals.begin(), proposals.end(), a);
+				if(it==proposals.end()) {
+					_erro("You don't have "<<a<<" in .txt file");
+					test_ok=false;
+				}
+			}
+		}
+		else if(cmdexists==false) {
+			_erro("You don't have "<<command<<" in file of expected output");
+			test_ok=false;
+		}
+	}	//end if
+	if(test_ok==true) _mark("Test from "<<path<<" completed succesfully");
+}
+
+
 using namespace nUse;
 vector<string> cCmdParser::EndingCmdNames (const string sofar) {
 	vector<string> CmdNames;
@@ -54,7 +96,8 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	_mark("TEST COMPLETION");
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
-
+	std::fstream file;
+	file.open("Hintingtest.txt",  std::ios::out);
 	auto alltest = vector<string>{ ""
 //	,"~"
 //	,"ot~"
@@ -92,7 +135,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
 			_note("Completions: " << DbgVector(completions));
-
+			nUtils:: hintingToTxt(file, cmd, completions);
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
@@ -100,6 +143,55 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	}
 }
 
+void cCmdParser::_cmd_test_safe_completion(shared_ptr<cUseOT> use ) {
+	_mark("TEST SAFE COMPLETION");
+	shared_ptr<cCmdParser> parser(new cCmdParser);
+	parser->Init();
+	string path="Hintingtest.txt";
+	std::ifstream file2(path);
+	auto alltest = vector<string>{ ""
+//	,"~"
+//	,"ot~"
+//	,"ot msg send~ ali"
+//	,"ot msg send ali~"
+	,"ot a~"
+	,"ot msg s~"
+//  ,"msg send-from al~"
+//  ,"ot msg sen~ alice"
+//	,"ot msg sen~ alice bob"
+//	,"ot msg send-from ali~ bo"
+//	,"ot msg send-from ali bo~"
+//	,"ot msg send-from alice bob subject message --prio 3 --dryr~"
+//	,"ot msg send-from alice bob subject message --pr~ 3 --dryrun"
+//	,"ot msg send-from alice bob subject message --prio 3 --cc al~ --dryrun"
+//	,"ot help securi~"
+//	,"help securi~"
+//	,"ot msg sendfrom ali bobxxxxx~"
+//	,"ot msg sendfrom ali       bob      subject message_hello --cc charlie --cc dave --prio 4 --cc eve --dry~ --cc xray"
+	};
+	for (const auto cmd_raw : alltest) {
+		try {
+			if (!cmd_raw.length()) continue;
+
+			auto pos = cmd_raw.find_first_of("~");
+			if (pos == string::npos) {
+				_erro("Bad example - no TAB position given!");
+				continue; // <---
+			}
+			auto cmd = cmd_raw;
+			cmd.erase( pos , 1 );
+
+			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
+			auto processing = parser->StartProcessing(cmd, use);
+			vector<string> completions = processing.UseComplete( pos  );
+			HintingToTxtTest("Hintingtest.txt", cmd_raw, completions,file2);
+			_note("Completions: " << DbgVector(completions));
+
+		}
+		catch (const myexception &e) { e.Report(); }
+		catch (const std::exception &e) { _erro("Exception " << e.what()); }
+	}
+}
 
 void cCmdParser::_cmd_test_tree( shared_ptr<cUseOT> use ) {
 	_mark("TEST TREE");

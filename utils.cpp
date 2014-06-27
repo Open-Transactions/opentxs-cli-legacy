@@ -412,7 +412,16 @@ const string cEnvUtils::ReadFromFile(const string path) {
 	return msg;
 }
 
-
+void hintingToTxt(std::fstream & file, string command, vector<string> &commands) {
+	if(file.good()) {
+		file<<command<<"~"<<endl;
+		for (auto a: commands) {
+			file <<a<< " ";
+			file.flush();
+		}
+		file<<endl;
+	}
+}
 
 // ====================================================================
 // algorthms

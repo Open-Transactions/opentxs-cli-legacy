@@ -244,6 +244,7 @@ public:
 	const string Compose();
 	const string ReadFromFile(const string path);
 };
+void hintingToTxt(std::fstream & file, string command, vector<string> &commands);
 
 // ====================================================================
 
