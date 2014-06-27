@@ -937,11 +937,11 @@ bool cUseOT::NymCreate(const string & nymName, bool registerOnServer, bool dryru
 	return true;
 }
 
-void cUseOT::NymGetAll() {
+void cUseOT::NymGetAll(bool force) {
 	if(!Init())
 		return;
 
-	if (mNyms.size() != OTAPI_Wrap::GetNymCount()) { //TODO optimize?
+	if (force || mNyms.size() != OTAPI_Wrap::GetNymCount()) { //TODO optimize?
 		mNyms.clear();
 
 		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount();i++) {
@@ -1017,7 +1017,7 @@ bool cUseOT::NymDisplayInfo(const string & nymName, bool dryrun) {
 	return true;
 }
 
-const string cUseOT::NymGetName(const string & nymID) {
+const string cUseOT::NymGetName(const ID & nymID) {
 	if(!Init())
 		return "";
 	return OTAPI_Wrap::GetNym_Name(nymID);
@@ -1113,7 +1113,7 @@ bool cUseOT::NymRemove(const string & nymName, bool dryrun) {
 	return false;
 }
 
-bool cUseOT::NymSetName(const string & nymID, const string & newNymName) { //TODO: passing to function: const string & nymName, const string & signerNymName,
+bool cUseOT::NymSetName(const ID & nymID, const string & newNymName) { //TODO: passing to function: const string & nymName, const string & signerNymName,
 	if(!Init()) return false;
 
 	if ( !OTAPI_Wrap::SetNym_Name(nymID, nymID, newNymName) ) {
@@ -1124,16 +1124,19 @@ bool cUseOT::NymSetName(const string & nymID, const string & newNymName) { //TOD
 	return true;
 }
 
-bool cUseOT::NymRename(const string & oldNymName, const string & newNymName, bool dryrun) {
-	_fact("nym rename from " << oldNymName << " to " << newNymName);
+bool cUseOT::NymRename(const string & nym, const string & newNymName, bool dryrun) {
+	_fact("nym rename from " << nym << " to " << newNymName);
 	if(dryrun) return true;
 	if(!Init()) return false;
 
-	if( NymSetName(NymGetId(oldNymName), newNymName) ) {
-		_info("Nym " << oldNymName << " renamed to " << newNymName);
+	ID nymID = NymGetId(nym);
+
+	if( NymSetName(nymID, newNymName) ) {
+		_info("Nym " << NymGetName(nymID) << "(" << nymID << ")" << " renamed to " << newNymName);
+		NymGetAll(true); //force==true to reload nym cache
 		return true;
 	}
-	_erro("Failed to rename Nym " << oldNymName << " to " << newNymName);
+	_erro("Failed to rename Nym " << NymGetName(nymID) << "(" << nymID << ")" << " to " << newNymName);
 	return false;
 }
 

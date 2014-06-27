@@ -132,12 +132,12 @@ namespace nUse {
 
 		//================= nym =================
 
-		void NymGetAll();
+		void NymGetAll(bool force=false);
 		const vector<string> NymGetAllIDs();
 		const string NymGetDefault();
 		const ID NymGetId(const string & nym); ///< Gets Nym ID both from name and ID with prefix
-		const string NymGetName(const string & nymID);
-		bool NymSetName(const string & nymID, const string & newNymName);
+		const string NymGetName(const ID & nymID);
+		bool NymSetName(const ID & nymID, const string & newNymName);
 
 		HINT const vector<string> NymGetAllNames();
 
