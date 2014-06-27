@@ -337,6 +337,11 @@ bool cUseOT::AccountCreate(const string & nym, const string & asset, const strin
 	if(dryrun) return true;
 	if(!Init()) return false;
 
+	if ( CheckIfExists(nUtils::eSubjectType::Account, newAccountName) ) {
+		_erro("Cannot create new account: '" << newAccountName << "'. Account with that name exists" );
+		return false;
+	}
+
 	ID nymID = NymGetId(nym);
 	ID assetID = AssetGetId(asset);
 
@@ -915,6 +920,11 @@ bool cUseOT::NymCreate(const string & nymName, bool registerOnServer, bool dryru
 	_fact("nym create " << nymName);
 	if (dryrun) return false;
 	if(!Init()) return false;
+
+	if ( CheckIfExists(nUtils::eSubjectType::User, nymName) ) {
+		_erro("Cannot create new nym: '" << nymName << "'. Nym with that name exists" );
+		return false;
+	}
 
 	int32_t nKeybits = 1024;
 	string NYM_ID_SOURCE = ""; //TODO: check
