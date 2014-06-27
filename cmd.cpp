@@ -200,6 +200,7 @@ void cCmdProcessing::Parse(bool allowBadCmdname) {
 
 void cCmdProcessing::_Parse(bool allowBadCmdname) {
 	// int _dbg_ignore=50;
+	bool dbg=false;
 	bool test_char2word = false; // run a detailed test on char to word conversion
 
 	mData = std::make_shared<cCmdDataParse>();
@@ -253,8 +254,8 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 			mCommandLine.push_back(curr_word);
 			mData->mWordIx2Entity.push_back( cParseEntity( cParseEntity::tKind::unknown, curr_word_pos)  );
 		}
-		_mark("Vector of words: " << DbgVector(mCommandLine));
-		_mark("Words position mWordIx2Entity=" << DbgVector(mData->mWordIx2Entity));
+		_dbg1("Vector of words: " << DbgVector(mCommandLine));
+		if(dbg) _dbg2("Words position mWordIx2Entity=" << DbgVector(mData->mWordIx2Entity));
 	}
 
 	if (test_char2word) { for (int i=0; i<mCommandLineString.size(); ++i) {
@@ -278,7 +279,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 	prepart_words++;
 	mData->mFirstWord = prepart_words; // usually 1, meaning that there is 1 word between actuall entities, e.g. when we remove the "ot" pre
 
-	_mark("Shift: mCharShift=" << mData->mCharShift << " mFirstWord="<<mData->mFirstWord );
+	if(dbg) _dbg3("Shift: mCharShift=" << mData->mCharShift << " mFirstWord="<<mData->mFirstWord );
 
 	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt   9:end
 	try {
@@ -317,7 +318,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 		mData->mWordIx2Entity.at(0).SetKind( cParseEntity::tKind::pre ); // "ot" token
 
 		for (int i=1; i<=namepart_words; ++i) mData->mWordIx2Entity.at(i).SetKind( cParseEntity::tKind::cmdname , i ); // mark this words as part of cmdname
-		_mark("Words position mWordIx2Entity=" << DbgVector(mData->mWordIx2Entity));
+		if(dbg) _dbg2("Words position mWordIx2Entity=" << DbgVector(mData->mWordIx2Entity));
 
 		try {
 			mFormat = mParser->FindFormat( name ); // <---

@@ -938,7 +938,7 @@ static char* CompletionReadlineWrapper(const char *sofar , int number) {
 	// http://www.delorie.com/gnu/docs/readline/rlman_28.html
 
 	bool dbg = my_rl_wrapper_debug;
-	dbg=true; // XXX
+	dbg=false; // XXX
 	ASRT( !(gReadlineHandleParser == nullptr) ); // must be set before calling this function
 	ASRT( !(gReadlineHandlerUseOT == nullptr) ); // must be set before calling this function
 
@@ -947,7 +947,7 @@ static char* CompletionReadlineWrapper(const char *sofar , int number) {
 	string line_all;
 	if (rl_line_buffer) line_all = string(rl_line_buffer).substr(0,rl_end); // <<<
 	string line = line_all.substr(0, rl_point); // Complete from cursor position
-	if (dbg||1) _mark("sofar="<<sofar<<" number="<<number<<" rl_line_buffer="<<rl_line_buffer<<" and line="<<line<<endl);
+	if (dbg) _dbg2("sofar="<<sofar<<" number="<<number<<" rl_line_buffer="<<rl_line_buffer<<" and line="<<line<<endl);
 
 
 	static vector <string> completions;
@@ -955,7 +955,7 @@ static char* CompletionReadlineWrapper(const char *sofar , int number) {
 		if (dbg) _dbg3("Start autocomplete (during first callback, number="<<number<<") of line="<<line);
 		auto processing = gReadlineHandleParser->StartProcessing(line_all, gReadlineHandlerUseOT);
 		completions = processing.UseComplete( rl_point );
-		_mark( DbgVector(completions) );
+		_note( "TAB-Completion: " << DbgVector(completions) );
 		if (dbg) _dbg3("Done autocomplete (during first callback, number="<<number<<"); completions="<<DbgVector(completions));
 	}
 
@@ -1013,9 +1013,9 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 
 	while (true) {
 		try {
-			_info("Using readline at time="<<time(NULL));
+			_fact("Waiting for user input via readline (time "<<time(NULL)<<")");
 			buf  = readline("ot command> "); // <=== READLINE
-			_info("Readline returned");
+			_dbg3("Readline returned");
 			if (buf==NULL) break;
 
 			std::string word;
@@ -1042,9 +1042,10 @@ void cInteractiveShell::_runEditline(shared_ptr<nUse::cUseOT> use) {
 				try {
 					_dbg1("Processing command");
 					auto processing = parser->StartProcessing(cmd, use); // <---
-					_dbg1("Executing command");
+					_info("Executing command");
 					processing.UseExecute(); // <--- ***
 					all_ok=true;
+					_info("Executed command.");
 				}
 				catch (const myexception &e) {
 					cerr<<"ERROR: Could not execute your command ("<<cmd<<")"<<endl;
