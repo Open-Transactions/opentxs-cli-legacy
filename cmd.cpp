@@ -539,7 +539,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		_dbg3("entity="<<entity);
 		char sofar_last_char = mCommandLineString.at(char_pos-1); // the character after which we are now completing e.g. "g" for "msg~" or " " for "msg ~"
 		const bool after_word = sofar_last_char==' ' ; // are we now after (e.g. 1st) word, e.g. because we stand on space like in  "ot msg ~"  (instead "ot msg~")
-		_mark("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity
+		_note("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity
 			<<" word_sofar=["<<word_sofar<<"] sofar_last_char=["<<sofar_last_char<<"] word_previous="<<word_previous<<" after_word="<<after_word);
 
 		vector<string> matching; // <--- the completions what seem to fit
@@ -554,6 +554,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			if ((entity_previous.mKind == cParseEntity::tKind::cmdname) && (entity_previous.mSub==1) && (mFormat!=nullptr)) {
 				// "msg ~" (or maybe... "msg -~" or "msg ad~") and "msg" is a valid command, so we add all options here, like "msg --dryrun"
 				// yes obviously "msg a~" will not be an option but this is ok e.g. code will add 0 options here and continue
+				_mark(" OPTIONS NAMES: " << DbgVector(mFormat->GetPossibleOptionNames()));
 				matching += WordsThatMatch( word_sofar ,  mFormat->GetPossibleOptionNames() );
 			}
 
@@ -640,7 +641,12 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 				matching += WordsThatMatch( "" , mParser->GetCmdNamesWord2( word_sofar ) );
 				return matching; // <---
 			} else if ( (cmd_word_nr==2))  { // "msg se~"
-				matching += WordsThatMatch( word_sofar , mParser->GetCmdNamesWord2( word_previous ) );
+				auto match2 = mParser->GetCmdNamesWord2( word_previous );
+				_mark("match2="<<DbgVector(match2));
+				match2.erase( std::remove_if( match2.begin() , match2.end(),   [](const string &v){ return (v=="") ; }    )  ,  match2.end() );
+				_mark("match2="<<DbgVector(match2));
+
+				matching += WordsThatMatch( word_sofar , match2 );
 				return matching; // <---
 			} else throw cErrInternalParse("Bad cmd_word_nr="+ToStr(cmd_word_nr)+", after_word="+ToStr(after_word)+" in completion");
 			return vector<string>{};
