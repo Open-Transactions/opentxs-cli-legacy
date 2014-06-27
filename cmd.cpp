@@ -482,8 +482,9 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 }
 
 
-
 vector<string> cCmdProcessing::UseComplete(int char_pos) {
+	_mark("Will complete command line: ["<<mCommandLineString<<"] at char_pos="<<char_pos);
+
 	if (mStateParse == tState::never) Parse( true );
 	if (mStateParse != tState::succeeded) {
 		if (mStateParse == tState::succeeded_partial) _dbg3("Failed to fully parse.");  // can be ok - maybe we want to comlete cmd name like "ot msg sendfr~"
@@ -491,7 +492,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	}
 	ASRT(nullptr != mData);
 
-	vector<string> mCommandLine = this->mCommandLine ; // XXX wee are on purpose shadowing this->mCommandLine.
+	vector<string> mCommandLine = this->mCommandLine ; // XXX wee are on purpose shadowing this->mCommandLine.  TODO not needed we aren't overwritting it ater all here?
 
 	using namespace nOper;
 
@@ -503,27 +504,26 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			if (word_ix >= mCommandLine.size()) { fake_empty=true; mCommandLine.push_back(""); } // fake word
 		}
 
-		_dbg1("word_ix=" << word_ix);
+		//_dbg1("word_ix=" << word_ix);
 		int arg_nr = mData->WordIx2ArgNr( word_ix );
 
 		_dbg1("mCommandLine=" << DbgVector(mCommandLine));
 		string word_sofar = mCommandLine.at(word_ix - mData->mFirstWord);  // the current word that we need to complete. e.g. "--dryr" (and we will complete "--dryrun")
 		long int word_previous_ixtab = word_ix - mData->mFirstWord - 1;
 		const string word_previous = (word_previous_ixtab>=0) ? mCommandLine.at(word_previous_ixtab) : "";
-		_dbg1("word_sofar="<<word_sofar<<", and previous word="<<word_previous<<" char_pos="<<char_pos);
+		//_dbg1("word_sofar="<<word_sofar<<", and previous word="<<word_previous<<" char_pos="<<char_pos);
 
 		cParseEntity entity = (!fake_empty) ? mData->mWordIx2Entity.at(word_ix) : cParseEntity( cParseEntity::tKind::fake_empty , char_pos );
 		_dbg3("entity="<<entity);
 		char sofar_last_char = mCommandLineString.at(char_pos-1); // the character after which we are now completing e.g. "g" for "msg~" or " " for "msg ~"
 		const bool after_word = sofar_last_char==' ' ; // are we now after (e.g. 1st) word, e.g. because we stand on space like in  "ot msg ~"  (instead "ot msg~")
 		_mark("Completion at pos="<<char_pos<<" word_ix="<<word_ix<<" arg_nr="<<arg_nr<<" entity="<<entity
-			<<" word_sofar=["<<word_sofar<<"] sofar_last_char=["<<sofar_last_char<<"] after_word="<<after_word);
+			<<" word_sofar=["<<word_sofar<<"] sofar_last_char=["<<sofar_last_char<<"] word_previous="<<word_previous<<" after_word="<<after_word);
 
 		vector<string> matching; // <--- the completions what seem to fit
 
-
+		// handle empty word (the Parser did not told us what is/would be the type of token that is now beginning:
 		if (entity.mKind == cParseEntity::tKind::fake_empty) { // we are finishg an empty word - we are now creating a new word
-
 			// *** DUAL: handling DUAL choice, where user might be starting now an option or something else ***
 			// try to make an --option out of the DUAL
 
@@ -537,7 +537,10 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 
 			// now finish the normal (not-options) part of DUAL:
 
-			if (entity_previous.mKind == cParseEntity::tKind::cmdname) {
+			if (entity_previous.mKind == cParseEntity::tKind::pre) { // we are adding new word after pre: so it will be command name
+				entity = cParseEntity(cParseEntity::tKind::cmdname, char_pos, 0);
+			} else
+			if (entity_previous.mKind == cParseEntity::tKind::cmdname) { // after command name: 2nd word of command name or jump further to e.g. var/varExt/opt
 				// nym --> cmd (has 1-word variant)   [we assumed there will never be "nym arg1 ..." no args after 1-word cmd]
 				// msg     (has no 1-word variant)  --> cmd
 				// nym ls --> arg
@@ -551,12 +554,23 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 					}
 				}
 				else if (entity_previous.mSub==2) { // "nym ls" "msg ls"
-					entity = cParseEntity(cParseEntity::tKind::variable, char_pos, 1);
+					entity = cParseEntity(cParseEntity::tKind::argument_somekind, char_pos, 1);
 				}
-		} // after a command
+			} // after a command
+			else if (entity_previous.mKind == cParseEntity::tKind::option_name) {
+				entity = cParseEntity(cParseEntity::tKind::option_value, char_pos,  0); // after option_name goes option_value
+			}
+			else {
+				entity = cParseEntity(cParseEntity::tKind::argument_somekind, char_pos,  0); // else var/varExt/opt
+			}
+		} // fake empty
 
-	} // fake empty
-
+		if (entity.mKind == cParseEntity::tKind::argument_somekind) {  _dbg1("Finding out which kind of argument is here, from entity="<<entity);
+			ASRT(mFormat);
+			if (arg_nr <= mFormat->mVar.size()) { entity.SetKind(cParseEntity::tKind::variable); }
+			else if (arg_nr <= mFormat->SizeAllVar()) { entity.SetKind(cParseEntity::tKind::variable_ext); }
+			else { entity.SetKind(cParseEntity::tKind::option_name); }
+		}
 		_fact("matching after DUAL: " << DbgVector(matching) << " and now entity="<<entity );
 
 		if (entity.mKind == cParseEntity::tKind::option_name) {
@@ -579,18 +593,24 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			} catch(std::exception &e) { } // something failed probaly the option name was not known
 			return vector<string>{}; // the name of option seems unknown, so we can not offer any completion for the value for that option
 		}
-		else if (entity.mKind == cParseEntity::tKind::variable) {
-			shared_ptr<cCmdFormat> format = mFormat;  // info about command "msg sendfrom"
-			ASRT( format );
-			cParamInfo param_info = format->GetParamInfo( arg_nr ); // eg. pNymFrom  <--- info about kind (completion function etc) of argument that we now are tab-completing
-			vector<string> completions = param_info.GetFuncHint()  ( *mUse , *mData , arg_nr );
-			_fact("Completions: " << DbgVector(completions));
-			matching += WordsThatMatch( mData->V( arg_nr ) ,  completions );
-			return matching;
+		else if (entity.mKind == cParseEntity::tKind::variable) { _info("Completing variable as arg_nr="<<arg_nr);
+			ASRT( mFormat );
+			if (!fake_empty) ASRT( mData->V(arg_nr) == word_sofar ); // the current work == current arg. (unless this is new word)
+			cParamInfo param_info = mFormat->GetParamInfo( arg_nr );  // eg. pNymFrom  <--- info about kind (completion function etc) of argument that we now are tab-completing
+			auto completions = param_info.GetFuncHint()  ( *mUse , *mData , arg_nr );
+			_info("Var completions: " << DbgVector(completions));
+			return matching + WordsThatMatch( word_sofar ,  completions );
+		}
+		else if (entity.mKind == cParseEntity::tKind::variable_ext) { _info("Completing variable_ext as arg_nr="<<arg_nr);
+			ASRT( mFormat );
+			if (!fake_empty) ASRT( mData->v(arg_nr) == word_sofar ); // the current work == current arg. (unless this is new word)
+			cParamInfo param_info = mFormat->GetParamInfo( arg_nr );  // eg. pNymFrom  <--- info about kind (completion function etc) of argument that we now are tab-completing
+			auto completions = param_info.GetFuncHint()  ( *mUse , *mData , arg_nr );
+			return matching + WordsThatMatch( word_sofar ,  completions );
 		}
 		else if (entity.mKind == cParseEntity::tKind::cmdname) {
 			const int cmd_word_nr = entity.mSub;
-			_fact("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word);
+			_info("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word);
 			if ( (cmd_word_nr==1) && (!after_word) ) { // "ms~" or "msg~"
 				matching += WordsThatMatch( word_sofar , mParser->GetCmdNamesWord1() );
 				return matching; // <---
@@ -604,9 +624,10 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			return vector<string>{};
 		}
 		else if (entity.mKind == cParseEntity::tKind::pre) {
-			return matching + vector<string>{"ot"}; // TODO
+			return matching + vector<string>{"ot"};
 		}
 		else if (entity.mKind == cParseEntity::tKind::fake_empty) {
+			_warn("Didnt knew how to complete (further) this fake_empty entity="<<entity<<" (set it to proper type after the DUAL code)");
 			return matching; // TODO
 		}
 		else {

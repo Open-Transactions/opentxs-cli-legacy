@@ -19,7 +19,8 @@ BUGS MISC
 * editline is not detected as missing (in cmake)
 * cmake wrongly detects the .hpp files only .h files
 * ... and also cmake detects dirs so that main.cpp must skip the dir name in #include... (see git diff of this message for details)
-* "ot nym inf~" does not complete 
+* "ot msg ~ alice" does NOT complete "send-from send-to ...", completes nothing
+* "ot account sh~ bitcoins" does NOT complete "show", completes nothing and error
 
 ====================================================================
 TODO

@@ -62,6 +62,7 @@ class cParseEntity {
 			cmdname, // "msg" or "sendfrom", mWordNr=1,2,3,... usually; mSub=1,2 number of part of command name: word1, word2
 			variable, // positional argument; mSub == arg_nr (numbered from 1)
 			variable_ext, // same, but the extra (optional, not required) variables
+			argument_somekind, // some variable or option, not decided yet (used internally e.g. by completion code on new word)
 			option_name, // an option, the name part; mSub is the occurance of the option, e.g. mSub==3 for 4th use of --x in "--x --x --x --x"
 			option_value, // an option, the value part; mSub is same as for corresponding option_name  --color red  --color green
 			fake_empty // empty word e.g. at end of string (when user is completing)
@@ -87,11 +88,12 @@ class cParseEntity {
 				case tKind::unknown: return "?";
 				case tKind::pre: return "P";
 				case tKind::cmdname: return "C";
+				case tKind::argument_somekind: return "v*";
 				case tKind::variable: return "V";
 				case tKind::variable_ext: return "ve";
 				case tKind::option_name: return "on";
 				case tKind::option_value: return "ov";
-				case tKind::fake_empty: return "_";
+				case tKind::fake_empty: return "+";
 			}
 			string msg="Unexpected type of Kind!";
 			_erro(msg);
