@@ -20,7 +20,13 @@ BUGS MISC
 * cmake wrongly detects the .hpp files only .h files
 * ... and also cmake detects dirs so that main.cpp must skip the dir name in #include... (see git diff of this message for details)
 * "ot msg ~ alice" does NOT complete "send-from send-to ...", completes nothing
+
+====================================================================
+TODO TESTCASE - write testcase for the following bugs that are now fixed:
+====================================================================
+
 * "ot account sh~ bitcoins" does NOT complete "show", completes nothing and error
+* "ot nym inf~"
 
 ====================================================================
 TODO

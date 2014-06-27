@@ -211,7 +211,10 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 	if (mCommandLineString.empty()) { const string s="Command for processing was empty (string)"; _warn(s);  throw cErrParseSyntax(s); } // <--- THROW
 
-	{
+	{ // initial parsing
+
+		mCommandLine.clear();
+
 		// [doc] praser documentation
 
 		// char processing (remove double-space, parse quotations etc)
@@ -485,7 +488,26 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	_mark("Will complete command line: ["<<mCommandLineString<<"] at char_pos="<<char_pos);
 
-	if (mStateParse == tState::never) Parse( true );
+	if (mStateParse == tState::never) {
+		bool ok=0;
+		try {
+			Parse( true );
+			ok=1;
+		} catch (cErrParseSyntax &e) { ok=0; }
+
+		if (!ok) { // first parse failed maybe because we wanted to complete something here like ot nym sh~ alice and parsed assumed it's "nym" + arg "sh",
+			mCommandLineString = mCommandLineString.substr(0, char_pos );
+			_mark("Parsing failed, will parse again as ["<<mCommandLineString<<"]");
+			// instead assuming it is half-written command name "nym sh~".
+			// so we will re-parse just the part before char position
+			mStateParse = tState::never; // to force re-parsnig again
+			try {
+				Parse( true );
+				ok=1;
+			} catch (cErrParseSyntax &e) { ok=0; }
+		}
+		if (!ok) mFormat=nullptr; // we do not have any realiable format/cmdname if even very lax parsing failed
+	}
 	if (mStateParse != tState::succeeded) {
 		if (mStateParse == tState::succeeded_partial) _dbg3("Failed to fully parse.");  // can be ok - maybe we want to comlete cmd name like "ot msg sendfr~"
 		else _dbg1("Failed to parse (even partially)");
