@@ -279,6 +279,8 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt   9:end
 	try {
+
+		// phase0 - the command name
 		string name_tmp = mCommandLine.at(0); // buld the name of command, start with 1st word like "msg" or "help"
 		if(mCommandLine.size()>1) {	// if NOT one-word command like "help", then:
 			string name_tmp2 = name_tmp+" " + mCommandLine.at(1);
@@ -303,15 +305,13 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 		}
 
 		const string name = name_tmp;
-		_mark("command name = " << name);
+		namepart_words++;
 
 		// "msg send" or "help"
-		namepart_words++;
-		_dbg3("Name of command is: " << name);
-		_dbg3("namepart_words="<<namepart_words);
+		_dbg1("Name of command is: " << name << " namepart_words="<<namepart_words);
 		mData->mFirstArgAfterWord = namepart_words;
 
-		mData->mWordIx2Entity.at(0).SetKind( cParseEntity::tKind::pre );
+		mData->mWordIx2Entity.at(0).SetKind( cParseEntity::tKind::pre ); // "ot" token
 
 		for (int i=1; i<=namepart_words; ++i) mData->mWordIx2Entity.at(i).SetKind( cParseEntity::tKind::cmdname , i ); // mark this words as part of cmdname
 		_mark("Words position mWordIx2Entity=" << DbgVector(mData->mWordIx2Entity));
@@ -412,11 +412,13 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 		if (phase==3) {
 			string prev_name="";  bool inside_opt=false; // are we now in middle of --option ?  curr_name is the opt name like "--cc"
+			int token_nr=0;
 			while (true) { // parse options
+				++token_nr;
 				if (pos >= words_count) { _dbg1("reached END, pos="<<pos);	phase=9; break;	}
 
 				string word = mCommandLine.at(pos);
-				_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word);
+				_dbg1("phase="<<phase<<" pos="<<pos<<" word="<<word<<" (token_nr="<<token_nr<<")");
 				++pos;
 
 				bool is_newopt =  nUtils::CheckIfBegins("--", word); // word is opt name like "--cc"
@@ -441,7 +443,14 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 						_dbg1("got option "<<prev_name<<" with value="<<value);
 					}
 					else { // we have a word like "bob", but we are not in middle of an option - syntax error
-						throw cErrParseSyntax("Expected an --option here, but got a word=" + ToStr(word) + " at pos=" + ToStr(pos));
+						// this is the special case of "ot nym inf" the word "inf" might be not a wrong use of --option, but 2nd word of command name being entered
+						_dbg3("TOLERATE? token_nr"<<token_nr<<" namepart_words="<<namepart_words<<" allowBadCmdname="<<allowBadCmdname);
+						if ((token_nr==1) && (namepart_words==1) && (allowBadCmdname)) {
+							_dbg2("Tollerating this option-or-nameword2 here at pos="<<pos);
+							mData->mWordIx2Entity.at( pos ).SetKind( cParseEntity::tKind::cmdname , 2 ); // assume this is 2nd word of command
+						} else {
+							throw cErrParseSyntax("Expected an --option here, but got a word=" + ToStr(word) + " at pos=" + ToStr(pos));
+						}
 					}
 				}
 			} // all words
