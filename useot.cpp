@@ -311,11 +311,13 @@ bool cUseOT::AccountRename(const string & account, const string & newAccountName
 	if(dryrun) return true;
 	if(!Init()) return false;
 
-	if( AccountSetName (AccountGetId(account), newAccountName) ) {
-		_info("Account " << account << " renamed to " << newAccountName);
+	ID accountID = AccountGetId(account);
+
+	if( AccountSetName (accountID, newAccountName) ) {
+		_info("Account " << AccountGetName(accountID) + "(" + accountID + ")" << " renamed to " << newAccountName);
 		return true;
 	}
-	_erro("Failed to rename account " << account << " to " << newAccountName);
+	_erro("Failed to rename account " << AccountGetName(accountID) + "(" + accountID + ")" << " to " << newAccountName);
 	return false;
 }
 
@@ -943,7 +945,7 @@ void cUseOT::NymGetAll(bool force) {
 
 	if (force || mNyms.size() != OTAPI_Wrap::GetNymCount()) { //TODO optimize?
 		mNyms.clear();
-
+		_dbg3("Reloading nyms cache");
 		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount();i++) {
 			string nym_ID = OTAPI_Wrap::GetNym_ID (i);
 			string nym_Name = OTAPI_Wrap::GetNym_Name (nym_ID);
