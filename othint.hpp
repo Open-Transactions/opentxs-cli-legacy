@@ -44,15 +44,17 @@ class cHintManager {
 
 class cInteractiveShell {
 	protected:
-		void _runEditline(shared_ptr<nUse::cUseOT> use);
-		void _runOnce(const string line, shared_ptr<nUse::cUseOT> use);
-		void _completeOnce(const string line, shared_ptr<nUse::cUseOT> use);
+		void _RunEditline(shared_ptr<nUse::cUseOT> use);
+		void _RunOnce(const string line, shared_ptr<nUse::cUseOT> use);
+		void _CompleteOnce(const string line, shared_ptr<nUse::cUseOT> use);
+
+		bool Execute(const string cmd);
 
 	public:
 		cInteractiveShell();
-		void runOnce(const string line, shared_ptr<nUse::cUseOT> use);
-		void completeOnce(const string line, shared_ptr<nUse::cUseOT> use);
-		void runEditline(shared_ptr<nUse::cUseOT> use);
+		void RunOnce(const string line, shared_ptr<nUse::cUseOT> use);
+		void CompleteOnce(const string line, shared_ptr<nUse::cUseOT> use);
+		void RunEditline(shared_ptr<nUse::cUseOT> use);
 
 	protected:
 		bool dbg;
