@@ -45,11 +45,11 @@ class cHintManager {
 class cInteractiveShell {
 	protected:
 		void _runEditline(shared_ptr<nUse::cUseOT> use);
-		void _runOnce(const string line);
+		void _runOnce(const string line, shared_ptr<nUse::cUseOT> use);
 
 	public:
 		cInteractiveShell();
-		void runOnce(const string line);
+		void runOnce(const string line, shared_ptr<nUse::cUseOT> use);
 		void runEditline(shared_ptr<nUse::cUseOT> use);
 
 	protected:

@@ -67,7 +67,7 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
 			if (ok) {
 				nOT::nOTHint::cInteractiveShell shell;
-				shell.runOnce(v);
+				shell.runOnce(v, useOT);
 			}
 			else {
 				_erro("Missing variables for command line argument '"<<arg<<"'");

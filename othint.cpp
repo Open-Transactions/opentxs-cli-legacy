@@ -887,16 +887,24 @@ cInteractiveShell::cInteractiveShell()
 :dbg(false)
 { }
 
-void cInteractiveShell::_runOnce(const string line) { // used with bash autocompletion
+void cInteractiveShell::_runOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
 	gCurrentLogger.setDebugLevel(100);
-	nOT::nOTHint::cHintManager hint;
-	vector<string> out = hint.AutoCompleteEntire(line);
-	nOT::nUtils::DisplayVectorEndl(std::cout, out);
+
+	auto parser = make_shared<nNewcli::cCmdParser>();
+	gReadlineHandleParser = parser;
+	//gReadlineHandlerUseOT = use;
+	parser->Init();
+	vector <string> completions;
+	auto processing = gReadlineHandleParser->StartProcessing(line, use);
+	completions = processing.UseComplete( line.size() ); // Function gets line before cursor, so we need to complete from the end
+
+	nOT::nUtils::DisplayVectorEndl(std::cout, completions);
+
 }
 
-void cInteractiveShell::runOnce(const string line) { // used with bash autocompletion
+void cInteractiveShell::runOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
 	try {
-		runOnce(line);
+		_runOnce(line, use);
 	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
 }
 
