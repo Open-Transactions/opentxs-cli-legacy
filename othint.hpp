@@ -46,10 +46,12 @@ class cInteractiveShell {
 	protected:
 		void _runEditline(shared_ptr<nUse::cUseOT> use);
 		void _runOnce(const string line, shared_ptr<nUse::cUseOT> use);
+		void _completeOnce(const string line, shared_ptr<nUse::cUseOT> use);
 
 	public:
 		cInteractiveShell();
 		void runOnce(const string line, shared_ptr<nUse::cUseOT> use);
+		void completeOnce(const string line, shared_ptr<nUse::cUseOT> use);
 		void runEditline(shared_ptr<nUse::cUseOT> use);
 
 	protected:

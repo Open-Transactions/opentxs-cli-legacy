@@ -67,6 +67,17 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
 			if (ok) {
 				nOT::nOTHint::cInteractiveShell shell;
+				shell.completeOnce(v, useOT);
+			}
+			else {
+				_erro("Missing variables for command line argument '"<<arg<<"'");
+				status = 1;
+			}
+		}
+		else if (arg=="--run-one") { // otcli "--run-one" "ot msg sendfr"
+			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
+			if (ok) {
+				nOT::nOTHint::cInteractiveShell shell;
 				shell.runOnce(v, useOT);
 			}
 			else {
