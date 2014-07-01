@@ -76,7 +76,7 @@ std::string cSpaceFromEscape(const std::string &s);
 class cLogger {
 	public:
 		cLogger();
-		~cLogger(){ cout << "Logger destructor" << endl; }
+		~cLogger(){}
 		std::ostream & write_stream(int level);
 		void setOutStream();
 		std::string icon(int level) const;

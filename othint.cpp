@@ -948,6 +948,7 @@ void cInteractiveShell::_runOnce(const string cmd, shared_ptr<nUse::cUseOT> use)
 		}
 	} // length
 
+	gReadlineHandlerUseOT->CloseApi(); // Close OT_API at the end of shell runtime
 }
 
 void cInteractiveShell::runOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
