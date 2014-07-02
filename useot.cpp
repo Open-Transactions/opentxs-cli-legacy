@@ -1186,7 +1186,7 @@ bool cUseOT::ServerAdd(bool dryrun) {
 }
 
 bool cUseOT::ServerCreate(const string & nym, bool dryrun) {
-	_fact("server ls");
+	_fact("server new for nym=" << nym);
 	if(dryrun) return true;
 	if(!Init()) return false;
 
@@ -1195,11 +1195,10 @@ bool cUseOT::ServerCreate(const string & nym, bool dryrun) {
 	xmlContents = envUtils.Compose();
 
 	ID nymID = NymGetId(nym);
-	string contract = OTAPI_Wrap::CreateServerContract(nymID, xmlContents);
-
-	if( !contract.empty() ) {
+	ID serverID = OTAPI_Wrap::CreateServerContract(nymID, xmlContents);
+	if( !serverID.empty() ) {
 		_info( "Contract created for Nym: " << NymGetName(nymID) << "(" << nymID << ")" );
-		nUtils::DisplayStringEndl(cout, contract);
+		nUtils::DisplayStringEndl( cout, OTAPI_Wrap::GetServer_Contract(serverID) );
 		return true;
 	}
 	_erro( "Failure to create contract for nym: " << NymGetName(nymID) << "(" << nymID << ")" );
