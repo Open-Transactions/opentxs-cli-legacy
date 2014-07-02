@@ -56,6 +56,8 @@ class cInteractiveShell {
 		void CompleteOnce(const string line, shared_ptr<nUse::cUseOT> use);
 		void RunEditline(shared_ptr<nUse::cUseOT> use);
 
+		void CompleteOnceWithDaemon(const string & line);
+
 	protected:
 		bool dbg;
 };

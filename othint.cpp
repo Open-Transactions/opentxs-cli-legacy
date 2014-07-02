@@ -6,6 +6,15 @@
 #include "otcli.hpp"
 
 #include "tests.hpp" // TODO Not needed
+#include "daemon_tools.hpp"
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <chrono>
+#include <thread>
 
 /**
 OT Hints (new CLI - new commandline : auto complete commands, verify, check, etc)
@@ -931,6 +940,76 @@ void cInteractiveShell::_CompleteOnce(const string line, shared_ptr<nUse::cUseOT
 	nOT::nUtils::DisplayVectorEndl(std::cout, completions);
 
 	gReadlineHandlerUseOT->CloseApi(); // Close OT_API at the end of shell runtime
+}
+
+
+void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
+	cDaemoninfoComplete dinfo;
+	if (dinfo.IsRunning()) {
+		_mark("DAEMON available, will use it");
+	}
+	else {
+		// we will become the daemon then... (well, we will fork here)
+		_mark("DAEMON IS NOT YET RUNNIG - WILL START IT");
+
+		_fact("I will fork here");
+		pid_t pid = fork();
+		_fact("After fork");
+
+		if (!pid) { // I am the child
+			auto useOT = std::make_shared<nUse::cUseOT>("Created for the daemon" + ToStr(" (for Complete)"));
+			_fact("daemon()");
+			int daemon_err = daemon(1,1);
+			if (daemon_err)  { const string ERR="Daemon failed"; _erro(ERR); throw std::runtime_error(ERR); }
+			_fact("daemon() done");
+
+			string pipe_name = dinfo.GetPathIn();
+
+			_fact("Will create the pipe (fifo) to listen on, as " << pipe_name);
+			mkfifo(pipe_name.c_str(), 0666);
+
+			_fact("Will open the pipe to listen on, as " << pipe_name);
+			FILE * pipe_file = fopen( pipe_name.c_str() , "r");
+			if (pipe_file == NULL) { const string ERR="Pipe failed"; _erro(ERR); throw std::runtime_error(ERR); }
+			_note("Pipe opened, on pipe_file="<<(void*)pipe_file);
+
+			bool finished=false;
+			while (!finished) {
+				_dbg1("Reading from pipe");
+				const size_t buff_size = 8192;
+				char buff[ buff_size ];
+
+				// wait for reading something
+				float sleep_size=25;
+				float const sleep_inc=2, sleep_limit1=60, sleep_limit2=200, sleep_limit3=300, sleep_eff1=0.2, sleep_eff2=0.01;
+				bool read_something=false;
+				long int cycle=0;
+				do {
+					++cycle;
+					char * read_status = fgets( buff , buff_size , pipe_file );
+					if (read_status == NULL) {
+						auto sleep_add = sleep_inc;
+						if (sleep_size>sleep_limit1) sleep_add = sleep_inc * sleep_eff1;
+						if (sleep_size>sleep_limit2) sleep_add = sleep_inc * sleep_eff2;
+						sleep_size += sleep_add;
+						sleep_size = std::min(sleep_size, sleep_limit3);
+						if ((cycle % 30)==0) _dbg1("Daemon waiting for input, cycle="<<cycle<<", now sleeping for " << (int)sleep_size << " ms" );
+						std::this_thread::sleep_for(std::chrono::milliseconds( (int)sleep_size ));
+					} else read_something=true;
+				} while (!read_something);
+
+				_fact("Read from pipe: [" << ToStr(buff) << "]");
+				const string pipe_command( buff );
+				if (pipe_command=="QUIT") { _fact("Read QUIT (1)"); finished=true;  continue; }
+				if (pipe_command=="QUIT\n") { _fact("Read QUIT (2)"); finished=true;  continue; }
+
+				// fgets( dinfo.GetPathIn().c_str() );
+			} // untill finish
+
+			_mark("DONE reading commands as daemon.");
+		}
+
+	}
 }
 
 void cInteractiveShell::CompleteOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion

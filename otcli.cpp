@@ -6,7 +6,8 @@
 #include "cmd.hpp"
 
 #include "lib_common2.hpp"
-#include "useot.hpp"
+
+#include "daemon_tools.hpp"
 
 namespace nOT {
 namespace nNewcli {
@@ -43,11 +44,11 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 		throw std::runtime_error("Main program called with 0 arguments (not even program name).");
 	}
 
-	auto useOT = std::make_shared<nUse::cUseOT>("Normal");
 
 	size_t nr=0;
 	for(auto arg : args) {
 		if (arg=="--complete-shell") {
+			auto useOT = std::make_shared<nUse::cUseOT>("Normal");
 			nOT::nOTHint::cInteractiveShell shell;
 
 			switch ( gRunOptions.getTRunMode() ){
@@ -64,10 +65,11 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 			}
 		}
 		else if (arg=="--complete-one") { // otcli "--complete-one" "ot msg sendfr"
+			// do NOT create otuse yet, maybe we will jut "use" it via from daemon!
 			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
 			if (ok) {
 				nOT::nOTHint::cInteractiveShell shell;
-				shell.CompleteOnce(v, useOT);
+				shell.CompleteOnceWithDaemon( v );
 			}
 			else {
 				_erro("Missing variables for command line argument '"<<arg<<"'");
@@ -75,6 +77,7 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 			}
 		}
 		else if (arg=="--run-one") { // otcli "--run-one" "ot msg sendfr"
+			auto useOT = std::make_shared<nUse::cUseOT>("Normal");
 			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
 			if (ok) {
 				nOT::nOTHint::cInteractiveShell shell;
