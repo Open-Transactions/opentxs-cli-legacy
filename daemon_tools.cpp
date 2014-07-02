@@ -4,19 +4,29 @@
 #include "daemon_tools.hpp"
 
 #include "lib_common2.hpp"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 namespace nOT {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
 bool cDaemoninfoComplete::IsRunning() const {
-	std::ifstream ifs( GetPathIn().c_str() );
+	_info("Testing is daemon running");
 
-	_note("ifs good" << ifs.good());
-	_note("ifs bad" << ifs.bad());
-	_note("ifs eof" << ifs.eof());
+	struct stat buf;
+	int stat_err = stat(  GetPathIn().c_str() , & buf);
 
-	return ifs.good();
+	/*
+	std::ofstream fs( GetPathIn().c_str() );
+
+	_note("fs good" << fs.good());
+	_note("fs bad" << fs.bad());
+	_note("fs eof" << fs.eof());
+*/
+	return stat_err == 0;
 }
 
 string cDaemoninfoComplete::GetPathIn() const {

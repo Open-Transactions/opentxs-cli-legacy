@@ -44,9 +44,9 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 		throw std::runtime_error("Main program called with 0 arguments (not even program name).");
 	}
 
-
 	size_t nr=0;
 	for(auto arg : args) {
+		_dbg1("Parsing arg="<<arg);
 		if (arg=="--complete-shell") {
 			auto useOT = std::make_shared<nUse::cUseOT>("Normal");
 			nOT::nOTHint::cInteractiveShell shell;
@@ -68,8 +68,11 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 			// do NOT create otuse yet, maybe we will jut "use" it via from daemon!
 			string v;  bool ok=1;  try { v=args.at(nr+1); } catch(...) { ok=0; } //
 			if (ok) {
+				_dbg1("Will complete this - preparing shell");
 				nOT::nOTHint::cInteractiveShell shell;
+				_dbg1("Will complete this - start completion with daemon");
 				shell.CompleteOnceWithDaemon( v );
+				_dbg1("Will complete this - DONE");
 			}
 			else {
 				_erro("Missing variables for command line argument '"<<arg<<"'");
@@ -97,6 +100,7 @@ int cOTCli::_Run(const vector<string> args_without_programname) {
 }
 
 bool cOTCli::LoadScript_Main(const std::string &thefile_name) {
+	_dbg1("Loading script " + thefile_name);
 	using std::string;
 	std::string cmd="";
 	std::ifstream thefile( thefile_name.c_str() );
@@ -142,6 +146,7 @@ void cOTCli::LoadScript(const std::string &script_filename, const std::string &t
 	catch(...) {
 		_erro("\n*** In SCRIPT "+script_filename+" got an UNKNOWN exception!");
 	}
+	_dbg1("Script " + script_filename + " ("+title+") - DONE");
 }
 
 

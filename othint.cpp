@@ -944,29 +944,51 @@ void cInteractiveShell::_CompleteOnce(const string line, shared_ptr<nUse::cUseOT
 
 
 void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
+	_info("Entering CompleteOnceWithDaemon");
+
 	cDaemoninfoComplete dinfo;
 	if (dinfo.IsRunning()) {
 		_mark("DAEMON available, will use it");
+		string pipe_name = dinfo.GetPathIn();
+		string reply_file_choice = dinfo.GetPathOut();
+		std::ostringstream oss;  oss << "complete " << reply_file_choice << " " << line << std::endl << std::ends;
+		const string request_string = oss.str();
+		_mark("STARTER: sending request [" << request_string << "] to pipe " << pipe_name );
+
+		ofstream request_file( pipe_name.c_str()  );
+		request_file << request_string << endl;
+
+		_mark("STARTER: I'm done");
 	}
 	else {
 		// we will become the daemon then... (well, we will fork here)
 		_mark("DAEMON IS NOT YET RUNNIG - WILL START IT");
+
 
 		_fact("I will fork here");
 		pid_t pid = fork();
 		_fact("After fork");
 
 		if (!pid) { // I am the child
-			auto useOT = std::make_shared<nUse::cUseOT>("Created for the daemon" + ToStr(" (for Complete)"));
 			_fact("daemon()");
 			int daemon_err = daemon(1,1);
 			if (daemon_err)  { const string ERR="Daemon failed"; _erro(ERR); throw std::runtime_error(ERR); }
 			_fact("daemon() done");
 
+
+			// preparing OT variables etc:
+			auto useOT = std::make_shared<nUse::cUseOT>("Daemon-Completion");
+			auto parser = make_shared<nNewcli::cCmdParser>();
+			gReadlineHandleParser = parser;
+			gReadlineHandlerUseOT = useOT;
+			parser->Init();
+
+
+			// prepare named pipe file
 			string pipe_name = dinfo.GetPathIn();
 
 			_fact("Will create the pipe (fifo) to listen on, as " << pipe_name);
-			mkfifo(pipe_name.c_str(), 0666);
+			mkfifo(pipe_name.c_str(), 0600);
 
 			_fact("Will open the pipe to listen on, as " << pipe_name);
 			FILE * pipe_file = fopen( pipe_name.c_str() , "r");
@@ -974,7 +996,7 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 			_note("Pipe opened, on pipe_file="<<(void*)pipe_file);
 
 			bool finished=false;
-			while (!finished) {
+			while (!finished) { // read all requests in loop
 				_dbg1("Reading from pipe");
 				const size_t buff_size = 8192;
 				char buff[ buff_size ];
@@ -993,17 +1015,57 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 						if (sleep_size>sleep_limit2) sleep_add = sleep_inc * sleep_eff2;
 						sleep_size += sleep_add;
 						sleep_size = std::min(sleep_size, sleep_limit3);
-						if ((cycle % 30)==0) _dbg1("Daemon waiting for input, cycle="<<cycle<<", now sleeping for " << (int)sleep_size << " ms" );
+						if ((cycle % 100)==0) _dbg1("Daemon waiting for input, cycle="<<cycle<<", now sleeping for " << (int)sleep_size << " ms" );
 						std::this_thread::sleep_for(std::chrono::milliseconds( (int)sleep_size ));
 					} else read_something=true;
 				} while (!read_something);
+				string pipe_command( buff );
 
-				_fact("Read from pipe: [" << ToStr(buff) << "]");
-				const string pipe_command( buff );
+				bool found_nl=false;
+				if (pipe_command.size()) { // >0 size
+					if (*(pipe_command.end()-1) == '\n') { // ends with \n
+						found_nl=true;
+						pipe_command = pipe_command.substr(0, pipe_command.size()-1);
+					}
+					if (!found_nl) _warn("No new line");
+				}
+
+				_fact("Read from pipe: [" << ToStr(pipe_command) << "] " << (found_nl ? "found-NL" : "no-NL?" ) );
 				if (pipe_command=="QUIT") { _fact("Read QUIT (1)"); finished=true;  continue; }
-				if (pipe_command=="QUIT\n") { _fact("Read QUIT (2)"); finished=true;  continue; }
 
-				// fgets( dinfo.GetPathIn().c_str() );
+				// TODO SECURITY verify that this parses correctly (no UB / mem errors in string) on mallformed strings! TODO XXX
+				size_t sep1 = pipe_command.find(' ',0);
+				size_t sep2 = pipe_command.find(' ',sep1+1);
+				const string request_command = pipe_command.substr(0, sep1);
+				const string request_output_name = pipe_command.substr(sep1+1, sep2-sep1-1);
+				const string request_data = pipe_command.substr(sep2+1);
+
+				_fact("Request: " << request_command<<";"<<request_output_name<<";"<<request_data<<";");
+
+				if (request_command == "complete") {
+					// CompleteOnce(request_data, useOT);
+					const string & line = request_data;
+
+					vector <string> completions;
+					auto processing = gReadlineHandleParser->StartProcessing(line, gReadlineHandlerUseOT);
+					completions = processing.UseComplete( line.size() ); // Function gets line before cursor, so we need to complete from the end
+					_mark("Daemon: I generated completions: " << DbgVector(completions));
+
+					// TODO XXX verify if file begins with safe path intended for OT daemon
+					{
+						ofstream reply_file( request_output_name.c_str() );
+						nOT::nUtils::DisplayVectorEndl( reply_file , completions);
+					}
+					_info("Written the reply, with completions count " << completions.size() << " to file " << request_output_name );
+				}
+				else if (request_command == "execute") {
+					_warn("NOT IMPLEMENTED YET ("<<request_command<<")");
+				}
+				else {
+					_warn("Invalid request command for daemon ("<<request_command<<")");
+				}
+
+
 			} // untill finish
 
 			_mark("DONE reading commands as daemon.");
