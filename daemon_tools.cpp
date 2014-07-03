@@ -14,18 +14,9 @@ namespace nOT {
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
 bool cDaemoninfoComplete::IsRunning() const {
-	_info("Testing is daemon running");
-
+	// _dbg3("Testing is daemon running");
 	struct stat buf;
 	int stat_err = stat(  GetPathIn().c_str() , & buf);
-
-	/*
-	std::ofstream fs( GetPathIn().c_str() );
-
-	_note("fs good" << fs.good());
-	_note("fs bad" << fs.bad());
-	_note("fs eof" << fs.eof());
-*/
 	return stat_err == 0;
 }
 
@@ -34,9 +25,26 @@ string cDaemoninfoComplete::GetPathIn() const {
 }
 
 string cDaemoninfoComplete::GetPathOut() const {
-	return "/tmp/ot." + ToStr(rand()%10000) + ToStr(time(NULL)) + ".out";
+	if (!mOutCreated) throw std::runtime_error("Trying to read PatchOut before creating it");
+	return mOutFilename;
 }
 
+string cDaemoninfoComplete::GetPathOutFlag() const {
+	return GetPathOut() + ".ready";
+}
+
+void cDaemoninfoComplete::CreateOut() {
+	// TODO mktemp
+	mOutFilename = "/tmp/ot." + ToStr(rand()%10000) + ToStr(time(NULL)) + ".out";
+	mOutCreated = true;
+}
+
+bool cDaemoninfoComplete::IsReadyPatchOut() const {
+	string fname = GetPathOutFlag();
+	struct stat buf;
+	int stat_err = stat( fname.c_str() , & buf);
+	return stat_err == 0;
+}
 
 }; // namespace OT
 

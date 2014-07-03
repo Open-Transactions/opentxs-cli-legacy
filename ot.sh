@@ -7,7 +7,7 @@ _ot()
 {
   local cur="${COMP_WORDS[COMP_CWORD]}" # current word
   local line="${COMP_LINE}" # entire line
-  local all=$(./othint --complete-one "$line") # get all possibilities
+  local all=$(./othint +debugfile --complete-one "$line") # get all possibilities
 
   COMPREPLY=($(compgen -W "${all}" -- ${cur}))
 }

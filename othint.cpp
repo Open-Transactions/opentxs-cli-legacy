@@ -947,9 +947,11 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 	_info("Entering CompleteOnceWithDaemon");
 
 	cDaemoninfoComplete dinfo;
+
 	if (dinfo.IsRunning()) {
 		_mark("DAEMON available, will use it");
 		string pipe_name = dinfo.GetPathIn();
+		dinfo.CreateOut(); // *** prepare OUT file
 		string reply_file_choice = dinfo.GetPathOut();
 		std::ostringstream oss;  oss << "complete " << reply_file_choice << " " << line << std::endl << std::ends;
 		const string request_string = oss.str();
@@ -957,6 +959,40 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 
 		ofstream request_file( pipe_name.c_str()  );
 		request_file << request_string << endl;
+
+		_note("Waiting for daemon reply");
+
+		int cycle=0;
+		double time_waited=0; const double time_max=5000; // in milliseconds
+		while (!dinfo.IsReadyPatchOut()) { ++cycle;
+			const double wait = 2;
+			time_waited += wait;
+			std::this_thread::sleep_for(std::chrono::milliseconds( (int)wait )); // ***
+			if (time_waited > time_max) { // timeout
+				ostringstream oss;
+				oss << "Timeout in starter while waiting for daemon reply"
+					<< " after " << time_waited <<  " ms " << " in " << cycle << " cycles" << ends;
+				const string ERR=oss.str();
+				_erro(ERR); throw std::runtime_error(ERR);
+			}
+		} // wait for daemon
+		_note("Done waiting in starter while waiting for daemon reply"
+				<< " after " << time_waited <<  " ms " << " in " << cycle << " cycles" );
+
+		ifstream response_file( dinfo.GetPathOut() );
+		vector<string> response;
+		while (response_file.good()) {
+			if (response_file.eof()) break;
+			string word;
+			response_file >> word;
+			response.push_back(word);
+		}
+		_note("Ready reply from daemon: " << DbgVector(response));
+
+		for (auto word : response) {
+			cout << word << " ";
+		}
+		cout << endl;
 
 		_mark("STARTER: I'm done");
 	}
@@ -966,15 +1002,39 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 
 
 		_fact("I will fork here");
-		pid_t pid = fork();
-		_fact("After fork");
+		pid_t pid = fork(); // <--- *** *** FORK *** ***
+		if (!pid) {
+			gCurrentLogger.setOutStreamFile("daemon.log");
+			_fact("=== Daemon log started ===");
+		}
+		_fact("After fork, fork-pid = " << pid);
 
-		if (!pid) { // I am the child
+		if (pid) { // fork: I am the parent - I will execute first call of completion
+			long int cycle=0;
+			double time_waited=0; const double time_max=1000; // in milliseconds
+			while (!dinfo.IsRunning()) { ++cycle;
+				const double wait = 2;
+				time_waited += wait;
+				std::this_thread::sleep_for(std::chrono::milliseconds( (int)wait ));
+				if (time_waited > time_max) { // timeout
+					ostringstream oss;
+					oss << "Timeout in starter (first starter) while waiting for the child daemon that we just started to become ready"
+						<< " after " << time_waited <<  " ms " << " in " << cycle << " cycles" << ends;
+					const string ERR=oss.str();
+					_erro(ERR); throw std::runtime_error(ERR);
+				}
+			} // wait for daemon
+			_note("Done waiting in starter (first starter) while waiting for the child daemon that we just started to become ready"
+					<< " after " << time_waited <<  " ms " << " in " << cycle << " cycles" );
+
+			CompleteOnceWithDaemon(line); // *** again use self (recurency) <--- RECURSION ***
+		} // the parent
+		else
+		{ // fork: I am the child - I will become daemon
 			_fact("daemon()");
-			int daemon_err = daemon(1,1);
+			int daemon_err = daemon(1,1); // ***
 			if (daemon_err)  { const string ERR="Daemon failed"; _erro(ERR); throw std::runtime_error(ERR); }
 			_fact("daemon() done");
-
 
 			// preparing OT variables etc:
 			auto useOT = std::make_shared<nUse::cUseOT>("Daemon-Completion");
@@ -983,17 +1043,15 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 			gReadlineHandlerUseOT = useOT;
 			parser->Init();
 
-
 			// prepare named pipe file
 			string pipe_name = dinfo.GetPathIn();
 
-			_fact("Will create the pipe (fifo) to listen on, as " << pipe_name);
+			_note("Will create the pipe (fifo) to listen on, as " << pipe_name);
 			mkfifo(pipe_name.c_str(), 0600);
-
-			_fact("Will open the pipe to listen on, as " << pipe_name);
+			_dbg1("Will open the pipe to listen on, as " << pipe_name);
 			FILE * pipe_file = fopen( pipe_name.c_str() , "r");
 			if (pipe_file == NULL) { const string ERR="Pipe failed"; _erro(ERR); throw std::runtime_error(ERR); }
-			_note("Pipe opened, on pipe_file="<<(void*)pipe_file);
+			_dbg1("Pipe opened, on pipe_file="<<(void*)pipe_file);
 
 			bool finished=false;
 			while (!finished) { // read all requests in loop
@@ -1030,7 +1088,7 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 					if (!found_nl) _warn("No new line");
 				}
 
-				_fact("Read from pipe: [" << ToStr(pipe_command) << "] " << (found_nl ? "found-NL" : "no-NL?" ) );
+				_info("Read from pipe: [" << ToStr(pipe_command) << "] " << (found_nl ? "found-NL" : "no-NL?" ) );
 				if (pipe_command=="QUIT") { _fact("Read QUIT (1)"); finished=true;  continue; }
 
 				// TODO SECURITY verify that this parses correctly (no UB / mem errors in string) on mallformed strings! TODO XXX
@@ -1040,7 +1098,11 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 				const string request_output_name = pipe_command.substr(sep1+1, sep2-sep1-1);
 				const string request_data = pipe_command.substr(sep2+1);
 
-				_fact("Request: " << request_command<<";"<<request_output_name<<";"<<request_data<<";");
+				const string request_output_name_with_flag = request_output_name + ".ready";
+
+				_note("Daemon: got request: " << request_command<<";"<<request_output_name<<";"<<request_data<<";");
+
+				// *** work on the REQUEST here:
 
 				if (request_command == "complete") {
 					// CompleteOnce(request_data, useOT);
@@ -1049,15 +1111,19 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 					vector <string> completions;
 					auto processing = gReadlineHandleParser->StartProcessing(line, gReadlineHandlerUseOT);
 					completions = processing.UseComplete( line.size() ); // Function gets line before cursor, so we need to complete from the end
-					_mark("Daemon: I generated completions: " << DbgVector(completions));
+					_info("Daemon: I generated completions: " << DbgVector(completions));
 
-					// TODO XXX verify if file begins with safe path intended for OT daemon
+					// TODO XXX verify if file name begins with safe path intended for OT daemon
 					{
 						ofstream reply_file( request_output_name.c_str() );
-						nOT::nUtils::DisplayVectorEndl( reply_file , completions);
+						nOT::nUtils::DisplayVectorEndl( reply_file , completions); // write to file
+						reply_file.close();
+
+						ofstream reply_flag_file( request_output_name_with_flag.c_str());
+						reply_flag_file.close();
 					}
 					_info("Written the reply, with completions count " << completions.size() << " to file " << request_output_name );
-				}
+				} // request
 				else if (request_command == "execute") {
 					_warn("NOT IMPLEMENTED YET ("<<request_command<<")");
 				}
@@ -1065,12 +1131,9 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 					_warn("Invalid request command for daemon ("<<request_command<<")");
 				}
 
-
 			} // untill finish
-
 			_mark("DONE reading commands as daemon.");
 		}
-
 	}
 }
 

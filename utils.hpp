@@ -73,19 +73,25 @@ std::string cSpaceFromEscape(const std::string &s);
 
 // ========== logger ==========
 
+// Class to write debug into. Used by all the debug macros _dbg1 _info _erro etc.
 class cLogger {
 	public:
 		cLogger();
 		~cLogger(){}
 		std::ostream & write_stream(int level);
-		void setOutStream();
+
+		void setOutStreamFromGlobalOptions(); // set debug level, file etc - according to global Options
+		void setOutStreamFile(const std::string &fname); // switch to using this file
+		void setDebugLevel(int level); // change the debug level e.g. to mute debug from now
+
 		std::string icon(int level) const;
 		std::string endline() const;
-		void setDebugLevel(int level);
+
 	protected:
-		unique_ptr<std::ofstream> outfile;
-		std::ostream * mStream; // pointing only
-		int mLevel;
+		unique_ptr<std::ofstream> mOutfile;
+		std::ostream * mStream; // pointing only! can point to our own mOutfile, or maye to global null stream
+
+		int mLevel; // current debug level
 };
 
 
@@ -337,6 +343,26 @@ int RangesFindPosition(const vector<T> &R, const T &pos) {
 	}	// end while
 	return 0; // empty, not found (?)
 }
+
+// ====================================================================
+// ====================================================================
+
+// value_init for given value
+
+template <class T, T INIT>
+class value_init {
+	private:
+		T data;
+	public:
+		value_init();
+
+		T& operator=(const T& v) { data=v; return *this; }
+		operator T const &() const { return data; }
+		operator T&() { return data;	}
+};
+
+template <class T, T INIT>
+value_init<T, INIT>::value_init() :	data(INIT) { }
 
 
 }; // namespace nUtils

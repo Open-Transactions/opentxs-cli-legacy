@@ -26,7 +26,7 @@ int main(int argc, const char **argv) {
 		// eg: args_clear: ot msg sendfrom rafal piotr +thisisplussign
 		// +debug +debugfile <-- this will be Executed by gRunOptions
 
-		gCurrentLogger.setOutStream();
+		gCurrentLogger.setOutStreamFromGlobalOptions();
 		_dbg1("Running the program with arguments: " + nOT::nUtils::vectorToStr(args_clear));
 
 		#define COMPILER_VERSION "(unknown)"

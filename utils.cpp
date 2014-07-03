@@ -84,11 +84,18 @@ std::unique_ptr<T> make_unique( Args&& ...args )
     return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
 }
 
-void cLogger::setOutStream() {
+void cLogger::setOutStreamFile(const string &fname) { // switch to using this file
+	_mark("WILL SWITCH DEBUG NOW to file: " << fname);
+	mOutfile =  make_unique<std::ofstream>(fname);
+	mStream = & (*mOutfile);
+	_mark("Started new debug, to file: " << fname);
+}
+
+void cLogger::setOutStreamFromGlobalOptions() {
 	if ( gRunOptions.getDebug() ) {
 		if ( gRunOptions.getDebugSendToFile() ) {
-			outfile =  make_unique<std::ofstream> ("debuglog.txt");
-			mStream = & (*outfile);
+			mOutfile =  make_unique<std::ofstream> ("debuglog.txt");
+			mStream = & (*mOutfile);
 		}
 		else if ( gRunOptions.getDebugSendToCerr() ) {
 			mStream = & std::cerr;
