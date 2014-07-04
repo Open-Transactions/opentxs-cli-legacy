@@ -449,29 +449,6 @@ void cCmdParser::Init() {
 	AddFormat("text decrypt", {pNymMy}, {pText}, {},
 			LAMBDA { auto &D=*d; return U.TextDecrypt(D.V(1), D.v(2, ""), D.has("--dryrun") ); } );
 
-	//mI->tree.emplace( cCmdName("msg send") , msg_send_format );
-
-//	mI->tree[ cCmdName("msg send") ] = msg_send_format;
-
-	// msg send-from bob alice
-	// msg send-from bob alice HelloThisIsATest // TODO, other call to OTUse, just pass the message
-	// msg send-from bob alice "Hello This Is A Test" // TODO, need parser+editline support for quotes
-
-/*	mI->tree[ cCmdName("msg send") ] = cCmdFormat(
-			vector<cParamInfo>{ ARG_STR, ARG_STR, ARG_STR }, map<string,cParamInfo>{{"subject",ARG_STR}}, map<string,cParamInfo>{{"cc",ARG_STR}} ,
-			[]( nUse::cUseOT &useOt , cCmdData &data ) {
-				string msg=data.arg(3,""); if (0==msg.length()) msg=nUtils::GetMultiline();
-				useOt->msgSend( data.arg(1), data.arg(2), msg ); }
-			);
-
-
-	typedef vector<cParamInfo> vpar;
-	typedef map<string,cParamInfo> mopt;
-
-	mI->tree[ cCmdName("msg send") ] = cCmdFormat( useOt::msgList,
-		vpar{ ARG_STR, ARG_STR, ARG_STR },  vpar{},  vopt{{"subject",ARG_STR}},  mopt{{"cc",ARG_STR}, {"bcc",ARG_STR}} );
-*/
-
 	mI->BuildCache_CmdNames();
 }
 

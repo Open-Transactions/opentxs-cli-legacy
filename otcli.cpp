@@ -115,13 +115,6 @@ bool cOTCli::LoadScript_Main(const std::string &thefile_name) {
 			_note("COMMAND: "<<cmd<<" - QUIT");
 			return false;
 		}
-		else if (cmd=="tree") {
-			_note("Will test new functions and exit");
-			_note("TTTTTTTT");
-			nOT::nOTHint::cHintManager hint;
-			hint.TestNewFunction_Tree();
-			_note("That is all, goodby");
-		}
 		else if ((cmd=="hello")) {
 			_note("COMMAND: Hello world.");
 		}
