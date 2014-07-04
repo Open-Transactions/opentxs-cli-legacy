@@ -1,6 +1,6 @@
 ot a~
-account account-in account-out asset 
-ot msg s~
-send-from send-to 
-ot help help~
 
+ot msg s~
+
+ot help help~
+help 

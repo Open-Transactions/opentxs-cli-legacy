@@ -195,12 +195,12 @@ void cCmdProcessing::Parse(bool allowBadCmdname) {
 		else { _info("Parsed ok (fully ok)"); mStateParse = tState::succeeded; }
 	}
 	catch (const myexception &e) { e.Report(); throw ; }
-	catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
+	catch (const std::exception &e) { _info("Exception " << e.what()); throw ; }
 }
 
 void cCmdProcessing::_Parse(bool allowBadCmdname) {
 	// int _dbg_ignore=50;
-	bool dbg=false;
+	bool dbg=1;
 	bool test_char2word = false; // run a detailed test on char to word conversion
 
 	mData = std::make_shared<cCmdDataParse>();
@@ -260,21 +260,24 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 	if (test_char2word) { for (int i=0; i<mCommandLineString.size(); ++i) {
 		const char c = mCommandLineString.at(i);
-		_dbg3("char '" << c << "' on position " << i << " is inside word: " << mData->CharIx2WordIx(i) 	);
+		_dbg3("char '" << c << "' on position " << i << " is inside word: " << mData->CharIx2WordIx(i) );
 	} }
 
-	if (mCommandLine.empty()) { const string s="Command for processing was empty (had no words)"; _warn(s);  throw cErrParseSyntax(s); } // <--- THROW
+	if (mCommandLine.empty()) { const string s="Command for processing was empty (had no words)"; _info(s);  throw cErrParseSyntax(s); } // <--- THROW
 
 	// -----------------------------------
 	if (mCommandLine.at(0) == "help") { mData->mCharShift=-3; namepart_words--; prepart_words--;  mCommandLine.insert( mCommandLine.begin() , "ot"); } // change "help" to "ot help"
 	// ^--- namepart_words-- because we here inject the word "ot" and it will make word-position calculation off by one
 
-	if (mCommandLine.at(0) != "ot") _warn("Command for processing is mallformed");
+	if (mCommandLine.at(0) != "ot") {
+		_info("Command for processing is mallformed");
+		const string s="Missing pre word: ot";  _info(s);  throw cErrParseSyntax(s);
+	}
 	mCommandLine.erase( mCommandLine.begin() ); // delete the first "ot" ***
 	// mCommandLine = msg, send-from, alice, bob, hello
 	_dbg1("Parsing (after erasing ot) : " << DbgVector(mCommandLine) );
 
-	if (mCommandLineString.empty()) { const string s="Command for processing was empty (besides prefix)"; _warn(s);  throw cErrParseSyntax(s); } // <--- THROW
+	if (mCommandLineString.empty()) { const string s="Command for processing was empty (besides prefix)"; _info(s);  throw cErrParseSyntax(s); } // <--- THROW
 
 	prepart_words++;
 	mData->mFirstWord = prepart_words; // usually 1, meaning that there is 1 word between actuall entities, e.g. when we remove the "ot" pre
@@ -283,9 +286,10 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 	int phase=0; // 0: cmd name  1:var, 2:varExt  3:opt   9:end
 	try {
+		if (mCommandLine.size()==0) { const string s="No words (besides pre ot)";  _info(s);  throw cErrParseSyntax(s); }
 
 		// phase0 - the command name
-		string name_tmp = mCommandLine.at(0); // buld the name of command, start with 1st word like "msg" or "help"
+		string name_tmp = mCommandLine.at(0); // build the name of command, start with 1st word like "msg" or "help"
 		if(mCommandLine.size()>1) {	// if NOT one-word command like "help", then:
 			string name_tmp2 = name_tmp+" " + mCommandLine.at(1);
 			if (	mParser->FindFormatExists(name_tmp) && mParser->FindFormatExists(name_tmp2)) { // if the second word is CmdName
@@ -306,7 +310,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 					name_tmp += " " + mCommandLine.at(1);
 				}
 			}
-		}
+		} // more then 1 word
 
 		const string name = name_tmp;
 		namepart_words++;
@@ -472,7 +476,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 		_note("mOption parsed  " + DbgMap(mData->mOption));
 	}
 	catch (cErrParse &e) {
-		_warn("Command can not be parsed " << e.what());
+		_info("Command can not be parsed " << e.what());
 		throw ;
 	}
 	catch (std::exception &e) {
@@ -487,7 +491,13 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 
 vector<string> cCmdProcessing::UseComplete(int char_pos) {
-	_mark("Will complete command line: ["<<mCommandLineString<<"] at char_pos="<<char_pos);
+	_mark("Will complete command line: ["<<mCommandLineString<<"] at char_pos="<<char_pos);  // mCommandLine is not parsed yet
+
+	vector<string> allwords;
+	size_t pos = mCommandLineString.find(' ');
+	if (pos != mCommandLineString::npos) allwords.push_back( mCommandLineString.substr(0, pos ) );
+	for (const auto & elem : mCommandLine) allwords.push_back( elem );
+	_mark("Allwords="<<allwords)
 
 	if (mStateParse == tState::never) {
 		bool ok=0;
@@ -496,9 +506,15 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			ok=1;
 		} catch (cErrParseSyntax &e) { ok=0; }
 
+		_mark("Will complete command line: ["<<mCommandLineString<<"] " << " words " << DbgVector(mCommandLine) << " at char_pos="<<char_pos);
+		if ( (mCommandLine.size()==0) && (mCommandLineString.size()>0) ) {
+			_note("Correcting the no-words case");
+			mCommandLine.push_back( mCommandLineString ); // cut by space?
+		}
+
 		if (!ok) { // first parse failed maybe because we wanted to complete something here like ot nym sh~ alice and parsed assumed it's "nym" + arg "sh",
 			mCommandLineString = mCommandLineString.substr(0, char_pos );
-			_mark("Parsing failed, will parse again as ["<<mCommandLineString<<"]");
+			_note("Parsing failed, will parse again as ["<<mCommandLineString<<"]");
 			// instead assuming it is half-written command name "nym sh~".
 			// so we will re-parse just the part before char position
 			mStateParse = tState::never; // to force re-parsnig again
@@ -506,6 +522,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 				Parse( true );
 				ok=1;
 			} catch (cErrParseSyntax &e) { ok=0; }
+			_mark("After PARSING AGAIN: Will complete command line: ["<<mCommandLineString<<"] " << " words " << DbgVector(mCommandLine) << " at char_pos="<<char_pos);
 		}
 		if (!ok) mFormat=nullptr; // we do not have any realiable format/cmdname if even very lax parsing failed
 	}
@@ -519,6 +536,20 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 
 	using namespace nOper;
 
+	_info("check0.  size=" << mCommandLine.size());
+	if (mCommandLine.size()>0) {
+		if (mCommandLine.at(0) != "ot") {
+			_dbg1("not ot!");
+			if (mCommandLine.at(0)=="help") return vector<string>{""};
+			return WordsThatMatch(mCommandLine.at(0), vector<string>{"ot", "help"});
+		}
+	} else {
+		_dbg1("empty cmd line");
+		return vector<string>{ "ot" } ;
+	}
+
+	_info("check1.  size=" << mCommandLine.size());
+
 	try {
 		int word_ix = mData->CharIx2WordIx( char_pos  );
 		bool fake_empty=false; // are we adding fake word "" at end for purpose of completion at end of string?
@@ -530,6 +561,13 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 				mCommandLine.insert( mCommandLine.begin() + add_empty_at_word , "");
 				_dbg2("mCommandLine="<<DbgVector(mCommandLine));
 			} // fake word
+		}
+
+		if (mCommandLine.size()==1) {
+			_mark("size1");
+			if (!fake_empty) return WordsThatMatch(mCommandLine.at(0), vector<string>{"ot", "help"});
+			if (mCommandLine.at(0)=="help") return vector<string>{""};
+			_mark("...ELSE...");
 		}
 
 		//_dbg1("word_ix=" << word_ix);
