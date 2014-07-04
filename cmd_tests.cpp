@@ -98,6 +98,8 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	parser->Init();
 	std::fstream file;
 	file.open("Hintingtest.txt",  std::ios::out);
+	std::fstream file2;
+	file2.open("Questions",  std::ios::out);
 	auto alltest = vector<string>{ ""
 //	,"~"
 //	,"ot~"
@@ -137,7 +139,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			_note("Completions: " << DbgVector(completions));
 			nUtils:: hintingToTxt(file, cmd, completions);
 			generateQuestions (file,cmd_raw);
-	//		generateAnswers (file2,cmd_raw, completions); // TODO edw TODO 
+	//		generateAnswers (file2,cmd_raw, completions); // TODO edw TODO
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
@@ -199,7 +201,7 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 	_mark("TEST ANSWERS");
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
-	std:: fstream file2("Answers.txt");
+	std:: ifstream file2("Answers.txt");
 	auto alltest = vector<string>{ ""
 //	,"~"
 //	,"ot~"
@@ -236,7 +238,7 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-	//		HintingToTxtTest("Answers.txt", cmd_raw, completions,file2); // TODO edw TODO
+			HintingToTxtTest("Answers.txt", cmd_raw, completions,file2);
 			_note("Completions: " << DbgVector(completions));
 
 		}
