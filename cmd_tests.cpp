@@ -137,7 +137,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			_note("Completions: " << DbgVector(completions));
 			nUtils:: hintingToTxt(file, cmd, completions);
 			generateQuestions (file,cmd_raw);
-			generateAnswers (file2,cmd_raw, completions);
+	//		generateAnswers (file2,cmd_raw, completions); // TODO edw TODO 
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
@@ -236,7 +236,7 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-			HintingToTxtTest("Answers.txt", cmd_raw, completions,file2);
+	//		HintingToTxtTest("Answers.txt", cmd_raw, completions,file2); // TODO edw TODO
 			_note("Completions: " << DbgVector(completions));
 
 		}

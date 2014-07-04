@@ -495,9 +495,9 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 
 	vector<string> allwords;
 	size_t pos = mCommandLineString.find(' ');
-	if (pos != mCommandLineString::npos) allwords.push_back( mCommandLineString.substr(0, pos ) );
+	if   (pos != string::npos) allwords.push_back( mCommandLineString.substr(0, pos ) );
 	for (const auto & elem : mCommandLine) allwords.push_back( elem );
-	_mark("Allwords="<<allwords)
+	_mark("Allwords=" << DbgVector(allwords));
 
 	if (mStateParse == tState::never) {
 		bool ok=0;
