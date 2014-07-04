@@ -285,6 +285,9 @@ void cCmdParser::Init() {
 	AddFormat("test complete", {}, {}, {},
 		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); cmd_test_EndingCmdNames(Utmp); return true; } );
 
+	AddFormat("test answers", {}, {}, {},
+		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _cmd_test_completion_answers(Utmp); return true; } );
+
 
 	//======== ot account ========
 

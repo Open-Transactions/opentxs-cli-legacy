@@ -136,6 +136,8 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			vector<string> completions = processing.UseComplete( pos  );
 			_note("Completions: " << DbgVector(completions));
 			nUtils:: hintingToTxt(file, cmd, completions);
+			generateQuestions (file,cmd_raw);
+			generateAnswers (file2,cmd_raw, completions);
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
@@ -185,6 +187,56 @@ void cCmdParser::_cmd_test_safe_completion(shared_ptr<cUseOT> use ) {
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
 			HintingToTxtTest("Hintingtest.txt", cmd_raw, completions,file2);
+			_note("Completions: " << DbgVector(completions));
+
+		}
+		catch (const myexception &e) { e.Report(); }
+		catch (const std::exception &e) { _erro("Exception " << e.what()); }
+	}
+}
+
+void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
+	_mark("TEST ANSWERS");
+	shared_ptr<cCmdParser> parser(new cCmdParser);
+	parser->Init();
+	std:: fstream file2("Answers.txt");
+	auto alltest = vector<string>{ ""
+//	,"~"
+//	,"ot~"
+//	,"ot msg send~ ali"
+//	,"ot msg send ali~"
+//	,"ot a~"
+		,"ot msg s~"
+		,"ot msg sen~"
+//  ,"msg send-from al~"
+//  ,"ot msg sen~ alice"
+//	,"ot msg sen~ alice bob"
+//	,"ot msg send-from ali~ bo"
+//	,"ot msg send-from ali bo~"
+//	,"ot msg send-from alice bob subject message --prio 3 --dryr~"
+//	,"ot msg send-from alice bob subject message --pr~ 3 --dryrun"
+//	,"ot msg send-from alice bob subject message --prio 3 --cc al~ --dryrun"
+//		,"ot help securi~"
+//	,"help securi~"
+//	,"ot msg sendfrom ali bobxxxxx~"
+//	,"ot msg sendfrom ali       bob      subject message_hello --cc charlie --cc dave --prio 4 --cc eve --dry~ --cc xray"
+	};
+	for (const auto cmd_raw : alltest) {
+		try {
+			if (!cmd_raw.length()) continue;
+
+			auto pos = cmd_raw.find_first_of("~");
+			if (pos == string::npos) {
+				_erro("Bad example - no TAB position given!");
+				continue; // <---
+			}
+			auto cmd = cmd_raw;
+			cmd.erase( pos , 1 );
+
+			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
+			auto processing = parser->StartProcessing(cmd, use);
+			vector<string> completions = processing.UseComplete( pos  );
+			HintingToTxtTest("Answers.txt", cmd_raw, completions,file2);
 			_note("Completions: " << DbgVector(completions));
 
 		}

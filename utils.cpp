@@ -429,6 +429,67 @@ void hintingToTxt(std::fstream & file, string command, vector<string> &commands)
 		file<<endl;
 	}
 }
+void generateQuestions (std::fstream & file, string command)  {
+    vector<string> commands;
+		char c=command.back();
+		size_t i=command.size()-1;
+    string subcommand=command.erase(i);
+			while(i>0){
+          if(c!=' ') {
+						commands.push_back(subcommand);
+						i=i-1;
+						c=subcommand.back();
+						subcommand=subcommand.erase(i);
+					}
+					else if(c==' ') {
+						i=i-1;
+						c=subcommand.back();
+						subcommand=subcommand.erase(i);
+					}
+			}
+	if(file.good()) {
+		for (auto a: commands) {
+			file <<a<< "~"<<endl;
+			file.flush();
+			file<<endl;
+		}
+	}
+}
+
+void generateAnswers (std::fstream & file, string command, vector<string> &completions) {
+		char c=command.back();
+		size_t i=command.size()-1;
+    string subcommand=command.erase(i);
+    vector <string> newcompletions;
+    for(auto a: completions) {
+			newcompletions.push_back(a);
+		}
+		if(file.good())
+		{
+			while(i>0){
+          if(c!=' ') {
+						file <<subcommand<< "~"<<endl;
+						for(auto a: newcompletions) {
+							file<<a<<" ";
+						}
+						file<<endl;
+						i=i-1;
+						c=subcommand.back();
+						subcommand=subcommand.erase(i);
+					}
+					else if(c==' ') {
+						newcompletions.clear();
+						size_t j=subcommand.find(" ");
+						string com = subcommand.substr(j+1);
+
+						newcompletions.push_back(com);
+						i=i-1;
+						c=subcommand.back();
+						subcommand=subcommand.erase(i);
+					}
+			}
+		}
+	}
 
 // ====================================================================
 // algorthms

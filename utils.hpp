@@ -251,6 +251,8 @@ public:
 	const string ReadFromFile(const string path);
 };
 void hintingToTxt(std::fstream & file, string command, vector<string> &commands);
+void generateQuestions (std::fstream & file, string command);
+void generateAnswers (std::fstream & file, string command, vector<string> &completions);
 
 // ====================================================================
 
