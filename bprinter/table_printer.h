@@ -83,6 +83,9 @@ private:
   std::vector<int> column_widths_;
   std::string separator_;
 
+  std::string table_color;
+  std::string no_color;
+
   int i_; // index of current row
   int j_; // index of current column
 
