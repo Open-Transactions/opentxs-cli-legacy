@@ -19,7 +19,7 @@ template<typename T> void TablePrinter::OutputDecimalNumber(T input){
     i_ = i_ + 1;
     j_ = 0;
   } else {
-    *out_stream_ << separator_;
+    *out_stream_ << table_color << separator_ << no_color;
     j_ = j_ + 1;
   }
 }
@@ -63,11 +63,11 @@ template<typename T> void TablePrinter::OutputDecimalNumber(T input){
   }
 
   if (j_ == get_num_columns()-1){
-    *out_stream_ << "|\n";
+    *out_stream_ << table_color << "|\n" << no_color;
     i_ = i_ + 1;
     j_ = 0;
   } else {
-    *out_stream_ << separator_;
+    *out_stream_ << table_color << separator_ << no_color;
     j_ = j_ + 1;
   }
 }
