@@ -431,14 +431,13 @@ void hintingToTxt(std::fstream & file, string command, vector<string> &commands)
 }
 void generateQuestions (std::fstream & file, string command)  {	
 	if(file.good()) {
-			file <<command<< "~"<<endl;
+			file <<command<<endl;	
 			file.flush();
 			file<<endl;
 	}
 }
 
 void generateAnswers (std::fstream & file, string command, vector<string> &completions) {
-		_mark("LOL");
 		char c=command.back();
 		size_t i=command.size()-1;
     string subcommand=command.erase(i);
@@ -448,8 +447,7 @@ void generateAnswers (std::fstream & file, string command, vector<string> &compl
 		}
 		if(file.good())
 		{
-			_mark("plik ok");
-			while(i>0){
+			while(i>4){
           if(c!=' ') {
 						file <<subcommand<< "~"<<endl;
 						for(auto a: newcompletions) {
@@ -460,11 +458,10 @@ void generateAnswers (std::fstream & file, string command, vector<string> &compl
 						c=subcommand.back();
 						subcommand=subcommand.erase(i);
 					}
-					else if(c==' ') {
+		else if(c==' ') {
 						newcompletions.clear();
 						size_t j=subcommand.find(" ");
 						string com = subcommand.substr(j+1);
-
 						newcompletions.push_back(com);
 						i=i-1;
 						c=subcommand.back();

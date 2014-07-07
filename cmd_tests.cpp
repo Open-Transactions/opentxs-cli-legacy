@@ -30,7 +30,7 @@ void HintingToTxtTest(string path, string command, vector <string> &completions,
 				std::vector<string>::iterator it;
 				it = find (completions.begin(), completions.end(), a);
 				if(it==completions.end()) {
-					_erro("You don't have "<<a<<" in completions");
+					_erro("You don't have "<<a<<" in current output");
 					test_ok=false;
 				}
 			}
@@ -38,7 +38,7 @@ void HintingToTxtTest(string path, string command, vector <string> &completions,
 				std::vector<string>::iterator it;
 				it = find (proposals.begin(), proposals.end(), a);
 				if(it==proposals.end()) {
-					_erro("You don't have "<<a<<" in .txt file");
+					_erro("You don't have "<<*it<<" in file of expected output");
 					test_ok=false;
 				}
 			}
@@ -99,9 +99,9 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	std::fstream file;
 	file.open("Hintingtest.txt",  std::ios::out);
 	std::fstream Questions;
-	Questions.open("/script/test/hint/test1-questions.txt",  std::ios::out);
+	Questions.open("script/test/hint/test1-questions.txt",  std::ios::out);
 	std::fstream Answers;
-	Questions.open("/script/test/hint/test1-answers.txt",  std::ios::out);
+	Answers.open("script/test/hint/test1-answers.txt",  std::ios::out);
 	auto alltest = vector<string>{ ""
 //	,"~"
 //	,"ot~"
@@ -109,7 +109,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 //	,"ot msg send ali~"
 	,"ot a~"
 	,"ot msg s~"
-	,"ot help help~"
+	,"ot hel~"
 //  ,"msg send-from al~"
 //  ,"ot msg sen~ alice"
 //	,"ot msg sen~ alice bob"
@@ -139,7 +139,7 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
 			_note("Completions: " << DbgVector(completions));
-			//nUtils:: hintingToTxt(file, cmd, completions);
+			nUtils:: hintingToTxt(file, cmd, completions);
 			generateQuestions (Questions,cmd_raw);
 			generateAnswers (Answers,cmd_raw, completions); 
 		}
@@ -201,16 +201,37 @@ void cCmdParser::_cmd_test_safe_completion(shared_ptr<cUseOT> use ) {
 
 void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 	_mark("TEST ANSWERS");
+
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
-	std:: ifstream Answers("/script/test/hint/test1-answers.txt");
-	ifstream Questions("/script/test/hint/test1-questions.txt");
-	if (Questions.open()){
-	string line; 
-	getline (file,line);
-	
+	std:: ifstream Answers("script/test/hint/test1-answers.txt");
+	std:: ifstream Questions("script/test/hint/test1-questions.txt");
+	vector<string> alltest;
+	if (Questions.good()){
+	string line;
+	line=line+"~"; 
+	getline (Questions,line);
+		alltest.push_back(line);
+		char c=line.back();
+		size_t i=line.size()-1;
+		string subcommand=line.erase(i);
+			while(i>4){
+          if(c!=' ') {	
+						subcommand=subcommand+"~";
+						alltest.push_back(subcommand);
+						i=i-1;
+						c=subcommand.back();
+						subcommand=subcommand.erase(i);
+					}
+					else if(c==' ') {
+						i=i-1;
+						c=subcommand.back();
+						subcommand=subcommand.erase(i);
+					}
+			}
 	}
 	for (const auto cmd_raw : alltest) {
+		
 		try {
 			if (!cmd_raw.length()) continue;
 
@@ -225,7 +246,8 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-			HintingToTxtTest("/script/test/hint/test1-answers.txt", cmd_raw, completions,Answers);
+			_mark("comparing current results with good output from script/test/hint/test1-answers.txt");
+			HintingToTxtTest("script/test/hint/test1-answers.txt", cmd_raw, completions,Answers);
 			_note("Completions: " << DbgVector(completions));
 
 		}

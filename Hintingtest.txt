@@ -1,44 +1,8 @@
+ot~
+ot 
 ot a~
 account account-in account-out asset 
-ot a~
-
-ot ~
-
-o~
-
 ot msg s~
 send-from send-to 
-ot msg s~
-
-ot msg ~
-
-ot ms~
-
-ot m~
-
-ot ~
-
-o~
-
-ot help help~
-
-ot help help~
-
-ot help hel~
-
-ot help he~
-
-ot help h~
-
-ot help ~
-
 ot hel~
-
-ot he~
-
-ot h~
-
-ot ~
-
-o~
-
+help 
