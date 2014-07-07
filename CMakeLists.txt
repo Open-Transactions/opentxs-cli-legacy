@@ -32,6 +32,10 @@ endif ()
 
 set(CMAKE_SKIP_BUILD_RPATH  FALSE) # Always include RPATH to the binary
 
+# This is needed to properly set RPATH for newer libstdc++ from gcc 4.8.3 (local build)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH "$ENV{HOME}/.local/lib64:$ENV{HOME}/.local/lib")
+
 if (WITH_WRAPPER)
 	set(CMAKE_CXX_COMPILER "$ENV{HOME}/.local/bin/compile-cxx")
 	set(CMAKE_CC_COMPILER "$ENV{HOME}/.local/bin/compile-cc")
