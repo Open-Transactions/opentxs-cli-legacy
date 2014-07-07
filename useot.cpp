@@ -410,12 +410,14 @@ bool cUseOT::AccountDisplayAll(bool dryrun) {
   tp.AddColumn("Balance", 10);
 
   tp.PrintHeader();
-
 	for(int32_t i = 0 ; i < OTAPI_Wrap::GetAccountCount();i++) {
 		ID accountID = OTAPI_Wrap::GetAccountWallet_ID(i);
 		int64_t balance = OTAPI_Wrap::GetAccountWallet_Balance(accountID);
 		ID assetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 		string accountType = OTAPI_Wrap::GetAccountWallet_Type(accountID);
+		if(accountType=="issuer") tp.SetContentColor(zkr::cc::fore::lightred);
+		else if (accountType=="simple") tp.SetContentColor(zkr::cc::fore::lightgreen);
+
 		tp << std::to_string(i) << "(" + accountType + ")" << AccountGetName(accountID) + "(" + accountID + ")"  << AssetGetName(assetID) + "(" + assetID + ")" << std::to_string(balance);
 	}
 
