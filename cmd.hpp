@@ -154,7 +154,8 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 		void Init();
 		void Test();
 
-		void PrintUsage();
+		void PrintUsage() const;
+		void PrintUsageCommand(const string &cmdname) const;
 
 		vector<string> EndingCmdNames (const string sofar);
 		static void _cmd_test_completion(  shared_ptr<nUse::cUseOT> use  );
@@ -229,6 +230,7 @@ class cCmdFormat {  MAKE_CLASS_NAME("cCmdFormat");
 
 		void Debug() const;
 		void PrintUsageShort(ostream &out) const;
+		void PrintUsageLong(ostream &out) const;
 
 		vector<string> GetPossibleOptionNames() const;
 

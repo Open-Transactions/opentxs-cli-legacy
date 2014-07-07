@@ -187,6 +187,24 @@ void cCmdParser::Init() {
 		}
 	);
 
+	cParamInfo pCmdName1("cmdword1", "A first word of an OT command name",
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			return true;
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			return vector<string>{"msg"};
+		}
+	);
+
+	cParamInfo pCmdName2("cmdword2", "A second word of an OT command name",
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			return true;
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			return vector<string>{"send-to"};
+		}
+	);
+
 	// sendmoney alice gold 1000
 	// sendmsgto alice hi    --addmoney 1000 --addmoney 2000
 	//           arg=1 arg=2           arg=3           arg=4
@@ -255,6 +273,15 @@ void cCmdParser::Init() {
 		[this_weak] (tData d, tUse U) -> tExit { auto &D=*d;
 			shared_ptr<cCmdParser> this_lock( this_weak );
 			this_lock->PrintUsage();
+			return true;
+		} );
+
+	AddFormat("help cmd", { pCmdName1 } , { pCmdName2 }, {},
+		[this_weak] (tData d, tUse U) -> tExit { auto &D=*d;
+			shared_ptr<cCmdParser> this_lock( this_weak );
+			string cmd = D.V(1);
+			if (D.v(2).size()>0) cmd += " " + D.V(2);
+			this_lock->PrintUsageCommand( cmd );
 			return true;
 		} );
 

@@ -78,7 +78,7 @@ cCmdExecutable::tExitCode Execute1( shared_ptr<cCmdData> , nUse::cUseOT ) {
 	return cCmdExecutable::sSuccess;
 }
 
-void cCmdParser::PrintUsage() {
+void cCmdParser::PrintUsage() const {
 	auto & out = cerr;
 	out << endl;
 	using namespace zkr;
@@ -93,6 +93,19 @@ void cCmdParser::PrintUsage() {
 	out << endl;
 }
 
+void cCmdParser::PrintUsageCommand(const string &cmdname) const {
+/*
+ //	mI->mTree.at(cmdname); // find
+auto & out = cerr;
+ try {
+ auto format  = ....
+		format->PrintUsageShort(out);
+		format->PrintUsageLong(out); // ***
+ } ...
+TODO
+*/
+
+}
 
 cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use ) {
 	return cCmdProcessing( shared_from_this() , words , use );
@@ -841,6 +854,10 @@ void cCmdFormat::Debug() const {
 	_info(".. mVar size=" << mVar.size());
 	_info(".. mVarExt size=" << mVarExt.size());
 	_info(".. mOption size=" << mOption.size());
+}
+
+void cCmdFormat::PrintUsageLong(ostream &out) const {
+_erro("TODO");
 }
 
 void cCmdFormat::PrintUsageShort(ostream &out) const {

@@ -1,5 +1,5 @@
 ot a~
-
+account account-in account-out asset 
 ot a~
 
 ot ~
@@ -7,7 +7,7 @@ ot ~
 o~
 
 ot msg s~
-
+send-from send-to 
 ot msg s~
 
 ot msg ~
@@ -21,7 +21,7 @@ ot ~
 o~
 
 ot help help~
- 
+
 ot help help~
 
 ot help hel~
