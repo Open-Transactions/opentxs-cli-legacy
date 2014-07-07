@@ -36,6 +36,9 @@ void cCmdParser::AddFormat(
 void cCmdParser::Init() {
 	_mark("Init tree");
 
+	auto this_shared_do_not_use = shared_from_this(); // make_shared<cCmdProcessing>(this);
+	weak_ptr<cCmdParser> this_weak( this_shared_do_not_use );
+
 // TODO hinting for ID?
 	cParamInfo pNym( "nym", "nym existing on a server",
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
@@ -191,8 +194,9 @@ void cCmdParser::Init() {
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
-		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			return vector<string>{"msg"};
+		[this_weak] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			shared_ptr<cCmdParser> this_lock( this_weak );
+			return this_lock->GetCmdNamesWord1();
 		}
 	);
 
@@ -200,8 +204,11 @@ void cCmdParser::Init() {
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
-		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			return vector<string>{"send-to"};
+		[this_weak] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			shared_ptr<cCmdParser> this_lock( this_weak );
+			try {
+				return this_lock->GetCmdNamesWord2( data.V(1) );
+			} catch(const cErrParseName &e) { return vector<string>{}; }
 		}
 	);
 
@@ -264,8 +271,6 @@ void cCmdParser::Init() {
 	auto & pMsg = pSubject; // TODO
 	auto & pInt = pOnceInt;
 
-	auto this_shared_do_not_use = shared_from_this(); // make_shared<cCmdProcessing>(this);
-	weak_ptr<cCmdParser> this_weak( this_shared_do_not_use );
 
 	//======== special, test, developer: ========
 
