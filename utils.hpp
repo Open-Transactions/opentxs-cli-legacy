@@ -3,7 +3,7 @@
 Utils provides various utilities and general-purpose functions that
 we find helpful in coding this project.
 */
-
+#include "ccolor.hpp"
 #ifndef INCLUDE_OT_NEWCLI_UTILS
 #define INCLUDE_OT_NEWCLI_UTILS
 
@@ -132,12 +132,14 @@ void DbgDisplayVector(const std::vector<T> &v, const std::string &delim=" ") {
 	std::cerr << "]";
 }
 
-
+string stringToColor(const string &hash);
 template <class T, class T2>
 void DisplayMap(std::ostream & out, const std::map<T, T2> &m, const std::string &delim=" ") {
+	auto *no_color = zkr::cc::fore::console;
 	for(auto var : m) {
-		out << var.first << delim << var.second << endl;
+	    out << stringToColor(var.first) << var.first << delim << var.second << no_color << endl;
  	}
+
 }
 
 template <class T, class T2>
@@ -365,6 +367,7 @@ class value_init {
 
 template <class T, T INIT>
 value_init<T, INIT>::value_init() :	data(INIT) { }
+
 
 
 }; // namespace nUtils

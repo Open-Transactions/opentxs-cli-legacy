@@ -491,6 +491,27 @@ void generateAnswers (std::fstream & file, string command, vector<string> &compl
 		}
 	}
 
+string stringToColor(const string &hash) {
+  // Generete vector with all possible light colors
+  vector <string> lightColors;
+  using namespace zkr;
+  lightColors.push_back(cc::fore::lightblue);
+  lightColors.push_back(cc::fore::lightred);
+  lightColors.push_back(cc::fore::lightmagenta);
+  lightColors.push_back(cc::fore::lightgreen);
+  lightColors.push_back(cc::fore::lightcyan);
+  lightColors.push_back(cc::fore::lightyellow);
+  lightColors.push_back(cc::fore::lightwhite);
+
+  int sum=0;
+
+  for (auto ch : hash) sum+=ch;
+  auto color = sum%(lightColors.size()-1);
+
+  return lightColors.at( color );
+}
+
+
 // ====================================================================
 // algorthms
 

@@ -11,7 +11,7 @@ TablePrinter::TablePrinter(std::ostream * output, const std::string & separator)
   j_ = 0;
   separator_ = separator;
   table_width_ = 0;
-  table_color= zkr::cc::fore::lightblue;
+  table_color= zkr::cc::fore::lightyellow;
   no_color = zkr::cc::console;
 }
 
