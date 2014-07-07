@@ -98,8 +98,10 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	parser->Init();
 	std::fstream file;
 	file.open("Hintingtest.txt",  std::ios::out);
-	std::fstream file2;
-	file2.open("Questions",  std::ios::out);
+	std::fstream Questions;
+	Questions.open("/script/test/hint/test1-questions.txt",  std::ios::out);
+	std::fstream Answers;
+	Questions.open("/script/test/hint/test1-answers.txt",  std::ios::out);
 	auto alltest = vector<string>{ ""
 //	,"~"
 //	,"ot~"
@@ -137,9 +139,9 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
 			_note("Completions: " << DbgVector(completions));
-			nUtils:: hintingToTxt(file, cmd, completions);
-			generateQuestions (file,cmd_raw);
-			generateAnswers (file2,cmd_raw, completions); // TODO edw TODO
+			//nUtils:: hintingToTxt(file, cmd, completions);
+			generateQuestions (Questions,cmd_raw);
+			generateAnswers (Answers,cmd_raw, completions); 
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
@@ -201,28 +203,13 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 	_mark("TEST ANSWERS");
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
-	std:: ifstream file2("Answers.txt");
-	auto alltest = vector<string>{ ""
-//	,"~"
-//	,"ot~"
-//	,"ot msg send~ ali"
-//	,"ot msg send ali~"
-//	,"ot a~"
-		,"ot msg s~"
-		,"ot msg sen~"
-//  ,"msg send-from al~"
-//  ,"ot msg sen~ alice"
-//	,"ot msg sen~ alice bob"
-//	,"ot msg send-from ali~ bo"
-//	,"ot msg send-from ali bo~"
-//	,"ot msg send-from alice bob subject message --prio 3 --dryr~"
-//	,"ot msg send-from alice bob subject message --pr~ 3 --dryrun"
-//	,"ot msg send-from alice bob subject message --prio 3 --cc al~ --dryrun"
-//		,"ot help securi~"
-//	,"help securi~"
-//	,"ot msg sendfrom ali bobxxxxx~"
-//	,"ot msg sendfrom ali       bob      subject message_hello --cc charlie --cc dave --prio 4 --cc eve --dry~ --cc xray"
-	};
+	std:: ifstream Answers("/script/test/hint/test1-answers.txt");
+	ifstream Questions("/script/test/hint/test1-questions.txt");
+	if (Questions.open()){
+	string line; 
+	getline (file,line);
+	
+	}
 	for (const auto cmd_raw : alltest) {
 		try {
 			if (!cmd_raw.length()) continue;
@@ -238,7 +225,7 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-			HintingToTxtTest("Answers.txt", cmd_raw, completions,file2);
+			HintingToTxtTest("/script/test/hint/test1-answers.txt", cmd_raw, completions,Answers);
 			_note("Completions: " << DbgVector(completions));
 
 		}
@@ -283,6 +270,8 @@ void cCmdParser::_cmd_test_tree( shared_ptr<cUseOT> use ) {
 	}
 
 }
+
+
 
 void cCmdParser::cmd_test( shared_ptr<cUseOT> use ) {
 	try {
