@@ -326,6 +326,7 @@ class cCmdDataParse : public cCmdData { MAKE_CLASS_NAME("cCmdDataParse");
 		int mFirstWord; // at which word is the first entity (because we could had removed "ot" for example). Usually 1 ("ot something ...")
 
 		int mCharShift; // *deprecated?* how many characters should we shift to get back to orginal string becuse auto-prepending like "help"->"ot help" (-3), or 0 often
+		bool mIsPreErased;
 
 	public:
 		cCmdDataParse();

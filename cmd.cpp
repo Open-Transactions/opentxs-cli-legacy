@@ -274,6 +274,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 		const string s="Missing pre word: ot";  _info(s);  throw cErrParseSyntax(s);
 	}
 	mCommandLine.erase( mCommandLine.begin() ); // delete the first "ot" ***
+	mData->mIsPreErased=true;
 	// mCommandLine = msg, send-from, alice, bob, hello
 	_dbg1("Parsing (after erasing ot) : " << DbgVector(mCommandLine) );
 
@@ -492,12 +493,7 @@ void cCmdProcessing::_Parse(bool allowBadCmdname) {
 
 vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	_mark("Will complete command line: ["<<mCommandLineString<<"] at char_pos="<<char_pos);  // mCommandLine is not parsed yet
-
-	vector<string> allwords;
-	size_t pos = mCommandLineString.find(' ');
-	if   (pos != string::npos) allwords.push_back( mCommandLineString.substr(0, pos ) );
-	for (const auto & elem : mCommandLine) allwords.push_back( elem );
-	_mark("Allwords=" << DbgVector(allwords));
+	const vector<string> allowed_pre_words = {"ot","help"};
 
 	if (mStateParse == tState::never) {
 		bool ok=0;
@@ -525,18 +521,31 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			_mark("After PARSING AGAIN: Will complete command line: ["<<mCommandLineString<<"] " << " words " << DbgVector(mCommandLine) << " at char_pos="<<char_pos);
 		}
 		if (!ok) mFormat=nullptr; // we do not have any realiable format/cmdname if even very lax parsing failed
-	}
+	} // parse
 	if (mStateParse != tState::succeeded) {
 		if (mStateParse == tState::succeeded_partial) _dbg3("Failed to fully parse.");  // can be ok - maybe we want to comlete cmd name like "ot msg sendfr~"
 		else _dbg1("Failed to parse (even partially)");
 	}
 	ASRT(nullptr != mData);
 
-	vector<string> mCommandLine = this->mCommandLine ; // XXX wee are on purpose shadowing this->mCommandLine.  TODO not needed we aren't overwritting it ater all here?
+	vector<string> allwords; // vector of all words including pre "ot" (before removing that pre, so we can complete first word)
+	if (mData->mIsPreErased) {
+		_mark("Restoring pre, for the reason to complete the pre-word");
+		size_t pos = mCommandLineString.find(' ');
+		if (pos == string::npos) pos = mCommandLineString.size(); // there are no words with space e.g. "ot" or "o" or "hel"
+		if (pos != string::npos) allwords.push_back( mCommandLineString.substr(0, pos ) );
+	}
+	_mark("Allwords1=" << DbgVector(allwords));
+	for (const auto & elem : mCommandLine) allwords.push_back( elem );
+	_mark("Allwords2=" << DbgVector(allwords));
+
+	if (allwords.size()==0) return allowed_pre_words;
+
+	vector<string> mCommandLine = this->mCommandLine ; // XXX we are on purpose shadowing this->mCommandLine.  TODO not needed we aren't overwritting it ater all here?
 
 	using namespace nOper;
 
-	_info("check0.  size=" << mCommandLine.size());
+/*	_info("check0.  size=" << mCommandLine.size());
 	if (mCommandLine.size()>0) {
 		if (mCommandLine.at(0) != "ot") {
 			_dbg1("not ot!");
@@ -549,6 +558,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	}
 
 	_info("check1.  size=" << mCommandLine.size());
+*/
 
 	try {
 		int word_ix = mData->CharIx2WordIx( char_pos  );
@@ -563,18 +573,23 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 			} // fake word
 		}
 
-		if (mCommandLine.size()==1) {
-			_mark("size1");
-			if (!fake_empty) return WordsThatMatch(mCommandLine.at(0), vector<string>{"ot", "help"});
-			if (mCommandLine.at(0)=="help") return vector<string>{""};
-			_mark("...ELSE...");
+		if (allwords.size()<1) {
+			_mark("size<1");
+			if (!fake_empty) return WordsThatMatch("", allowed_pre_words);
 		}
+		if (allwords.size()==1) {
+			_mark("size==1");
+			if (!fake_empty) return WordsThatMatch(allwords.at(0), allowed_pre_words);
+		}
+
+		if (allwords.at(0)=="help") return {}; // there is nothing to complete after "help" alias
 
 		//_dbg1("word_ix=" << word_ix);
 		int arg_nr = mData->WordIx2ArgNr( word_ix );
 
 		_dbg1("mCommandLine=" << DbgVector(mCommandLine));
 		string word_sofar = mCommandLine.at(word_ix - mData->mFirstWord);  // the current word that we need to complete. e.g. "--dryr" (and we will complete "--dryrun")
+		_dbg3(word_sofar);
 		long int word_previous_ixtab = word_ix - mData->mFirstWord - 1;
 		const string word_previous = (word_previous_ixtab>=0) ? mCommandLine.at(word_previous_ixtab) : "";
 		//_dbg1("word_sofar="<<word_sofar<<", and previous word="<<word_previous<<" char_pos="<<char_pos);
@@ -633,10 +648,16 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		} // fake empty
 
 		if (entity.mKind == cParseEntity::tKind::argument_somekind) {  _dbg1("Finding out which kind of argument is here, from entity="<<entity);
-			ASRT(mFormat);
-			if (arg_nr <= mFormat->mVar.size()) { entity.SetKind(cParseEntity::tKind::variable); }
-			else if (arg_nr <= mFormat->SizeAllVar()) { entity.SetKind(cParseEntity::tKind::variable_ext); }
-			else { entity.SetKind(cParseEntity::tKind::option_name); }
+			if (!mFormat) { // we do not yet have a format even
+				if (allwords.size()<=1) entity.SetKind(cParseEntity::tKind::cmdname); // in commad name... is 0 correct?
+				if (allwords.size()<=2) entity.SetKind(cParseEntity::tKind::cmdname); // in commad name... is 1 correct?
+			}
+			else {
+				ASRT(mFormat);
+				if (arg_nr <= mFormat->mVar.size()) { entity.SetKind(cParseEntity::tKind::variable); }
+				else if (arg_nr <= mFormat->SizeAllVar()) { entity.SetKind(cParseEntity::tKind::variable_ext); }
+				else { entity.SetKind(cParseEntity::tKind::option_name); }
+			}
 		}
 		_fact("matching after DUAL: " << DbgVector(matching) << " and now entity="<<entity );
 
@@ -678,7 +699,10 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		else if (entity.mKind == cParseEntity::tKind::cmdname) {
 			const int cmd_word_nr = entity.mSub;
 			_info("Completing command name cmd_word_nr="<<cmd_word_nr<<" after_word="<<after_word<<" word_sofar="<<word_sofar);
-			if ( (cmd_word_nr==1) && (!after_word) ) { // "ms~" or "msg~"
+			if ( (cmd_word_nr==0) ) { // "~" like from "ot ~"
+				matching += WordsThatMatch( "" , mParser->GetCmdNamesWord1() );
+				return matching; // <---
+			}	else if ( (cmd_word_nr==1) && (!after_word) ) { // "ms~" or "msg~"
 				matching += WordsThatMatch( word_sofar , mParser->GetCmdNamesWord1() );
 				return matching; // <---
 			} else if ( (cmd_word_nr==1) && (after_word) )  { // "msg ~"
@@ -969,7 +993,7 @@ void cCmdData::AddOpt(const string &name, const string &value) throw(cErrArgIlle
 // ========================================================================================================================
 
 cCmdDataParse::cCmdDataParse()
-	: mFirstArgAfterWord(0), mFirstWord(0), mCharShift(0)
+	: mFirstArgAfterWord(0), mFirstWord(0), mCharShift(0), mIsPreErased(false)
 {
 }
 
