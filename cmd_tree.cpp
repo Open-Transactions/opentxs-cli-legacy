@@ -278,6 +278,7 @@ void cCmdParser::Init() {
 
 	AddFormat("help cmd", { pCmdName1 } , { pCmdName2 }, {},
 		[this_weak] (tData d, tUse U) -> tExit { auto &D=*d;
+			_mark("command help!");
 			shared_ptr<cCmdParser> this_lock( this_weak );
 			string cmd = D.V(1);
 			if (D.v(2).size()>0) cmd += " " + D.V(2);

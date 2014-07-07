@@ -6,6 +6,7 @@
 
 #include "lib_common2.hpp"
 #include "ccolor.hpp"
+#include <iomanip>
 
 namespace nOT {
 namespace nNewcli {
@@ -104,7 +105,23 @@ auto & out = cerr;
  } ...
 TODO
 */
+	using namespace zkr;
+	auto const & name = cmdname;
+	auto & out = cerr;
+	out << endl;
+	try {
+		const cCmdFormat & format = * FindFormat(cmdname);
+		out << cc::fore::console << "  ot " << cc::fore::green << name << cc::fore::console	<< " " ;
+		format.PrintUsageShort(out);
+		out << endl << endl;
+		out << cc::fore::lightgreen << cmdname << cc::fore::console << " - is name of the command" << endl;
+		format.PrintUsageLong(out);
 
+	} catch (const cErrParseName &e) {
+		out << "There is no command name: " << cmdname << endl;
+	}
+
+	out << endl;
 }
 
 cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use ) {
@@ -112,7 +129,7 @@ cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse:
 }
 
 shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name )
-	throw(cErrParseName)
+	const throw(cErrParseName)
 {
 	auto it = mI->mTree.find( name );
 	if (it == mI->mTree.end()) {
@@ -122,7 +139,7 @@ shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name )
 	return it->second;
 }
 
-bool cCmdParser::FindFormatExists( const cCmdName &name ) throw()
+bool cCmdParser::FindFormatExists( const cCmdName &name ) const throw()
 {
 	try {
 		FindFormat(name);
@@ -857,7 +874,41 @@ void cCmdFormat::Debug() const {
 }
 
 void cCmdFormat::PrintUsageLong(ostream &out) const {
-_erro("TODO");
+	using namespace zkr;
+	bool written=false;
+
+	const int width1 = 20;
+
+	int varnr=0;
+	for (int tabnr=0; tabnr<=1; ++tabnr)
+	{
+		const auto & tab = ( (tabnr==0) ? mVar : mVarExt );
+		for(auto var : tab) {
+			++varnr;
+			out << ( (tabnr==0) ? cc::fore::lightyellow : cc::fore::lightcyan )  <<  std::setw(width1) << (string)var ;
+			out << cc::fore::console << " - " ;
+			out << var.getDescr() << " - ";
+			out << ( (tabnr==0) ? "required variable" : "extra variable" ) << " number #" << varnr;
+			out << endl;
+		}
+	}
+
+	for (int sort=0; sort<=1; ++sort) {
+		size_t nr=0;
+		for(auto opt : mOption) {
+			const string &name = opt.first;
+			const cParamInfo &info = opt.second;
+			bool boring = (info.getFlags().n.isBoring);
+			auto color1 = boring  ?  cc::fore::lightblack  :  cc::fore::lightblue;
+			if ((int)sort != boring) continue; // first 0 then 1
+
+			out << color1 << std::setw(width1) << name ; // --cc
+			if (info.getTakesValue()) out << " " << cc::fore::lightcyan << info.getName() << color1 ; // username
+			out << cc::fore::console << " - an option " ;
+			out << endl;
+		}
+	}
+	out << cc::fore::console;
 }
 
 void cCmdFormat::PrintUsageShort(ostream &out) const {

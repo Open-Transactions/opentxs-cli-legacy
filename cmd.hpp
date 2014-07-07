@@ -148,8 +148,8 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 	//	cCmdProcessing StartProcessing(const vector<string> &words, shared_ptr<nUse::cUseOT> use );
 		cCmdProcessing StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use );
 
-		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) throw(cErrParseName);
-		bool FindFormatExists( const cCmdName &name ) throw();
+		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) const throw(cErrParseName);
+		bool FindFormatExists( const cCmdName &name ) const throw();
 
 		void Init();
 		void Test();
@@ -444,6 +444,7 @@ class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 		operator string() const noexcept { return mName; }
 		std::string getName() const noexcept { return mName; }
 		std::string getName2() const noexcept { return mName+"("+mDescr+")"; }
+		std::string getDescr() const noexcept { return mDescr; }
 		bool getTakesValue() const noexcept { return mFlags.n.takesValue; }
 		tFlags getFlags() const noexcept { return mFlags; }
 
