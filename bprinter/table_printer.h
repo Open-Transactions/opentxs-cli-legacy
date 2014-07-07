@@ -70,7 +70,7 @@ public:
       *out_stream_ << separator_;
       j_ = j_ + 1;
     }
-    *out_stream_ << no_color;
+
     return *this;
   }
 
