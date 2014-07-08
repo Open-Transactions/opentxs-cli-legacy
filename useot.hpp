@@ -24,7 +24,7 @@ namespace nUse {
 	class cUseCache { // TODO optimize/share memory? or convert on usage
 		friend class cUseOT;
 	public:
-		cUseOT();
+		cUseCache();
 	protected:
 		map<ID, name> mNyms;
 		map<ID, name> mAccounts;
