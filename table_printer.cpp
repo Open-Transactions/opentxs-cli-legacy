@@ -11,7 +11,8 @@ TablePrinter::TablePrinter(std::ostream * output, const std::string & separator)
   j_ = 0;
   separator_ = separator;
   table_width_ = 0;
-  table_color= zkr::cc::fore::lightyellow;
+  SetTableColor(zkr::cc::fore::lightyellow);
+  SetBorderColor(zkr::cc::fore::lightblue);
   no_color = zkr::cc::console;
   content_color.clear();
 }
@@ -48,7 +49,7 @@ void TablePrinter::AddColumn(const std::string & header_name, int column_width){
 }
 
 void TablePrinter::PrintHorizontalLine() {
-  *out_stream_ << table_color << "+"; // the left bar
+  *out_stream_ << border_color << "+"; // the left bar
 
   for (int i=0; i<table_width_-1; ++i)
     *out_stream_ << "-";
@@ -59,16 +60,16 @@ void TablePrinter::PrintHorizontalLine() {
 
 void TablePrinter::PrintHeader(){
   PrintHorizontalLine();
-  *out_stream_ << table_color << "|";
+  *out_stream_ << border_color << "|" << table_color;
 
   for (int i=0; i<get_num_columns(); ++i){
     *out_stream_ << std::setw(column_widths_.at(i)) << column_headers_.at(i).substr(0, column_widths_.at(i));
     if (i != get_num_columns()-1){
-      *out_stream_ << separator_;
+      *out_stream_ << border_color << separator_ << table_color;
     }
   }
 
-  *out_stream_ << "|\n" << no_color;
+  *out_stream_ << border_color << "|\n" << no_color;
   PrintHorizontalLine();
 }
 

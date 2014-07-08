@@ -41,7 +41,9 @@ public:
   void AddColumn(const std::string & header_name, int column_width);
   void PrintHeader();
   void PrintFooter();
+  void SetTableColor(const std::string & color) { this->table_color=color; }
   void SetContentColor(const std::string & color) { this->content_color=color; }
+  void SetBorderColor(const std::string & color) { this->border_color=color; }
 
   TablePrinter& operator<<(endl input){
     while (j_ != 0){
@@ -56,18 +58,18 @@ public:
 
   template<typename T> TablePrinter& operator<<(T input){
     if (j_ == 0)
-      *out_stream_ << "|";
+      *out_stream_ << border_color << "|" << table_color;
 
     // Leave 3 extra space: One for negative sign, one for zero, one for decimal
     *out_stream_ << content_color << std::setw(column_widths_.at(j_))
                  << input;
 
     if (j_ == get_num_columns()-1){
-      *out_stream_ << "|\n";
+      *out_stream_ << border_color <<  "|\n" << table_color;
       i_ = i_ + 1;
       j_ = 0;
     } else {
-      *out_stream_ << separator_;
+      *out_stream_ << border_color << separator_ << table_color;
       j_ = j_ + 1;
     }
 
@@ -87,6 +89,7 @@ private:
   std::string table_color;
   std::string no_color;
   std::string content_color;
+  std::string border_color;
 
   int i_; // index of current row
   int j_; // index of current column
