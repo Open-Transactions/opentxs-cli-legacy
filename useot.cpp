@@ -958,6 +958,8 @@ bool cUseOT::NymCreate(const string & nymName, bool registerOnServer, bool dryru
 	_info("Nym " << nymName << "(" << nymID << ")" << " created successfully.");
 	//	TODO add nym to the cache
 
+	mNyms.insert( std::make_pair(nymID, nymName) ); // insert nym to nyms cache
+
 	if ( registerOnServer )
 		NymRegister(nymName, "^" + ServerGetDefault(), dryrun);
 	return true;
@@ -1139,6 +1141,7 @@ bool cUseOT::NymRemove(const string & nymName, bool dryrun) {
 	if ( OTAPI_Wrap::Wallet_CanRemoveNym(nymID) ) {
 		if ( OTAPI_Wrap::Wallet_RemoveNym(nymID) ) {
 			_info("Nym " << nymName  <<  "(" << nymID << ")" << " was deleted successfully");
+			mNyms.erase(nymID);
 			return true;
 		}
 	}
@@ -1166,7 +1169,7 @@ bool cUseOT::NymRename(const string & nym, const string & newNymName, bool dryru
 
 	if( NymSetName(nymID, newNymName) ) {
 		_info("Nym " << NymGetName(nymID) << "(" << nymID << ")" << " renamed to " << newNymName);
-		NymGetAll(true); //force==true to reload nym cache
+		mNyms.insert( std::make_pair(nymID, newNymName) ); // insert nym to nyms cache
 		return true;
 	}
 	_erro("Failed to rename Nym " << NymGetName(nymID) << "(" << nymID << ")" << " to " << newNymName);
@@ -1193,16 +1196,22 @@ bool cUseOT::ServerAdd(bool dryrun) {
 	nUtils::cEnvUtils envUtils;
 	contract = envUtils.Compose();
 
-	if( OTAPI_Wrap::AddServerContract(contract) ) {
-		_info("Server added");
-		return true;
+	if (!contract.empty()) {
+		if( OTAPI_Wrap::AddServerContract(contract) ) {
+			_info("Server added");
+			return true;
+		}
+	}
+	else {
+		nUtils::DisplayStringEndl(cout, "Provided contract was empty");
+		_erro("Provided contract was empty");
 	}
 	_erro("Failure to add server");
 	return false;
 }
 
-bool cUseOT::ServerCreate(const string & nymName, bool dryrun) {
-	_fact("server ls");
+bool cUseOT::ServerCreate(const string & nym, bool dryrun) {
+	_fact("server new for nym=" << nym);
 	if(dryrun) return true;
 	if(!Init()) return false;
 
@@ -1210,15 +1219,14 @@ bool cUseOT::ServerCreate(const string & nymName, bool dryrun) {
 	nUtils::cEnvUtils envUtils;
 	xmlContents = envUtils.Compose();
 
-	ID nymID = NymGetId(nymName);
-	string contract = OTAPI_Wrap::CreateServerContract(nymID, xmlContents);
-
-	if( !contract.empty() ) {
-		_info( "Contract created for Nym: " << nymName << "(" << nymID << ")" );
-		nUtils::DisplayStringEndl(cout, contract);
+	ID nymID = NymGetId(nym);
+	ID serverID = OTAPI_Wrap::CreateServerContract(nymID, xmlContents);
+	if( !serverID.empty() ) {
+		_info( "Contract created for Nym: " << NymGetName(nymID) << "(" << nymID << ")" );
+		nUtils::DisplayStringEndl( cout, OTAPI_Wrap::GetServer_Contract(serverID) );
 		return true;
 	}
-	_erro( "Failure to create contract for nym: " << nymName << "(" << nymID << ")" );
+	_erro( "Failure to create contract for nym: " << NymGetName(nymID) << "(" << nymID << ")" );
 	return false;
 }
 
