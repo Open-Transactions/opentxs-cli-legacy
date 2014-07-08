@@ -1177,9 +1177,15 @@ bool cUseOT::ServerAdd(bool dryrun) {
 	nUtils::cEnvUtils envUtils;
 	contract = envUtils.Compose();
 
-	if( OTAPI_Wrap::AddServerContract(contract) ) {
-		_info("Server added");
-		return true;
+	if (!contract.empty()) {
+		if( OTAPI_Wrap::AddServerContract(contract) ) {
+			_info("Server added");
+			return true;
+		}
+	}
+	else {
+		nUtils::DisplayStringEndl(cout, "Provided contract was empty");
+		_erro("Provided contract was empty");
 	}
 	_erro("Failure to add server");
 	return false;
