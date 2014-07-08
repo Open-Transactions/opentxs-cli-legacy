@@ -351,6 +351,7 @@ int RangesFindPosition(const vector<T> &R, const T &pos) {
 // ====================================================================
 // ====================================================================
 
+
 // value_init for given value
 
 template <class T, T INIT>
@@ -368,7 +369,7 @@ class value_init {
 template <class T, T INIT>
 value_init<T, INIT>::value_init() :	data(INIT) { }
 
-
+string FindMapValue(const map<string, string> & map, const string value);
 
 }; // namespace nUtils
 

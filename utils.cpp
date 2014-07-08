@@ -491,6 +491,14 @@ string stringToColor(const string &hash) {
   return lightColors.at( color );
 }
 
+string FindMapValue(const map<string, string> & map, const string value) {
+	for ( auto p : map ) {
+		if (p.second == value) {
+			return p.first;
+		}
+	}
+	return "";
+}
 
 // ====================================================================
 // algorthms

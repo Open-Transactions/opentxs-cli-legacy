@@ -27,10 +27,14 @@ namespace nUse {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_3; // <=== namespaces
 
+
+cUseCache::cUseCache()
+: mNymsMy_loaded(false)
+{}
+
 cUseOT::cUseOT(const string &mDbgName)
 :
 	mDbgName(mDbgName)
-, mNymsMy_loaded(false)
 , mDataFolder( OTPaths::AppDataFolder().Get() )
 , mDefaultIDsFile( mDataFolder + "defaults.opt" )
 {
@@ -119,6 +123,14 @@ bool cUseOT::DisplayHistory(bool dryrun) {
 	}
 	return true;
 }
+
+string cUseOT::SubjectGetDescr(const nUtils::eSubjectType type, const string & subject) {
+	ID subjectID = (this->*cUseOT::subjectGetIDFunc.at(type))(subject);
+	string subjectName = (this->*cUseOT::subjectGetNameFunc.at(type))(subjectID);
+	string description = subjectName + "(" + subjectID + ")";
+	return nUtils::stringToColor(description);
+}
+
 bool cUseOT::Refresh(bool dryrun){
 	_fact("refresh all");
 	if(dryrun) return true;
@@ -955,14 +967,14 @@ void cUseOT::NymGetAll(bool force) {
 	if(!Init())
 		return;
 
-	if (force || mNyms.size() != OTAPI_Wrap::GetNymCount()) { //TODO optimize?
-		mNyms.clear();
+	if (force || mCache.mNyms.size() != OTAPI_Wrap::GetNymCount()) { //TODO optimize?
+		mCache.mNyms.clear();
 		_dbg3("Reloading nyms cache");
 		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount();i++) {
 			string nym_ID = OTAPI_Wrap::GetNym_ID (i);
 			string nym_Name = OTAPI_Wrap::GetNym_Name (nym_ID);
 
-			mNyms.insert( std::make_pair(nym_ID, nym_Name) );
+			mCache.mNyms.insert( std::make_pair(nym_ID, nym_Name) );
 		}
 	}
 }
@@ -972,7 +984,7 @@ const vector<string> cUseOT::NymGetAllIDs() {
 		return vector<string> {};
 	NymGetAllNames();
 	vector<string> IDs;
-	for (auto val : mNyms) {
+	for (auto val : mCache.mNyms) {
 		IDs.push_back(val.first);
 	}
 	return IDs;
@@ -983,7 +995,7 @@ const vector<string> cUseOT::NymGetAllNames() {
 		return vector<string> {};
 	NymGetAll();
 	vector<string> names;
-	for (auto val : mNyms) {
+	for (auto val : mCache.mNyms) {
 		names.push_back(val.second);
 	}
 	return names;
@@ -995,7 +1007,7 @@ bool cUseOT::NymDisplayAll(bool dryrun) {
 	if(!Init()) return false;
 
 	NymGetAll();
-	nUtils::DisplayMap(cout, mNyms);// display Nyms cache
+	nUtils::DisplayMap(cout, mCache.mNyms);// display Nyms cache
 
 	return true;
 }
@@ -1009,15 +1021,22 @@ const string cUseOT::NymGetDefault() {
 const string cUseOT::NymGetId(const string & nymName) { // Gets nym aliases and IDs begins with '^'
 	if(!Init())
 		return "";
+
 	if ( nUtils::checkPrefix(nymName) ) // nym ID
 		return nymName.substr(1);
-	else { // nym Name
-		for(int i = 0 ; i < OTAPI_Wrap::GetNymCount ();i++) {
-			string nymID = OTAPI_Wrap::GetNym_ID (i);
-			string nymName_ = OTAPI_Wrap::GetNym_Name (nymID);
-			if (nymName_ == nymName)
-				return nymID;
+	else { // look in cache
+		string key = nUtils::FindMapValue(mCache.mNyms, nymName);
+		if(!key.empty()){
+			_dbg3("Found nymID in cache");
+			return key;
 		}
+	}
+//
+	for(int i = 0 ; i < OTAPI_Wrap::GetNymCount ();i++) {
+		string nymID = OTAPI_Wrap::GetNym_ID (i);
+		string nymName_ = OTAPI_Wrap::GetNym_Name (nymID);
+		if (nymName_ == nymName)
+			return nymID;
 	}
 	return "";
 }

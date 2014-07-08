@@ -21,12 +21,22 @@ namespace nUse {
 	using ID = string;
 	using name = string;
 
+	class cUseCache { // TODO optimize/share memory? or convert on usage
+		friend class cUseOT;
+	public:
+		cUseOT();
+	protected:
+		map<ID, name> mNyms;
+		map<ID, name> mAccounts;
+		map<ID, name> mAssets;
+		map<ID, name> mServers;
+		bool mNymsMy_loaded;
+	private:
+	};
+
 	class cUseOT {
 	public:
 
-		map<ID, name> mNyms; // TODO optimize/share memory? or convert on usage
-//		TODO make cache for accounts, assets etc
-		bool mNymsMy_loaded;
 		static bool OTAPI_loaded;
 		static bool OTAPI_error;
 
@@ -35,6 +45,8 @@ namespace nUse {
 		string mDbgName;
 
 		OT_ME mMadeEasy;
+
+		cUseCache mCache;
 
 		map<nUtils::eSubjectType, ID> mDefaultIDs; ///< Default IDs are saved to file after changing any default ID
 		const string mDataFolder;
@@ -63,6 +75,7 @@ namespace nUse {
 		EXEC bool DisplayDefaultSubject(const nUtils::eSubjectType type, bool dryrun);
 		bool DisplayAllDefaults(bool dryrun);
 		EXEC bool DisplayHistory(bool dryrun);
+		string SubjectGetDescr(const nUtils::eSubjectType type, const string & subject);
 		bool Refresh(bool dryrun);
 		//================= account =================
 
