@@ -16,11 +16,14 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
  */
 
 void HintingToTxtTest(string path, string command, vector <string> &completions, std::ifstream & file) {
+	std:: ifstream Questions("script/test/hint/test1-questions.txt");	
+	_mark("testing "<<command);
 	bool test_ok=true;		//if he have all the same
 	if(file.good()) {
-		bool cmdexists=false; //if you command exists in file of expected output
 		string line;
 		getline(file,line);
+		while(line.size()>0) {
+		bool cmdexists=false; //if you command exists in file of expected output
 		if(line==command) {
 			cmdexists=true;
 			string nextline;
@@ -38,19 +41,68 @@ void HintingToTxtTest(string path, string command, vector <string> &completions,
 				std::vector<string>::iterator it;
 				it = find (proposals.begin(), proposals.end(), a);
 				if(it==proposals.end()) {
-					_erro("You don't have "<<*it<<" in file of expected output");
-					test_ok=false;
+					cmdexists=true;
 				}
 			}
-		}
-		else if(cmdexists==false) {
+		if(cmdexists==false) {
 			_erro("You don't have "<<command<<" in file of expected output");
 			test_ok=false;
+		}
+		}
+		getline(file,line);
 		}
 	}	//end if
 	if(test_ok==true) _mark("Test from "<<path<<" completed succesfully");
 }
+void ParseTest(string command,std::ifstream & file,const vector<string> & mVars , const vector<string> & mVarExts,const map<string,vector<string>> & mOptions) {
+	bool test_ok=true;
+	if(file.good()) {
+		bool cmdexists=false; //if you command exists in file of expected output
+		string line;
+		getline(file,line);
+		while(line.size()>0) {
+			if(line==command) {
+				string number_of_var = std::to_string(mVars.size());
+				cmdexists=true;
+				string nextline;
+				getline(file,nextline);
+				if (nextline== number_of_var) {
+					_mark("good number of variables");
+					getline(file,nextline);
+					for(auto a: mVars){
+					_note(nextline<<"="<<a);
+					getline(file,nextline);
+					}
+				string number_of_var = std::to_string(mVarExts.size());
+				if(nextline== number_of_var){
+				_note("good number of Extvariables");
+					getline(file,nextline);
+					for(auto a: mVarExts){
+					_mark(nextline<<"="<<a);
+					getline(file,nextline);
+					}
+				}
+				for(auto var: mOptions) {
+					number_of_var = std::to_string(var.second.size());
+					if(nextline==number_of_var ){
+					getline(file,nextline);
+					}
+					for(auto a: var.second){
+					_mark(nextline<<"="<<a);
+					getline(file,nextline);
+					}
+				}
+				}
+				else _erro("Bad Parsing!");
+					bool test_ok=false;
+				}	
+		getline(file,line);
+		}
+	}
+	if(test_ok==true) _mark("Test ok");
+}
 
+	
 
 using namespace nUse;
 vector<string> cCmdParser::EndingCmdNames (const string sofar) {
@@ -208,14 +260,15 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 	std:: ifstream Questions("script/test/hint/test1-questions.txt");
 	vector<string> alltest;
 	if (Questions.good()){
-	string line;
-	line=line+"~"; 
-	getline (Questions,line);
+		string line;
+		getline (Questions,line);
+		while(line.size()>0)
+		{
 		alltest.push_back(line);
 		char c=line.back();
 		size_t i=line.size()-1;
 		string subcommand=line.erase(i);
-			while(i>4){
+		while(i>0){
           if(c!=' ') {	
 						subcommand=subcommand+"~";
 						alltest.push_back(subcommand);
@@ -229,9 +282,10 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 						subcommand=subcommand.erase(i);
 					}
 			}
+		getline(Questions,line);
+		}
 	}
 	for (const auto cmd_raw : alltest) {
-		
 		try {
 			if (!cmd_raw.length()) continue;
 
@@ -246,7 +300,6 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-			_mark("comparing current results with good output from script/test/hint/test1-answers.txt");
 			HintingToTxtTest("script/test/hint/test1-answers.txt", cmd_raw, completions,Answers);
 			_note("Completions: " << DbgVector(completions));
 
@@ -292,6 +345,45 @@ void cCmdParser::_cmd_test_tree( shared_ptr<cUseOT> use ) {
 	}
 
 }
+void cCmdParser::_parse_test(shared_ptr<cUseOT> use) {
+	_mark(" PARSE TEST");
+	shared_ptr<cCmdParser> parser(new cCmdParser);
+	parser->Init();
+	std:: ifstream Questions("script/test/parse/test1-questions.txt");
+	std:: ifstream Answers("script/test/parse/test1-answers.txt");
+	vector<string> alltest;
+	if (Questions.good()){
+		string line;
+		getline (Questions,line);
+		while(line.size()>0)
+		{
+			alltest.push_back(line);
+			getline (Questions,line);
+		}
+	}
+	
+	for (const auto cmd_raw : alltest) {
+		try {
+			if (!cmd_raw.length()) continue;
+			auto cmd = cmd_raw;
+			auto pos = cmd_raw.find_first_of("~");
+			bool good_format=true;
+			if (pos!= string::npos) {
+				good_format=false;
+				_erro("Bad example -  Cmdname is not complete!");
+				continue; // <---
+			}
+			auto processing = parser->StartProcessing(cmd, use);
+			processing.Parse(good_format);
+			shared_ptr<cCmdDataParse> TestData=processing.getmData();
+			map<string, vector<string> > mOptions=TestData->getmOption();
+			ParseTest(cmd_raw, Answers,TestData->getmVar(),TestData->getmVarExt(),TestData->getmOption());	
+		}
+		catch (const myexception &e) { e.Report(); }
+		catch (const std::exception &e) { _erro("Exception " << e.what()); }
+		// continue anyway
+	}
+}
 
 
 
@@ -336,6 +428,8 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 		// continue anyway
 	}
 }
+
+
 
 
 } // namespace

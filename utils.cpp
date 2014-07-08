@@ -433,21 +433,20 @@ void generateQuestions (std::fstream & file, string command)  {
 	if(file.good()) {
 			file <<command<<endl;	
 			file.flush();
-			file<<endl;
 	}
 }
 
 void generateAnswers (std::fstream & file, string command, vector<string> &completions) {
 		char c=command.back();
 		size_t i=command.size()-1;
-    string subcommand=command.erase(i);
-    vector <string> newcompletions;
-    for(auto a: completions) {
+		string subcommand=command.erase(i);
+		vector <string> newcompletions;
+		for(auto a: completions) {
 			newcompletions.push_back(a);
 		}
 		if(file.good())
 		{
-			while(i>4){
+			while(i>0){
           if(c!=' ') {
 						file <<subcommand<< "~"<<endl;
 						for(auto a: newcompletions) {

@@ -1,0 +1,28 @@
+ot a~
+account account-in account-out asset 
+ot ~
+account account-in account-out asset 
+o~
+ot 
+ot msg s~
+send-from send-to 
+ot msg ~
+send-from send-to 
+ot ms~
+msg 
+ot m~
+msg 
+ot ~
+msg 
+o~
+ot 
+ot hel~
+help 
+ot he~
+help 
+ot h~
+help 
+ot ~
+help 
+o~
+ot 

@@ -320,7 +320,9 @@ void cCmdParser::Init() {
 
 	AddFormat("test answers", {}, {}, {},
 		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _cmd_test_completion_answers(Utmp); return true; } );
-
+		
+	AddFormat("test parse", {}, {}, {},
+		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _parse_test(Utmp); return true; } );		
 
 	//======== ot account ========
 

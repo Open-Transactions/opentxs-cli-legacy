@@ -165,6 +165,7 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 		static void cmd_test_EndingCmdNames(  shared_ptr<nUse::cUseOT> use  );
 		static void _cmd_test_safe_completion(  shared_ptr<nUse::cUseOT> use  );
 		static void _cmd_test_completion_answers( shared_ptr<nUse::cUseOT> use  );
+		static void _parse_test( shared_ptr<nUse::cUseOT> use);
 
 		const vector<string> & GetCmdNamesWord1() const; // possible word1 in loaded command names
 		const vector<string> & GetCmdNamesWord2(const string &word1) const; // possible word2 for given word1 in loaded command names
@@ -204,6 +205,9 @@ class cCmdProcessing : public enable_shared_from_this<cCmdProcessing> { MAKE_CLA
 		virtual void UseExecute(); // execute the command
 
 		vector<string> UseComplete(int char_pos); // hint the possible completions (aka tab-completion)
+		shared_ptr<cCmdDataParse> getmData(){
+			return mData;
+		}
 };
 
 /**
@@ -306,7 +310,10 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 
 //		virtual const cCmdProcessing* MetaGetProcessing() const; // return optional pointer to the processing information
 //		virtual cCmdProcessing MetaGetProcessing() const; // return optional pointer to the processing information
-
+	const tVar & getmVar() const{return this->mVar;}	 
+	const tOption & getmOption() const{return this->mOption;}
+	const tVar & getmVarExt() const{return this->mVarExt;}
+		
 	protected:
 		void AssertLegalOptName(const string & name) const throw(cErrArgIllegal); // used internally to catch programming errors e.g. in binding lambdas
 };
@@ -329,6 +336,7 @@ class cCmdDataParse : public cCmdData { MAKE_CLASS_NAME("cCmdDataParse");
 
 		int mCharShift; // *deprecated?* how many characters should we shift to get back to orginal string becuse auto-prepending like "help"->"ot help" (-3), or 0 often
 		bool mIsPreErased;
+		
 
 	public:
 		cCmdDataParse();
