@@ -958,7 +958,7 @@ bool cUseOT::NymCreate(const string & nymName, bool registerOnServer, bool dryru
 	_info("Nym " << nymName << "(" << nymID << ")" << " created successfully.");
 	//	TODO add nym to the cache
 
-	mNyms.insert( std::make_pair(nymID, nymName) ); // insert nym to nyms cache
+	mCache.mNyms.insert( std::make_pair(nymID, nymName) ); // insert nym to nyms cache
 
 	if ( registerOnServer )
 		NymRegister(nymName, "^" + ServerGetDefault(), dryrun);
@@ -1141,7 +1141,7 @@ bool cUseOT::NymRemove(const string & nymName, bool dryrun) {
 	if ( OTAPI_Wrap::Wallet_CanRemoveNym(nymID) ) {
 		if ( OTAPI_Wrap::Wallet_RemoveNym(nymID) ) {
 			_info("Nym " << nymName  <<  "(" << nymID << ")" << " was deleted successfully");
-			mNyms.erase(nymID);
+			mCache.mNyms.erase(nymID);
 			return true;
 		}
 	}
@@ -1169,7 +1169,7 @@ bool cUseOT::NymRename(const string & nym, const string & newNymName, bool dryru
 
 	if( NymSetName(nymID, newNymName) ) {
 		_info("Nym " << NymGetName(nymID) << "(" << nymID << ")" << " renamed to " << newNymName);
-		mNyms.insert( std::make_pair(nymID, newNymName) ); // insert nym to nyms cache
+		mCache.mNyms.insert( std::make_pair(nymID, newNymName) ); // insert nym to nyms cache
 		return true;
 	}
 	_erro("Failed to rename Nym " << NymGetName(nymID) << "(" << nymID << ")" << " to " << newNymName);
