@@ -1,7 +1,7 @@
 ot msg send-from alice bob subject message --prio low --cc dave --cc eve
 2
 alice
-bob
+bobxxxxxxxxxxxxxxxx
 2
 subject
 message

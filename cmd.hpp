@@ -310,10 +310,10 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 
 //		virtual const cCmdProcessing* MetaGetProcessing() const; // return optional pointer to the processing information
 //		virtual cCmdProcessing MetaGetProcessing() const; // return optional pointer to the processing information
-	const tVar & getmVar() const{return this->mVar;}	 
+	const tVar & getmVar() const{return this->mVar;}
 	const tOption & getmOption() const{return this->mOption;}
 	const tVar & getmVarExt() const{return this->mVarExt;}
-		
+
 	protected:
 		void AssertLegalOptName(const string & name) const throw(cErrArgIllegal); // used internally to catch programming errors e.g. in binding lambdas
 };

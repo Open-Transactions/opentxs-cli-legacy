@@ -799,11 +799,11 @@ const vector<string> cUseOT::MsgGetAll() { ///< Get all messages from all Nyms. 
 	return vector<string> {};
 }
 
-bool cUseOT::MsgDisplayForNym(const string & nym, bool dryrun) { ///< Get all messages from Nym.
-	_fact("msg ls " << nym);
+bool cUseOT::MsgDisplayForNym(const string & nymName, bool dryrun) { ///< Get all messages from Nym.
+	_fact("msg ls " << nymName);
 	if (dryrun) return false;
 	if(!Init())	return false;
-	string nymID = NymGetId(nym);
+	string nymID = NymGetId(nymName);
 
 	bprinter::TablePrinter tpIn(&std::cout);
   tpIn.AddColumn("ID", 4);
@@ -829,6 +829,43 @@ bool cUseOT::MsgDisplayForNym(const string & nym, bool dryrun) { ///< Get all me
 		tpOut << i << NymGetName(OTAPI_Wrap::GetNym_OutmailRecipientIDByIndex(nymID, i)) << OTAPI_Wrap::GetNym_OutmailContentsByIndex(nymID,i);
 	}
 	tpOut.PrintFooter();
+	return true;
+}
+
+bool cUseOT::MsgDisplayForNymInbox(const string & nymName, int msg_index, bool dryrun) {
+	return cUseOT::MsgDisplayForNymBox( tBoxType::eInbox , nymName, msg_index, dryrun);
+}
+
+bool cUseOT::MsgDisplayForNymOutbox(const string & nymName, int msg_index, bool dryrun) {
+	return cUseOT::MsgDisplayForNymBox( tBoxType::eOutbox , nymName, msg_index, dryrun);
+}
+
+bool cUseOT::MsgDisplayForNymBox( tBoxType boxType, const string & nymName, int msg_index, bool dryrun) {
+	_fact("msg ls box " << nymName << " " << msg_index);
+	if (dryrun) return false;
+	if(!Init())	return false;
+	string nymID = NymGetId(nymName);
+
+  nUtils::DisplayStringEndl( cout, NymGetName(nymID) + "(" + nymID + ")" );
+	nUtils::DisplayStringEndl( cout, "INBOX" ); // TODO
+	// for(int i = 0 ; i < OTAPI_Wrap::GetNym_MailCount (nymID);i++) {
+
+	string &data_msg;
+  if (boxType == tBoxType::eInbox) {
+		data_msg = OTAPI_Wrap::GetNym_MailContentsByIndex(nymID,msg_index);
+		const string& data_from = NymGetName(OTAPI_Wrap::GetNym_MailSenderIDByIndex(nymID, msg_index));
+		const string& data_server = ServerGetName( OTAPI_Wrap::GetNym_MailServerIDByIndex(nymID, msg_index));
+		cout << "      To: " <<  nymName << endl;  // color
+	  cout << "    From: " <<  data_from << endl; // color
+	} else {
+		const string& data_to = NymGetName(OTAPI_Wrap::GetNym_Outmail......(nymID, msg_index)); // ?
+		const string& data_server = ServerGetName( OTAPI_Wrap::GetNym_OutmailServerIDByIndex(nymID, msg_index));
+	// ..
+	}
+	cout << "Msg size:" <<  data_from << endl; // color
+	cout << "Message : " <<  data_msg << endl; // color
+	cout << "--- end of message ---" << endl;
+
 	return true;
 }
 

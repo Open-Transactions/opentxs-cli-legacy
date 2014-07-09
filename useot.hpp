@@ -61,6 +61,11 @@ namespace nUse {
 
 		void LoadDefaults(); ///< Defaults are loaded when initializing OTAPI
 
+	protected:
+
+		enum class tBoxType { eInbox, eOutbox };
+		EXEC bool MsgDisplayForNymBox( tBoxType boxType, const string & nymName, int msg_index, bool dryrun);
+
 	public:
 
 		cUseOT(const string &mDbgName);
@@ -139,6 +144,10 @@ namespace nUse {
 		VALID bool MsgOutCheckIndex(const string & nymName, const int32_t & nIndex);
 
 		EXEC bool MsgDisplayForNym(const string & nymName, bool dryrun);
+
+		EXEC bool MsgDisplayForNymInbox(const string & nymName, int msg_index, bool dryrun);
+		EXEC bool MsgDisplayForNymOutbox(const string & nymName, int msg_index, bool dryrun);
+
 		EXEC bool MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, bool dryrun);
 		EXEC bool MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex, bool dryrun);
 		EXEC bool MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex, bool dryrun);
