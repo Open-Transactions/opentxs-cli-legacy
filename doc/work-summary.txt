@@ -1,0 +1,80 @@
+
+New Open-Transactions Command Line Interface
+
+Work summary:
+
+- Tree of commands - full model of possible commands and options understood by program.
+- Scalability - adding new command, with the validation, completion for all arguments and options, and with binding to OT command, takes usually 2 lines of C++ code.
+- Validation - checking syntax as well as data correctness (e.g. check with wallet/address book) of the data before executing OT command.
+- Hinting - auto completion and display possible propositions of the commands and arguments.
+- EditLine library integration - History functionality with scrolling through history and saving to file. Display prepared hints, and or files. Planning to use compatible with EditLine - WinEditLine for Windows.
+- Support for multiple words names through quotes.
+- Commands take both IDs and aliases as arguments (ID must be prepend by special prefix character '^') - so local nyms etc. are easy to use and remember. Aliases are obligatory.
+- So far there is over 40 working  commands including messaging, managing nyms, assets and servers. 
+- Application can be run in different modes - easy modifying of application parameters (e.g. redirecting debug to file, no debug).
+- Working completion and command execution in bash shell
+- Linux daemon for bash auto completion prevents from multiple initialization of OTAPI.
+- Use of external text editor (unix only), when entering multi line text. 
+- Test commands  - that we are using to test specific CLI functionalities, like tab completions or building tree of commands.
+- Secure code - asserts in many places, rich debug.
+- Working on unit tests that will be checking of validity of all commands, hinting.
+- Local configuration files - read and save defaults IDs: account, asset, nym, server.
+- We are preparing graphical documentation that will present tree of all CLI commands in clear and simple way.
+- Colorful debug and help displaying
+- Help - named arguments, types of arguments and description for each command. Detailed help for single commands.  Automatically generated list of all commands with variables and options (colorful output):
+
+  ot account [--dryrun] 
+  ot account ls [--dryrun] 
+  ot account new nym-my asset account-new [--dryrun] 
+  ot account refresh [account] [--all] [--dryrun] 
+  ot account rename account account-new [--dryrun] 
+  ot account rm account [--dryrun] 
+  ot account set-default account [--dryrun] 
+  ot account show account [--dryrun] 
+  ot account transfer-from account-from account-to amount [text] [--dryrun] 
+  ot account transfer-to account-to amount [text] [--dryrun] 
+  ot account-in accept [account] [inbox-index] [--all] [--dryrun] 
+  ot account-in ls [account] [--dryrun] 
+  ot account-out cancel [account] [inbox-index] [--all] [--dryrun] 
+  ot account-out ls [account] [--dryrun] 
+  ot asset [--dryrun] 
+  ot asset issue [server] [nym] [--dryrun] 
+  ot asset ls [--dryrun] 
+  ot asset new nym [--dryrun] 
+  ot asset rm nym [--dryrun] 
+  ot asset set-default asset [--dryrun] 
+  ot cash withdraw account amount [--dryrun] 
+  ot defaults [--dryrun] 
+  ot help [--dryrun] 
+  ot history [--dryrun] 
+  ot msg ls [nym] [--dryrun] 
+  ot msg rm nym int [--dryrun] 
+  ot msg rm-out nym int [--dryrun] 
+  ot msg send-from nym-from nym-to [subject] [subject] [--bcc nym] [--cc nym] [--prio int] [--dryrun] 
+  ot msg send-to nym-to [subject] [subject] [--bcc nym] [--cc nym] [--prio int] [--dryrun] 
+  ot nym [--dryrun] 
+  ot nym check nym [--dryrun] 
+  ot nym info nym [--dryrun] 
+  ot nym ls [--dryrun] 
+  ot nym new nym-new [--register] [--dryrun] 
+  ot nym refresh [nym] [--all] [--dryrun] 
+  ot nym register nym [server] [--dryrun] 
+  ot nym rename nym-my nym-new [--dryrun] 
+  ot nym rm nym [--dryrun] 
+  ot nym set-default nym [--dryrun] 
+  ot refresh [--dryrun] 
+  ot server [--dryrun] 
+  ot server add [--dryrun] 
+  ot server ls [--dryrun] 
+  ot server new [nym-my] [--dryrun] 
+  ot server rm server [--dryrun] 
+  ot server set-default server [--dryrun] 
+  ot test [--dryrun] 
+  ot test complete [--dryrun] 
+  ot test tab [--dryrun] 
+  ot test tree [--dryrun] 
+  ot text decode [text] [--dryrun] 
+  ot text decrypt nym-my [text] [--dryrun] 
+  ot text encode [text] [--dryrun] 
+  ot text encrypt nym-to [text] [--dryrun] 
+  ot x [--dryrun] 
