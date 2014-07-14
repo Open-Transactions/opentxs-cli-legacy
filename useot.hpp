@@ -30,7 +30,10 @@ namespace nUse {
 		map<ID, name> mAccounts;
 		map<ID, name> mAssets;
 		map<ID, name> mServers;
-		bool mNymsMy_loaded;
+		bool mNymsLoaded;
+		bool mAccountsLoaded;
+		bool mAssetsLoaded;
+		bool mServersLoaded;
 	private:
 	};
 

@@ -29,7 +29,10 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_3; // <=== namespaces
 
 
 cUseCache::cUseCache()
-: mNymsMy_loaded(false)
+: mNymsLoaded(false)
+, mAccountsLoaded(false)
+, mAssetsLoaded(false)
+, mServersLoaded(false)
 {}
 
 cUseOT::cUseOT(const string &mDbgName)
@@ -833,10 +836,16 @@ bool cUseOT::MsgDisplayForNym(const string & nymName, bool dryrun) { ///< Get al
 }
 
 bool cUseOT::MsgDisplayForNymInbox(const string & nymName, int msg_index, bool dryrun) {
+	if (msg_index == -1) { // display last message
+		msg_index = OTAPI_Wrap::GetNym_MailCount(NymGetId(nymName)) - 1;
+	}
 	return cUseOT::MsgDisplayForNymBox( tBoxType::eInbox , nymName, msg_index, dryrun);
 }
 
 bool cUseOT::MsgDisplayForNymOutbox(const string & nymName, int msg_index, bool dryrun) {
+	if (msg_index == -1) { // display last message
+		msg_index = OTAPI_Wrap::GetNym_OutmailCount(NymGetId(nymName)) - 1;
+	}
 	return cUseOT::MsgDisplayForNymBox( tBoxType::eOutbox , nymName, msg_index, dryrun);
 }
 
@@ -1057,7 +1066,7 @@ void cUseOT::NymGetAll(bool force) {
 const vector<string> cUseOT::NymGetAllIDs() {
 	if(!Init())
 		return vector<string> {};
-	NymGetAllNames();
+	NymGetAll();
 	vector<string> IDs;
 	for (auto val : mCache.mNyms) {
 		IDs.push_back(val.first);

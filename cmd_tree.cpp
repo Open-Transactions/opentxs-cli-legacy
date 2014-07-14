@@ -220,7 +220,10 @@ void cCmdParser::Init() {
 	cParamInfo pMsgInIndex( "msg-index-inbox", "index of message in our inbox",
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
-			return use.MsgInCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ); //TODO check if integer
+			if ( data.Var(nr) == "-1" || use.MsgInCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ) ) {//TODO check if integer
+				return true;
+			}
+			return false;
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			return vector<string> { "" }; //TODO hinting function for msg index
@@ -230,7 +233,10 @@ void cCmdParser::Init() {
 	cParamInfo pMsgOutIndex( "msg-index-outbox", "index of message in our outbox",
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
-			return use.MsgOutCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ); //TODO check if integer
+			if ( data.Var(nr) == "-1" || use.MsgOutCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ) ) { //TODO check if integer
+				return true;
+			}
+			return false;
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			return vector<string> { "" }; //TODO hinting function for msg index
@@ -320,9 +326,9 @@ void cCmdParser::Init() {
 
 	AddFormat("test answers", {}, {}, {},
 		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _cmd_test_completion_answers(Utmp); return true; } );
-		
+
 	AddFormat("test parse", {}, {}, {},
-		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _parse_test(Utmp); return true; } );		
+		LAMBDA { auto &D=*d; auto Utmp = make_shared<cUseOT>( U ); _parse_test(Utmp); return true; } );
 
 	//======== ot account ========
 
@@ -402,9 +408,9 @@ void cCmdParser::Init() {
 
 	//======== ot msg-in and msg-out ========
 
-	AddFormat( "msg-in show", {}, {pNym, pText}, {},
+	AddFormat( "msg-in show", {}, {pNym, pMsgInIndex}, {},
 		LAMBDA { auto &D=*d; return U.MsgDisplayForNymInbox( D.v(1, U.NymGetName(U.NymGetDefault())) , stoi(D.v(2,"-1")) ,  D.has("--dryrun") ); } );
-	AddFormat("msg-out show", {}, {pNym, pText}, {},
+	AddFormat("msg-out show", {}, {pNym, pMsgOutIndex}, {},
 		LAMBDA { auto &D=*d; return U.MsgDisplayForNymOutbox( D.v(1, U.NymGetName(U.NymGetDefault())) , stoi(D.v(2,"-1")) ,  D.has("--dryrun") ); } );
 
 	//======== ot msg ========
