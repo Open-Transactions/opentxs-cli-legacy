@@ -159,8 +159,8 @@ nym edit <nymID>		# allows to edit information about such <nymID>
 nym register <nymID>	# register nym defined by nymID on default server
 /nym register <nymID> <serverID>	# register this specific <nymID> to specific <serverID> server
 nym set-default <nymID> # set default nym
-nym import		# import saved (somewhere?) nyms
-nym export		# export nyms to (outerspace) :) ?
+*nym import		# import nyms
+*nym export		# export nyms to output (outerspace) :) ?, probably bug in OTAPI
 *nym check <nymID>			# returns Public Key of this <nymID> nym
 *nym refresh			# refresh nym's list and its included informations
 nym-cred new 			# change credential to trust?
