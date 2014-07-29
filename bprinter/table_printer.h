@@ -7,7 +7,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
-
+#include "../utils.hpp"
 namespace bprinter {
 class endl{};
 /** \class TablePrinter
@@ -61,14 +61,31 @@ public:
       *out_stream_ << border_color << "|" << table_color;
 
     // Leave 3 extra space: One for negative sign, one for zero, one for decimal
-    *out_stream_ << content_color << std::setw(column_widths_.at(j_))
-                 << input;
+    //*out_stream_ << content_color << std::setw(column_widths_.at(j_))
+    //             << input;
 
-    if (j_ == get_num_columns()-1){
+    std::ostringstream oss;
+    oss << input;
+    std::string print;
+
+    // if output is wider than column width
+    if (oss.str().size() >= column_widths_.at(j_)) {
+		// cut and add "..."
+    	print = oss.str().substr(0,column_widths_.at(j_)-4) + "...";
+	}
+	else {
+		// if last char of output is new line
+		if(oss.str().at(oss.str().size()-1)=='\n') print = oss.str().substr(0,oss.str().size()-1);
+		else print = oss.str();
+	}
+
+
+	*out_stream_ << content_color << std::setw(column_widths_.at(j_)) << print;
+	if (j_ == get_num_columns()-1){  // end row
       *out_stream_ << border_color <<  "|\n" << table_color;
       i_ = i_ + 1;
       j_ = 0;
-    } else {
+    } else { // only separator
       *out_stream_ << border_color << separator_ << table_color;
       j_ = j_ + 1;
     }
