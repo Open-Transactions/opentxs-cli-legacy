@@ -66,8 +66,8 @@ namespace nUse {
 
 	protected:
 
-		enum class tBoxType { eInbox, eOutbox };
-		EXEC bool MsgDisplayForNymBox( tBoxType boxType, const string & nymName, int msg_index, bool dryrun);
+		enum class eBoxType { Inbox, Outbox };
+		EXEC bool MsgDisplayForNymBox( eBoxType boxType, const string & nymName, int msg_index, bool dryrun);
 
 	public:
 

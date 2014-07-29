@@ -336,17 +336,6 @@ bool cUseOT::AccountRename(const string & account, const string & newAccountName
 	return false;
 }
 
-bool cUseOT::AccountSetName(const string & accountID, const string & newAccountName) { //TODO: passing to function: const string & nymName, const string & signerNymName,
-	if(!Init()) return false;
-
-	if ( !OTAPI_Wrap::SetAccountWallet_Name (accountID, mDefaultIDs.at(nUtils::eSubjectType::User), newAccountName) ) {
-		_erro("Failed trying to name new account: " << accountID);
-		return false;
-	}
-	_info("Set account " << accountID << "name to " << newAccountName);
-	return true;
-}
-
 bool cUseOT::AccountCreate(const string & nym, const string & asset, const string & newAccountName, bool dryrun) {
 	_fact("account new nym=" << nym << " asset=" << asset << " accountName=" << newAccountName);
 	if(dryrun) return true;
@@ -364,8 +353,7 @@ bool cUseOT::AccountCreate(const string & nym, const string & asset, const strin
 	response = mMadeEasy.create_asset_acct(mDefaultIDs.at(nUtils::eSubjectType::Server), nymID, assetID); //TODO server as argument
 
 	// -1 error, 0 failure, 1 success.
-	if (1 != mMadeEasy.VerifyMessageSuccess(response))
-	{
+	if (1 != mMadeEasy.VerifyMessageSuccess(response)) {
 		_erro("Failed trying to create Account at Server.");
 		return false;
 	}
@@ -653,6 +641,17 @@ bool cUseOT::AccountOutDisplay(const string & account, bool dryrun) {
 	return false;
 }
 
+bool cUseOT::AccountSetName(const string & accountID, const string & newAccountName) { //TODO: passing to function: const string & nymName, const string & signerNymName,
+	if(!Init()) return false;
+
+	if ( !OTAPI_Wrap::SetAccountWallet_Name (accountID, mDefaultIDs.at(nUtils::eSubjectType::User), newAccountName) ) {
+		_erro("Failed trying to name new account: " << accountID);
+		return false;
+	}
+	_info("Set account " << accountID << "name to " << newAccountName);
+	return true;
+}
+
 const vector<string> cUseOT::AssetGetAllNames() {
 	if(!Init())
 	return vector<string> {};
@@ -836,20 +835,14 @@ bool cUseOT::MsgDisplayForNym(const string & nymName, bool dryrun) { ///< Get al
 }
 
 bool cUseOT::MsgDisplayForNymInbox(const string & nymName, int msg_index, bool dryrun) {
-	if (msg_index == -1) { // display last message
-		msg_index = OTAPI_Wrap::GetNym_MailCount(NymGetId(nymName)) - 1;
-	}
-	return cUseOT::MsgDisplayForNymBox( tBoxType::eInbox , nymName, msg_index, dryrun);
+	return cUseOT::MsgDisplayForNymBox( eBoxType::Inbox , nymName, msg_index, dryrun);
 }
 
 bool cUseOT::MsgDisplayForNymOutbox(const string & nymName, int msg_index, bool dryrun) {
-	if (msg_index == -1) { // display last message
-		msg_index = OTAPI_Wrap::GetNym_OutmailCount(NymGetId(nymName)) - 1;
-	}
-	return cUseOT::MsgDisplayForNymBox( tBoxType::eOutbox , nymName, msg_index, dryrun);
+	return cUseOT::MsgDisplayForNymBox( eBoxType::Outbox , nymName, msg_index, dryrun);
 }
 
-bool cUseOT::MsgDisplayForNymBox(tBoxType boxType, const string & nymName, int msg_index, bool dryrun) {
+bool cUseOT::MsgDisplayForNymBox(eBoxType boxType, const string & nymName, int msg_index, bool dryrun) {
 	_fact("msg ls box " << nymName << " " << msg_index);
 	using namespace zkr;
 
@@ -872,7 +865,7 @@ bool cUseOT::MsgDisplayForNymBox(tBoxType boxType, const string & nymName, int m
 	cout << col4;
 	nUtils::DisplayStringEndl(cout, NymGetName(nymID) + "(" + nymID + ")");
 	cout << col1;
-	if (boxType == tBoxType::eInbox) {
+	if (boxType == eBoxType::Inbox) {
 		nUtils::DisplayStringEndl(cout, "INBOX");
 
 		data_msg = OTAPI_Wrap::GetNym_MailContentsByIndex(nymID, msg_index);
@@ -889,7 +882,7 @@ bool cUseOT::MsgDisplayForNymBox(tBoxType boxType, const string & nymName, int m
 		cout << col1 << "        From: " << col2 << data_from << endl;
 		cout << col1 << " Data server: " << col2 << data_server << endl;
 
-	} else {
+	} else if (boxType == eBoxType::Outbox) {
 		nUtils::DisplayStringEndl(cout, "OUTBOX");
 		data_msg = OTAPI_Wrap::GetNym_OutmailContentsByIndex(nymID, msg_index);
 
