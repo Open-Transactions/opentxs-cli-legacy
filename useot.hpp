@@ -170,6 +170,8 @@ namespace nUse {
 		EXEC bool NymCreate(const string & nymName, bool registerOnServer, bool dryrun);
 		EXEC bool NymDisplayAll(bool dryrun);
 		EXEC bool NymDisplayInfo(const string & nymName, bool dryrun);
+		EXEC bool NymExport(const string & nymName, bool dryrun);
+		EXEC bool NymImport(bool dryrun);
 		EXEC bool NymRefresh(const string & nymName, bool all, bool dryrun);
 		EXEC bool NymRegister(const string & nymName, const string & serverName, bool dryrun);
 		EXEC bool NymRemove(const string & nymName, bool dryrun);

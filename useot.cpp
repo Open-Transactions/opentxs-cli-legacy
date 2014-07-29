@@ -1040,6 +1040,38 @@ bool cUseOT::NymCreate(const string & nymName, bool registerOnServer, bool dryru
 	return true;
 }
 
+bool cUseOT::NymExport(const string & nymName, bool dryrun) {
+	if(dryrun) return true;
+	if(!Init()) return false;
+
+	std::string nymID = NymGetId(nymName);
+	_fact("nym export: " << nymName << ", id: " << nymID);
+
+	std::string exported = OTAPI_Wrap::Wallet_ExportNym(nymID);
+	// FIXME Bug in OTAPI? Can't export nym twice
+	std::cout << zkr::cc::fore::lightblue << exported << zkr::cc::console ;
+
+	return true;
+}
+
+bool cUseOT::NymImport(bool dryrun) {
+	if(dryrun) return true;
+	if(!Init()) return false;
+
+	std:string toImport;
+	nUtils::cEnvUtils envUtils;
+	toImport = envUtils.Compose();
+
+	if( toImport.empty() ) {
+		_warn("Can't import, empty input");
+		return false;
+	}
+
+	std::string nym = OTAPI_Wrap::Wallet_ImportNym(toImport);
+	cout << nym << endl;
+	return true;
+}
+
 void cUseOT::NymGetAll(bool force) {
 	if(!Init())
 		return;
