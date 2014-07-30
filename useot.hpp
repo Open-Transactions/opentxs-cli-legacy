@@ -178,6 +178,10 @@ namespace nUse {
 		EXEC bool NymRename(const string & oldNymName, const string & newNymName, bool dryrun);
 		EXEC bool NymSetDefault(const string & nymName, bool dryrun);
 
+		//================= purse ==================
+
+		EXEC bool PurseCreate(const string & serverName, const string & asset, const string & ownerName, const string & signerName, bool dryrun);
+
 		//================= server =================
 
 		void ServerCheck(); ///< Check server availability (ping server)

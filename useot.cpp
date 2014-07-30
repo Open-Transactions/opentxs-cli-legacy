@@ -677,7 +677,7 @@ bool cUseOT::AssetDisplayAll(bool dryrun) {
 	_dbg3("Retrieving all asset names");
 	for(std::int32_t i = 0 ; i < OTAPI_Wrap::GetAssetTypeCount();i++) {
 		ID assetID = OTAPI_Wrap::GetAssetType_ID(i);
-		nUtils::DisplayStringEndl(cout, AssetGetName( assetID ) + " - " + assetID );
+		nUtils::DisplayStringEndl(cout, assetID + " - " + AssetGetName( assetID ) );
 	}
 	return true;
 }
@@ -1343,6 +1343,22 @@ bool cUseOT::NymSetDefault(const string & nymName, bool dryrun) {
 	return true;
 }
 
+bool cUseOT::PurseCreate(const string & serverName, const string & asset, const string & ownerName, const string & signerName, bool dryrun) {
+	_fact("purse create ");
+	if(dryrun) return true;
+	if(!Init()) return false;
+
+	string serverID = ServerGetId(serverName);
+	string assetTypeID = AssetGetId(asset);
+	string ownerID = NymGetId(ownerName);
+	string signerID = NymGetId(signerName);
+
+	string result = OTAPI_Wrap::CreatePurse(serverID,assetTypeID,ownerID,signerID);
+	nUtils::DisplayStringEndl(cout, result);
+
+	return true;
+}
+
 bool cUseOT::ServerAdd(bool dryrun) {
 	_fact("server ls");
 	if(dryrun) return true;
@@ -1483,6 +1499,7 @@ bool cUseOT::ServerDisplayAll(bool dryrun) {
 
 	for(std::int32_t i = 0 ; i < OTAPI_Wrap::GetServerCount();i++) {
 		ID serverID = OTAPI_Wrap::GetServer_ID(i);
+
 		nUtils::DisplayStringEndl(cout, ServerGetName( serverID ) + " - " + serverID);
 	}
 	return true;

@@ -470,6 +470,11 @@ void cCmdParser::Init() {
 	AddFormat("nym rename", {pNymMy, pNymNewName}, {}, {},
 			LAMBDA { auto &D=*d; return U.NymRename(D.V(1), D.V(2), D.has("--dryrun") ); } );
 
+	//======== ot purse  ========
+
+	AddFormat("purse create", {pServer, pAsset, pNym, pNym}, {}, { },
+			LAMBDA { auto &D=*d; return U.PurseCreate( D.V(1), D.V(2), D.V(3), D.V(4), D.has("--dryrun") ); } );
+
 
 	//======== ot server ========
 
