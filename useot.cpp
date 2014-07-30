@@ -774,18 +774,64 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 
 	ID accountID = AccountGetId(account);
 	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 
+	// Make sure the appropriate asset contract is available.
+	string assetContract = OTAPI_Wrap::LoadAssetContract(accountAssetID);
+
+	if (assetContract.empty()) {
+		string strResponse = mMadeEasy.retrieve_contract(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+
+		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse))
+		{
+			_erro( "Unable to retreive asset contract for nym " << accountNymID << " and server " << mDefaultIDs.at(nUtils::eSubjectType::Server) );
+			DisplayStringEndl(cout, "Unable to retreive asset contract for nym " + accountNymID + " and server " + mDefaultIDs.at(nUtils::eSubjectType::Server) );
+			return false;
+		}
+
+		assetContract = OTAPI_Wrap::LoadAssetContract(accountAssetID);
+
+		if (assetContract.empty()) {
+			_erro("Failure: Unable to load Asset contract even after retrieving it.");
+			DisplayStringEndl(cout, "Failure: Unable to load Asset contract even after retrieving it.");
+			return false;
+		}
+	}
+
+	// Make sure the unexpired mint file is available.
+	string mint = mMadeEasy.load_or_retrieve_mint(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+
+	if (mint.empty()) {
+		_erro("Failure: Unable to load or retrieve necessary mint file for withdrawal.");
+		return false;
+	}
+
+	// Send withdrawal request
 	string response = mMadeEasy.withdraw_cash ( mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountID, amount);//TODO pass server as an argument
 
-	_fact(response);
-
+	// Check server response
 	if (1 != mMadeEasy.VerifyMessageSuccess(response) ) {
 		_erro("Failed trying to withdraw cash from account: " << AccountGetName(accountID) );
 		return false;
 	}
 	_info("Successfully withdraw cash from account: " << AccountGetName(accountID));
+	DisplayStringEndl(cout, "Successfully withdraw cash from account: " + AccountGetName(accountID));
 	return true;
 }
+
+//bool cUseOT::CashShow(const string & account, int64_t amount, bool dryrun) {
+//	_fact("cash withdraw " << account);
+//	if (dryrun) return false;
+//	if(!Init()) return false;
+//
+//	ID accountID = AccountGetId(account);
+//	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+//	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+//
+////	int32_t purse_count = OTAPI_Wrap::It()->Purse_Count( mDefaultIDs.at(nUtils::eSubjectType::Server), accountAssetID, str_purse);
+//
+//	return true;
+//}
 
 
 const string cUseOT::ContractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
