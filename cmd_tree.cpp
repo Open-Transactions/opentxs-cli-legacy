@@ -408,6 +408,9 @@ void cCmdParser::Init() {
 	AddFormat("cash withdraw", {pAccount, pAmount}, {}, {},
 			LAMBDA { auto &D=*d; return U.CashWithdraw( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
 
+	AddFormat("cash show", {pAccount}, {}, {},
+				LAMBDA { auto &D=*d; return U.CashShow( D.V(1), D.has("--dryrun") ); } );
+
 	//======== ot msg-in and msg-out ========
 
 	AddFormat( "msg-in show", {}, {pNym, pMsgInIndex}, {},

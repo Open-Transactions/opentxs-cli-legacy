@@ -124,12 +124,23 @@ basket exchange
 
 ------------------------------
 
-cash withdraw # add new asset to the wallet
-cash withdraw <account-issuer>
-cash withdraw <account-issuer>
+ot cash withdraw  									# ERROR: Missing required variable
+ot cash withdraw <amount> 							# Withdraw amount of cash from default account on default server. Should display if account isn't issuer account
 
-cash send <mynym> <hisnym>
+ot cash withdraw-from  								# ERROR: Missing required variable
+ot cash withdraw-from <server>  					# ERROR: Missing required variable
+ot cash withdraw-from <server> <account> 			# ERROR: Missing required variable
+ot cash withdraw-from <server> <account> <amount> 	# Withdraw amount of cash from account on server
 
+
+
+cash send <> <nym> 			# send cash from mypurse to recipient, withdraw if necessary
+cash show
+
+cash export
+cash import
+
+cash deposit
 
 cheque new
 contract? new  # Managed by asset new / server new

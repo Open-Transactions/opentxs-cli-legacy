@@ -819,19 +819,102 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	return true;
 }
 
-//bool cUseOT::CashShow(const string & account, int64_t amount, bool dryrun) {
-//	_fact("cash withdraw " << account);
-//	if (dryrun) return false;
-//	if(!Init()) return false;
-//
-//	ID accountID = AccountGetId(account);
-//	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
-//	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
-//
-////	int32_t purse_count = OTAPI_Wrap::It()->Purse_Count( mDefaultIDs.at(nUtils::eSubjectType::Server), accountAssetID, str_purse);
-//
-//	return true;
-//}
+bool cUseOT::CashShow(const string & account, bool dryrun) {
+	_fact("cash withdraw " << account);
+	if (dryrun) return false;
+	if(!Init()) return false;
+
+	ID accountID = AccountGetId(account);
+	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
+
+	string purseValue = OTAPI_Wrap::LoadPurse(accountServerID, accountAssetID, accountNymID); // returns NULL, or a purse
+
+  if (purseValue.empty()) {
+		 _erro("Unable to load purse. Does it even exist?");
+		 DisplayStringEndl(cout, "Unable to load purse. Does it even exist?");
+		 return false;
+	}
+
+  int64_t amount = OTAPI_Wrap::Purse_GetTotalValue(accountServerID, accountAssetID, purseValue);
+
+  DisplayStringEndl(cout, "Total value: " + OTAPI_Wrap::FormatAmount(purseValue, amount));
+
+  // Loop through purse contents and display tokens.
+	int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
+	if (count < 0) { // TODO check if integer?
+		DisplayStringEndl(cout, "Error: Unexpected bad value returned from OT_API_Purse_Count.");
+		return false;
+	}
+
+	if (count > 0) {
+		DisplayStringEndl(cout, "Token count: " + to_string(count) + "\n");
+		DisplayStringEndl(cout, "Index\tValue\tSeries\tValidFrom\tValidTo\t\tStatus");
+
+		int32_t nIndex = -1;
+
+		while (count > 0) {
+			--count;
+			++nIndex;  // on first iteration, this is now 0.
+
+			string strToken = OTAPI_Wrap::Purse_Peek(accountServerID, accountAssetID, accountNymID, purseValue);
+			if (strToken.empty()) {
+				_erro("OT_API_Purse_Peek unexpectedly returned NULL instead of token.");
+				return false;
+			}
+
+			string strNewPurse = OTAPI_Wrap::Purse_Pop(accountServerID, accountAssetID, accountNymID, purseValue);
+
+			if (strNewPurse.empty()) {
+				_erro("OT_API_Purse_Pop unexpectedly returned NULL instead of updated purse.\n");
+				return false;
+			}
+
+			purseValue = strNewPurse;
+
+			int64_t lDenomination = OTAPI_Wrap::Token_GetDenomination(accountServerID, accountAssetID, purseValue);
+			int32_t nSeries = OTAPI_Wrap::Token_GetSeries(accountServerID, accountAssetID, purseValue);
+			time64_t tValidFrom = OTAPI_Wrap::Token_GetValidFrom(accountServerID, accountAssetID, purseValue);
+			time64_t tValidTo = OTAPI_Wrap::Token_GetValidTo(accountServerID, accountAssetID, purseValue);
+			time64_t lTime = OTAPI_Wrap::GetTime();
+
+//			if (0 > lDenomination)
+//			{
+//					OTAPI_Wrap::Output(0, "Error while showing purse: bad lDenomination.\n");
+//					return -1;
+//			}
+//			if (!VerifyIntVal(nSeries))
+//			{
+//					OTAPI_Wrap::Output(0, "Error while showing purse: bad nSeries.\n");
+//					return -1;
+//			}
+//			if (!VerifyTimeVal(tValidFrom))
+//			{
+//					OTAPI_Wrap::Output(0, "Error while showing purse: bad tValidFrom.\n");
+//					return -1;
+//			}
+//			if (!VerifyTimeVal(tValidTo))
+//			{
+//					OTAPI_Wrap::Output(0, "Error while showing purse: bad tValidTo.\n");
+//					return -1;
+//			}
+//			if (OT_TIME_ZERO > lTime)
+//			{
+//					OTAPI_Wrap::Output(0, "Error while showing purse: bad strTime.\n");
+//					return -1;
+//			}
+
+			// Output the token...
+
+			string strStatus = (lTime > tValidTo) ? "expired" : "valid";
+
+			DisplayStringEndl(cout, to_string(nIndex) + "\t" + to_string(lDenomination) + "\t" + to_string(nSeries) + "\t" + to_string(tValidFrom) + "\t" + to_string(tValidTo) + "\t" + strStatus);
+
+		} // while
+	} // if count > 0
+	return true;
+}
 
 
 const string cUseOT::ContractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
