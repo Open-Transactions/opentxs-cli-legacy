@@ -1437,8 +1437,36 @@ bool cUseOT::PurseCreate(const string & serverName, const string & asset, const 
 	string ownerID = NymGetId(ownerName);
 	string signerID = NymGetId(signerName);
 
-	string result = OTAPI_Wrap::CreatePurse(serverID,assetTypeID,ownerID,signerID);
+	string purse = OTAPI_Wrap::CreatePurse(serverID,assetTypeID,ownerID,signerID);
+	nUtils::DisplayStringEndl(cout, purse);
+
+	//	bool OTAPI_Wrap::SavePurse	(	const std::string & 	SERVER_ID,
+	//	const std::string & 	ASSET_TYPE_ID,
+	//	const std::string & 	USER_ID,
+	//	const std::string & 	THE_PURSE
+	//	)
+	bool result = OTAPI_Wrap::SavePurse(serverID,assetTypeID,ownerID,purse);
+	_info("saving: " << result) ;
+
+	return true;
+}
+bool cUseOT::PurseDisplay(const string & serverName, const string & asset, const string & nymName, bool dryrun) {
+	_fact("purse show= " << serverName << " " << asset << " " << nymName);
+	if(dryrun) return true;
+	if(!Init()) return false;
+
+	string serverID = ServerGetId(serverName);
+	string assetTypeID = AssetGetId(asset);
+	string nymID = NymGetId(nymName);
+
+	string result = OTAPI_Wrap::LoadPurse(serverID,assetTypeID,nymID);
 	nUtils::DisplayStringEndl(cout, result);
+	_info(result);
+	//  TODO:
+//	std::string OTAPI_Wrap::LoadPurse	(	const std::string & 	SERVER_ID,
+//	const std::string & 	ASSET_TYPE_ID,
+//	const std::string & 	USER_ID
+//	)
 
 	return true;
 }

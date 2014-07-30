@@ -472,12 +472,15 @@ void cCmdParser::Init() {
 
 	AddFormat("nym rename", {pNymMy, pNymNewName}, {}, {},
 			LAMBDA { auto &D=*d; return U.NymRename(D.V(1), D.V(2), D.has("--dryrun") ); } );
+//		EXEC bool PurseDisplay(const string & serverName, const string & asset, const string & nymName, bool dryrun);
 
 	//======== ot purse  ========
 
 	AddFormat("purse create", {pServer, pAsset, pNym, pNym}, {}, { },
-			LAMBDA { auto &D=*d; return U.PurseCreate( D.V(1), D.V(2), D.V(3), D.V(4), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.PurseCreate( D.V(1), D.V(2), D.V(3), D.V(4), D.has("--dryrun") ); } );
 
+	AddFormat("purse show", {}, {pServer, pAsset, pNym}, { },
+		LAMBDA { auto &D=*d; return U.PurseDisplay( D.v(1, U.ServerGetName(U.ServerGetDefault())), D.v(2, U.AssetGetName(U.AssetGetDefault())), D.v(3, U.NymGetName(U.NymGetDefault())), D.has("--dryrun") ); } );
 
 	//======== ot server ========
 

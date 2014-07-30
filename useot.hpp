@@ -182,7 +182,7 @@ namespace nUse {
 		//================= purse ==================
 
 		EXEC bool PurseCreate(const string & serverName, const string & asset, const string & ownerName, const string & signerName, bool dryrun);
-
+		EXEC bool PurseDisplay(const string & serverName, const string & asset, const string & nymName, bool dryrun);
 		//================= server =================
 
 		void ServerCheck(); ///< Check server availability (ping server)
