@@ -1,67 +1,172 @@
+------------------------------------------------------------------------
+Testing:
+
+Full program build:
+	./full-rebuild.sh
+Build after change:
+	make
+
+#### Setup testing environment:
+
+Start with debug redirected to file
+	./start-log-shell.sh
+Start server in second console:
+	otserver
+View debug in third console:
+	tail -f debuglog.txt
+
+#### Testing command:
+
+1. Check if implemented command works as described in documentation:
+	doc/commands-tree.txt
+2. Check if all possible variation of command are described in documentation:
+	doc/commands-tree.txt
+3. Check if command are properly described in file:
+	doc/commands-tree.odg
+4. Check if command is properly described in output of command:
+	ot help cmd <command>
+5. Check if proper validation functionality exists and works for command variables
+6. Check if proper hinting functionality exists and works for command variables
+
+8. If there are commands that creates, add, refresh, remove, rename: account, asset, nym, server try to check commands completion, hinting and execution after calling them
+
+#### If:
+* Program behave differently that described in documentation
+* There are errors in documentation
+* There are errors
+* Program lacks some functionality
+describe the problem and send it to  someone who will fix it, or fix it yourself.
+------------------------------------------------------------------------
+
 List of commands
 
-#----------------Errors------------------#
-msg     # error: incomplete action
-msg send     # error: missing required options
-msg send <mynym>     # error: missing required options
-#----------------Errors------------------#
+* - works
+/ - wip
+% - broken
 
-[*] - works
-[/] - wip
+Agruments:
+<> - reqired
+[] - extra
 
 #------List of all included commands-----#
 *account		# display active (default) account
+
 *account ls			# list all accounts
-*account new			# make new account with UI
-*account new <assetName>			# make new account by giving only <assetID>...
-*account new <assetName> <accountName>			#... and <accountName>
-account refresh			#	refresh database of private accounts' list
-account set-default <accountID> # set default account
-*account rm <accountName>			# delete account
-*account mv <oldAccountName>	<newAccountName>		# rename account
+
+*account set-default 	# ERROR: Missing required variable
+*account set-default <account> 	# set default account
+
+*account new			# ERROR: Missing required variable | proposition: make new account with interactive UI
+*account new <nym-my>			# ERROR: Missing required variable
+*account new <nym-my> <asset> 			# ERROR: Missing required variable
+*account new <nym-my> <asset> <accountName>			# Create account accountName with asset for nym-my
+*account new <nym-my> <asset> <accountName>	--dryrun 	# Display in logs executed action only
+
+*account mv 	# ERROR: Missing required variable
+*account mv <oldAccount> 		# ERROR: Missing required variable
+*account mv <oldAccount> <newAccount>		# rename account oldAccount to newAccount
+
+*account rm 			# ERROR: Missing required variable
+*account rm <account>			# delete account
+
+*account transfer-from 		# ERROR: Missing required variable
+*account transfer-from <account-from> 		# ERROR: Missing required variable
+*account transfer-from <account-from> <account-to> 		# ERROR: Missing required variable
+*account transfer-from <account-from> <account-to> <amount> 		# Send transfer without text message
+*account transfer-from <account-from> <account-to> <amount> [message] 		# Send transfer with text message
+
+*account refresh			# refresh default account
+*account refresh <account>			# refresh account <account>
+*account refresh --all			# refresh all accounts
+*account refresh --all	--dryrun		# Display in logs executed action only
+
 --- Account inbox actions ---
-account-in ls			# for active account
-account-in ls <accountID>			# for specific <accountID>
-account-in accept <paymentID>				#	accept this particular payment
-account-in accept --all		# accept all incoming transfers, as well as receipts
+
+*account-in		# ERROR: Missing required variable
+
+*account-in ls			# list account inbox for default account
+*account-in ls [account]	 # list account inbox for specific <account>
+
+*account-in accept 		# accept last incoming transfer for default account inbox
+*account-in accept [account] 	# accept last incoming transfer transfer for account inbox
+*account-in accept [account] [inbox-index]	# accept inbox-index incoming transfer transfer for account inbox
+*account-in accept [account] --all		# accept all incoming transfers for account
+
+*account-in accept-all 		# accept all incoming transfers for all accounts
+
 --- Account outbox actions ---
-account-out ls
+
+*account-out 		# ERROR: Missing required variable
+
+*account-out ls		# ERROR: Missing required variable
+
+account-out cancel 							# cancel last outgoing transaction for default account outbox
+account-out cancel [account]				# cancel last outgoing transaction for account outbox
+account-out cancel [account] [outbox-index] # cancel outgoing transaction inbox-index for account
+account-out cancel [account] --all 			# cancel all outgoing transactions for account
+account-out cancel-all						# cancel all outgoing transactions for all accounts
+
 ------------------------------
-asset				# can display active (default) asset - TODO check differences beetween asset and purse
+
+*asset			# can display active (default) asset - TODO check differences beetween asset and purse
+
 *asset ls		# display all assets
-*asset issue # Issue asset for default nym and server
-*asset new # add new asset to the wallet
+
+*asset issue 	# Issue asset for default nym and server
+
+*asset new 		# add new asset to the wallet
+
 ------------------------------
+
 basket new
 basket ls
 basket exchange
+
+------------------------------
+
+cash withdraw # add new asset to the wallet
+cash withdraw <account-issuer>
+cash withdraw <account-issuer>
+
 cash send <mynym> <hisnym>
+
+
 cheque new
 contract? new  # Managed by asset new / server new
 contract? get <contractID>
 contract? sign
+
 ------------------------------
+
 market # can't test markets for now
 market ls
+
 ------------------------------
+
 mint new
+
 ------------------------------
-*msg			# should show what options do you have with this topic
-/msg sendto		# should ask you about nyms ?
-msg sendto <hisnym> 		# Send message from default nym to <hisnym>
-*msg sendfrom <mynym> <hisnym> message 		# Send message from <mynym> to <hisnym>
-msg sendfrom <mynym> <hisnym> --push     	# TODO option "--push" has no sense because msg will be already on the server. Implement msg draft?
-msg sendfrom <mynym> <hisnym> --no-footer   # action option
-msg sendfrom <mynym> <hisnym> --cc <ccnym>  # action option with value
-msg sendfrom <mynym> <hisnym> --cc <ccnym> --cc <ccnym2>
-msg sendfrom <mynym> <hisnym> --cc <ccnym> --cc <ccnym2> --push  	 # example of force send (?) - not sure if it will appear
+*msg			# ERROR: Missing required variable
+
+*msg send-to		# ERROR: Missing required variable
+
+*msg send-to <nym> 		# Open default system editor. After closing editor send message from default nym to <nym>
+*msg send-to <nym> 		# Send message from default nym to <nym>
+*msg send-to <nym> 		# Send message from default nym to <nym>
+*msg send-to <nym> [subject] [subject] [--bcc nym] [--cc nym] [--prio int] [--dryrun]
+*msg send-from <nym-my> <nym> message 		# Send message from <mynym> to <hisnym>
+msg send-from <nym-my> <nym> --push     	# TODO option "--push" has no sense because msg will be already on the server. Implement msg draft?
+msg send-from <nym-my> <nym> --no-footer   # action option
+msg send-from <nym-my> <nym> --cc <ccnym>  # action option with value
+msg send-from <nym-my> <nym> --cc <ccnym> --cc <ccnym2>
+msg send-from <nym-my> <nym> --cc <ccnym> --cc <ccnym2> --push  	 # example of force send (?) - not sure if it will appear
 *msg ls			# list all messages for all nyms
 /msg ls <mynym> # list all messages for nym
 msg mv			# move message to different directory in your mail box
 msg rm <index>		# remove message with <index> number for current nym
 msg rm --all		# remove all messages from mail box for current nym
 *msg rm <nymName> <index> # remove <index> message from mail inbox for <nymName>
-msg rm-out <nymName> <index> # proposition for command removing msg from mail outbox
+msg rm-out nymName> <index> # proposition for command removing msg from mail outbox
 ------------------------------
 *nym 			# can display active (default) nym
 *nym ls			# list of all nyms

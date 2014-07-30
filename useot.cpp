@@ -767,7 +767,7 @@ bool cUseOT::AssetSetDefault(const std::string & asset, bool dryrun){
 	return true;
 }
 
-bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) { ///< withdraw cash from account on server into local purse
+bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	_fact("cash withdraw " << account);
 	if (dryrun) return false;
 	if(!Init()) return false;
@@ -776,6 +776,9 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 
 	string response = mMadeEasy.withdraw_cash ( mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountID, amount);//TODO pass server as an argument
+
+	_fact(response);
+
 	if (1 != mMadeEasy.VerifyMessageSuccess(response) ) {
 		_erro("Failed trying to withdraw cash from account: " << AccountGetName(accountID) );
 		return false;

@@ -132,7 +132,7 @@ namespace nUse {
 
 		//================= cash =================
 
-		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun);
+		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse
 
 		//================= ?contract =================
 
