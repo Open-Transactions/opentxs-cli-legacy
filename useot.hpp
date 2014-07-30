@@ -191,6 +191,7 @@ namespace nUse {
 		EXEC bool ServerCreate(const string & nymName, bool dryrun); ///< Create new server contract
 		EXEC bool ServerRemove(const string & serverName, bool dryrun);
 		EXEC bool ServerSetDefault(const string & serverName, bool dryrun);
+		EXEC bool ServerShowContract(const string & serverName, bool dryrun);
 		EXEC bool ServerDisplayAll(bool dryrun);
 
 		//================= text =================

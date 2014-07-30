@@ -861,7 +861,7 @@ bool cUseOT::MsgDisplayForNym(const string & nymName, bool dryrun) { ///< Get al
   tpIn.AddColumn("From", 20);
   tpIn.AddColumn("Content", 50);
 
-  nUtils::DisplayStringEndl( cout, NymGetName(nymID) + "(" + nymID + ")" );
+  nUtils::DisplayStringEndl( cout, zkr::cc::fore::lightgreen + NymGetName(nymID) + zkr::cc::fore::console+ "(" + nymID + ")" );
 	nUtils::DisplayStringEndl( cout, "INBOX" );
 	tpIn.PrintHeader();
 	for(int i = 0 ; i < OTAPI_Wrap::GetNym_MailCount (nymID);i++) {
@@ -1451,7 +1451,18 @@ bool cUseOT::ServerSetDefault(const string & serverName, bool dryrun) {
 	nUtils::configManager.Save(mDefaultIDsFile, mDefaultIDs);
 	return true;
 }
+bool cUseOT::ServerShowContract(const string & serverName, bool dryrun) {
+	_fact("server show-contract " << serverName);
+	if(dryrun) return true;
+	if(!Init()) return false;
 
+	string serverID = ServerGetId(serverName);
+	nUtils::DisplayStringEndl(cout, zkr::cc::fore::lightblue + serverName + zkr::cc::fore::console);
+	nUtils::DisplayStringEndl(cout, "ID: " + serverID);
+	nUtils::DisplayStringEndl(cout, OTAPI_Wrap::GetServer_Contract(serverID));
+	return true;
+
+}
 const vector<string> cUseOT::ServerGetAllNames() { ///< Gets all servers name
 	if(!Init())
 	return vector<string> {};
@@ -1459,7 +1470,8 @@ const vector<string> cUseOT::ServerGetAllNames() { ///< Gets all servers name
 	vector<string> servers;
 	for(int i = 0 ; i < OTAPI_Wrap::GetServerCount ();i++) {
 		string servID = OTAPI_Wrap::GetServer_ID(i);
-		servers.push_back(servID);
+		string servName = OTAPI_Wrap::GetServer_Name(servID);
+		servers.push_back(servName);
 	}
 	return servers;
 }
@@ -1471,7 +1483,7 @@ bool cUseOT::ServerDisplayAll(bool dryrun) {
 
 	for(std::int32_t i = 0 ; i < OTAPI_Wrap::GetServerCount();i++) {
 		ID serverID = OTAPI_Wrap::GetServer_ID(i);
-		nUtils::DisplayStringEndl(cout, ServerGetName( serverID ) + " - " + serverID );
+		nUtils::DisplayStringEndl(cout, ServerGetName( serverID ) + " - " + serverID);
 	}
 	return true;
 }

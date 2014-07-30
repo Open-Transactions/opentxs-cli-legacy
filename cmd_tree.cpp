@@ -491,6 +491,9 @@ void cCmdParser::Init() {
 	AddFormat("server set-default", {pServer}, {}, {},
 		LAMBDA { auto &D=*d; return U.ServerSetDefault( D.V(1), D.has("--dryrun") ); } );
 
+	AddFormat("server show-contract", {pServer}, {}, {},
+			LAMBDA { auto &D=*d; return U.ServerShowContract(D.V(1), D.has("--dryrun") ); } );
+
 	//======== ot text ========
 
 	AddFormat("text encode", {}, {pText}, {},
