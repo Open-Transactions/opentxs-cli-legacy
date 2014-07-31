@@ -268,11 +268,9 @@ void cCmdParser::Init() {
 				const int nr = curr_word_ix+1;
 				return true; //TODO
 			} ,
-			[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-				// Enable filename autocompletion
-				rl_attempted_completion_over = 0;
-				rl_attempted_completion_function = NULL;
-				return vector<string> {}; //TODO hinting function for files
+			[this] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+				mEnableFilenameCompletion = true; // Enable filename autocompletion
+				return vector<string> {};
 			}
 		);
 

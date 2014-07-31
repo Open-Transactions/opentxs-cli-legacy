@@ -631,13 +631,17 @@ static char* CompletionReadlineWrapper(const char *sofar , int number) {
 }
 
 char ** completion(const char* text, int start, int end __attribute__((__unused__))) {
-	rl_attempted_completion_over = 0;
 	char **matches;
 	matches = (char **)NULL;
 	matches = rl_completion_matches (text, CompletionReadlineWrapper);
 	rl_attempted_completion_function = completion;
-	if ( matches == (char **)NULL ) // Disable filename autocompletion. Autocompletion can be explicitly enabled for filename arguments completion
+	if (gReadlineHandleParser->mEnableFilenameCompletion) {
+		rl_attempted_completion_over = 0;
+		gReadlineHandleParser->mEnableFilenameCompletion = false;
+	}
+	else {
 		rl_attempted_completion_over = 1;
+	}
 	return (matches);
 }
 

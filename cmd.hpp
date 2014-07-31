@@ -169,6 +169,8 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 
 		const vector<string> & GetCmdNamesWord1() const; // possible word1 in loaded command names
 		const vector<string> & GetCmdNamesWord2(const string &word1) const; // possible word2 for given word1 in loaded command names
+
+		bool mEnableFilenameCompletion;
 };
 
 /**
@@ -336,7 +338,7 @@ class cCmdDataParse : public cCmdData { MAKE_CLASS_NAME("cCmdDataParse");
 
 		int mCharShift; // *deprecated?* how many characters should we shift to get back to orginal string becuse auto-prepending like "help"->"ot help" (-3), or 0 often
 		bool mIsPreErased;
-		
+
 
 	public:
 		cCmdDataParse();
