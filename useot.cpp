@@ -1040,19 +1040,26 @@ bool cUseOT::MsgDisplayForNymBox(eBoxType boxType, const string & nymName, int m
 	return true;
 }
 
-bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, bool dryrun) {
+bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, string filename, bool dryrun) {
 	_fact("MsgSend " << nymSender << " to " << DbgVector(nymRecipient) << " msg=" << msg << " subj="<<subject<<" prio="<<prio);
 	if(dryrun) return true;
 	if(!Init()) return false;
 
 	string outMsg;
 
-	if ( msg.empty() ) {
+	if ( !filename.empty() ) {
+		_mark("try to load message from file: " << filename);
+		nUtils::cEnvUtils envUtils;
+		outMsg = envUtils.ReadFromFile(filename);
+		_dbg3("loaded message: " << outMsg);
+	}
+
+	if ( msg.empty() && outMsg.empty()) {
 		_dbg3("Message is empty, starting text editor");
 		nUtils::cEnvUtils envUtils;
 		outMsg = envUtils.Compose();
 	}
-	else
+	else if(outMsg.empty())
 		outMsg = msg;
 
 	if ( outMsg.empty() ) {

@@ -255,6 +255,16 @@ void cCmdParser::Init() {
 		}
 	);
 
+	cParamInfo pReadFile( "file", "input file",
+			[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+				const int nr = curr_word_ix+1;
+				return true; //TODO
+			} ,
+			[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+				return vector<string> { "" }; //TODO hinting function for files
+			}
+		);
+
 	// ===========================================================================
 	// COMMON OPTIONS
 
@@ -423,11 +433,11 @@ void cCmdParser::Init() {
 	AddFormat("msg ls", {}, {pNym}, {},
 		LAMBDA { auto &D=*d; return U.MsgDisplayForNym( D.v(1, U.NymGetName(U.NymGetDefault())), D.has("--dryrun") ); } );
 
-	AddFormat("msg send-from", {pFrom, pTo}, {pSubj, pMsg}, { {"--cc",pNym} , {"--bcc",pNym} , {"--prio",pInt} },
-		LAMBDA { auto &D=*d; return U.MsgSend(D.V(1), D.V(2) + D.o("--cc") , D.v(3,"nosubject"), D.v(4), stoi(D.o1("--prio","0")), D.has("--dryrun")); }	);
+	AddFormat("msg send-from", {pFrom, pTo}, {pSubj, pMsg}, { {"--cc",pNym} , {"--bcc",pNym} , {"--prio",pInt}, {"--file",pReadFile} },
+		LAMBDA { auto &D=*d; return U.MsgSend(D.V(1), D.V(2) + D.o("--cc") , D.v(3,"nosubject"), D.v(4), stoi(D.o1("--prio","0")), D.o1("--file",""), D.has("--dryrun")); }	);
 
-	AddFormat("msg send-to", {pTo}, {pSubj, pMsg}, { {"--cc",pNym} , {"--bcc",pNym} , {"--prio",pInt} },
-		LAMBDA { auto &D=*d; return U.MsgSend(U.NymGetName(U.NymGetDefault()), D.V(1) + D.o("--cc"), D.v(2,"nosubject"), D.v(3), stoi(D.o1("--prio","0")), D.has("--dryrun")); }	);
+	AddFormat("msg send-to", {pTo}, {pSubj, pMsg}, { {"--cc",pNym} , {"--bcc",pNym} , {"--prio",pInt}, {"--file",pReadFile} },
+		LAMBDA { auto &D=*d; return U.MsgSend(U.NymGetName(U.NymGetDefault()), D.V(1) + D.o("--cc"), D.v(2,"nosubject"), D.v(3), stoi(D.o1("--prio","0")), D.o1("--file",""), D.has("--dryrun")); }	);
 
 	AddFormat("msg rm", {pNym, pOnceInt}, {}, {/*{"--all", pBool}*/ }, // FIXME proper handle option without parameter!
 		LAMBDA { auto &D=*d; return U.MsgInRemoveByIndex(D.V(1), stoi(D.V(2)), D.has("--dryrun"));} );
