@@ -132,7 +132,10 @@ ot cash withdraw-from <server>  					# ERROR: Missing required variable
 ot cash withdraw-from <server> <account> 			# ERROR: Missing required variable
 ot cash withdraw-from <server> <account> <amount> 	# Withdraw amount of cash from account on server
 
-cash send <asset-my> <nym> 			# send cash from mypurse to recipient, withdraw if necessary
+cash send  					# ERROR: Missing required variable
+cash send <account>			# ERROR: Missing required variable
+cash send <account> <nym> 	# send cash from mypurse to recipient if there is enough cash in purse
+cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
 
 cash show				# ERROR: Missing required variable
 cash show <account>		# show cash purse connected with account asset type

@@ -767,60 +767,72 @@ bool cUseOT::AssetSetDefault(const std::string & asset, bool dryrun){
 	return true;
 }
 
-bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
-	_fact("cash withdraw " << account);
+bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool withdraw, bool dryrun) { // TODO make it work with longer version: asset, server, nym
+	_fact("cash send from purse with account" << account << " to " << nymRecipient);
 	if (dryrun) return false;
 	if(!Init()) return false;
 
 	ID accountID = AccountGetId(account);
 	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
-	// Make sure the appropriate asset contract is available.
-	string assetContract = OTAPI_Wrap::LoadAssetContract(accountAssetID);
+	ID nymRecipientID = NymGetId(nymRecipient);
 
-	if (assetContract.empty()) {
-		string strResponse = mMadeEasy.retrieve_contract(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+	string purseValue = OTAPI_Wrap::LoadPurse(accountServerID, accountAssetID, accountNymID); // returns NULL, or a purse
 
-		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse))
-		{
-			_erro( "Unable to retreive asset contract for nym " << accountNymID << " and server " << mDefaultIDs.at(nUtils::eSubjectType::Server) );
-			DisplayStringEndl(cout, "Unable to retreive asset contract for nym " + accountNymID + " and server " + mDefaultIDs.at(nUtils::eSubjectType::Server) );
+	if (purseValue.empty()) {
+		 _erro("Unable to load purse. Does it even exist?");
+		 DisplayStringEndl(cout, "Unable to load purse. Does it even exist?");
+		 return false;
+	}
+
+	int64_t purseAmount = OTAPI_Wrap::Purse_GetTotalValue(accountServerID, accountAssetID, purseValue);
+
+	int64_t purseAmountDifference = amount - purseAmount;
+
+	if (purseAmountDifference > 0 && withdraw) { // If there is not enough cash in purse
+		_info("Withdrawing cash for account: " << account);
+		bool withdrawalSuccess = CashWithdraw(account, purseAmountDifference, false);
+		if (!withdrawalSuccess) {
+			_erro("Not enough cash in purse an withdraw failed");
+			DisplayStringEndl(cout, "Not enough cash in purse an withdrawal failed");
 			return false;
 		}
+	}
 
-		assetContract = OTAPI_Wrap::LoadAssetContract(accountAssetID);
+	string retainedCopy = "";
+	string indices = "";
+	bool passwordProtected = false; // TODO check if password protected
+	string exportedCashPurse = CashExport(accountServerID, accountNymID, accountAssetID, nymRecipientID, indices, passwordProtected, retainedCopy);
 
-		if (assetContract.empty()) {
-			_erro("Failure: Unable to load Asset contract even after retrieving it.");
-			DisplayStringEndl(cout, "Failure: Unable to load Asset contract even after retrieving it.");
-			return false;
+  if (!exportedCashPurse.empty()) {
+		string response = mMadeEasy.send_user_cash(accountServerID, nymSender, nymRecipientID, exportedCashPurse, retainedCopy);
+
+		int32_t returnVal = mMadeEasy.VerifyMessageSuccess(response);
+
+		if (1 != returnVal) {
+			// It failed sending the cash to the recipient Nym.
+			// Re-import strRetainedCopy back into the sender's cash purse.
+			//
+			bool bImported = OTAPI_Wrap::Wallet_ImportPurse(accountServerID, accountAssetID, nymSender, retainedCopy);
+
+			if (bImported) {
+				DisplayStringEndl(cout, "Failed sending cash, but at least: success re-importing purse.\nServer: " + accountServerID + "\nAsset Type: " + accountServerID + "\nNym: " + nymSender + "\n\n");
+			}
+			else {
+				DisplayStringEndl(cout, " Failed sending cash AND failed re-importing purse.\nServer: " + accountServerID + "\nAsset Type: " + accountServerID + "\nNym: " + nymSender + "\n\nPurse (SAVE THIS SOMEWHERE!):\n\n" + retainedCopy);
+			}
 		}
-	}
+  }
 
-	// Make sure the unexpired mint file is available.
-	string mint = mMadeEasy.load_or_retrieve_mint(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
 
-	if (mint.empty()) {
-		_erro("Failure: Unable to load or retrieve necessary mint file for withdrawal.");
-		return false;
-	}
-
-	// Send withdrawal request
-	string response = mMadeEasy.withdraw_cash ( mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountID, amount);//TODO pass server as an argument
-
-	// Check server response
-	if (1 != mMadeEasy.VerifyMessageSuccess(response) ) {
-		_erro("Failed trying to withdraw cash from account: " << AccountGetName(accountID) );
-		return false;
-	}
-	_info("Successfully withdraw cash from account: " << AccountGetName(accountID));
-	DisplayStringEndl(cout, "Successfully withdraw cash from account: " + AccountGetName(accountID));
 	return true;
 }
 
-bool cUseOT::CashShow(const string & account, bool dryrun) {
-	_fact("cash withdraw " << account);
+
+bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it work with longer version: asset, server, nym
+	_fact("cash show for purse with account: " << account);
 	if (dryrun) return false;
 	if(!Init()) return false;
 
@@ -931,6 +943,58 @@ string cUseOT::CashExport(const string & account, const string & recNym, string 
     string exported = mMadeEasy.export_cash(accountServerID,accountID,accountAssetID,recipientNymID,indicies,bPasswordProtected,retained_copy);
     _dbg3("Exported cash");
     return exported;
+}
+
+bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
+	_fact("cash withdraw " << account);
+	if (dryrun) return false;
+	if(!Init()) return false;
+
+	ID accountID = AccountGetId(account);
+	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+
+	// Make sure the appropriate asset contract is available.
+	string assetContract = OTAPI_Wrap::LoadAssetContract(accountAssetID);
+
+	if (assetContract.empty()) {
+		string strResponse = mMadeEasy.retrieve_contract(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+
+		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse))
+		{
+			_erro( "Unable to retreive asset contract for nym " << accountNymID << " and server " << mDefaultIDs.at(nUtils::eSubjectType::Server) );
+			DisplayStringEndl(cout, "Unable to retreive asset contract for nym " + accountNymID + " and server " + mDefaultIDs.at(nUtils::eSubjectType::Server) );
+			return false;
+		}
+
+		assetContract = OTAPI_Wrap::LoadAssetContract(accountAssetID);
+
+		if (assetContract.empty()) {
+			_erro("Failure: Unable to load Asset contract even after retrieving it.");
+			DisplayStringEndl(cout, "Failure: Unable to load Asset contract even after retrieving it.");
+			return false;
+		}
+	}
+
+	// Make sure the unexpired mint file is available.
+	string mint = mMadeEasy.load_or_retrieve_mint(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+
+	if (mint.empty()) {
+		_erro("Failure: Unable to load or retrieve necessary mint file for withdrawal.");
+		return false;
+	}
+
+	// Send withdrawal request
+	string response = mMadeEasy.withdraw_cash ( mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountID, amount);//TODO pass server as an argument
+
+	// Check server response
+	if (1 != mMadeEasy.VerifyMessageSuccess(response) ) {
+		_erro("Failed trying to withdraw cash from account: " << AccountGetName(accountID) );
+		return false;
+	}
+	_info("Successfully withdraw cash from account: " << AccountGetName(accountID));
+	DisplayStringEndl(cout, "Successfully withdraw cash from account: " + AccountGetName(accountID));
+	return true;
 }
 
 const string cUseOT::ContractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)

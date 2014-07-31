@@ -132,7 +132,8 @@ namespace nUse {
 
 		//================= cash =================
 
-		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse status
+		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool withdraw, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
+		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse connected with account
 		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse
 		string CashExport(const string & account, const string & recNym, string & retained_copy, bool dryrun);
 

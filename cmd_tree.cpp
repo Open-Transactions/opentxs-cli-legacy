@@ -414,12 +414,14 @@ void cCmdParser::Init() {
 		LAMBDA { auto &D=*d; return U.AssetSetDefault( D.V(1), D.has("--dryrun") ); } );
 
 	//======== ot cash ========
-
-	AddFormat("cash withdraw", {pAccount, pAmount}, {}, {},
-			LAMBDA { auto &D=*d; return U.CashWithdraw( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
+	AddFormat("cash send-to", {pTo, pAccount, pAmount}, {}, { {"--withdraw", pBool} },
+		LAMBDA { auto &D=*d; return U.CashSend( U.NymGetName(U.NymGetDefault()), D.V(1), D.V(2), stoi(D.V(3)), D.has("--withdraw"), D.has("--dryrun") ); } );
 
 	AddFormat("cash show", {pAccount}, {}, {},
-				LAMBDA { auto &D=*d; return U.CashShow( D.V(1), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.CashShow( D.V(1), D.has("--dryrun") ); } );
+
+	AddFormat("cash withdraw", {pAccount, pAmount}, {}, {},
+		LAMBDA { auto &D=*d; return U.CashWithdraw( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
 
 	//======== ot msg-in and msg-out ========
 
