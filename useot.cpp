@@ -916,7 +916,22 @@ bool cUseOT::CashShow(const string & account, bool dryrun) {
 	} // if count > 0
 	return true;
 }
+string cUseOT::CashExport(const string & account, const string & recNym, string & retained_copy, bool dryrun) {
+	ID accountID = AccountGetId(account);
+	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
+	ID recipientNymID = NymGetId(recNym);
+
+	string indicies = "";
+
+    bool bPasswordProtected = false;
+
+    string exported = mMadeEasy.export_cash(accountServerID,accountID,accountAssetID,recipientNymID,indicies,bPasswordProtected,retained_copy);
+    _dbg3("Exported cash");
+    return exported;
+}
 
 const string cUseOT::ContractSign(const std::string & nymID, const std::string & contract){ // FIXME can't sign contract with this (assetNew() functionality)
 	if(!Init())
