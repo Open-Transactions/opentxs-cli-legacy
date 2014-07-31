@@ -456,8 +456,8 @@ void cCmdParser::Init() {
 	AddFormat("nym export", {pNym}, {}, {},
 			LAMBDA { auto &D=*d; return U.NymExport( D.V(1), D.has("--dryrun") ); } );
 
-	AddFormat("nym import", {}, {}, {},
-			LAMBDA { auto &D=*d; return U.NymImport( D.has("--dryrun") ); } );
+	AddFormat("nym import", {}, {}, {{"--file",pReadFile}},
+			LAMBDA { auto &D=*d; return U.NymImport( D.o1("--file",""), D.has("--dryrun") ); } );
 
 	AddFormat("nym info", {pNym}, {}, {},
 		LAMBDA { auto &D=*d; return U.NymDisplayInfo( D.V(1), D.has("--dryrun") ); } );

@@ -152,7 +152,7 @@ namespace nUse {
 		EXEC bool MsgDisplayForNymInbox(const string & nymName, int msg_index, bool dryrun);
 		EXEC bool MsgDisplayForNymOutbox(const string & nymName, int msg_index, bool dryrun);
 
-		EXEC bool MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, string filename, bool dryrun);
+		EXEC bool MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, const string & filename, bool dryrun);
 		EXEC bool MsgInRemoveByIndex(const string & nymName, const int32_t & nIndex, bool dryrun);
 		EXEC bool MsgOutRemoveByIndex(const string & nymName, const int32_t & nIndex, bool dryrun);
 
@@ -172,7 +172,7 @@ namespace nUse {
 		EXEC bool NymDisplayAll(bool dryrun);
 		EXEC bool NymDisplayInfo(const string & nymName, bool dryrun);
 		EXEC bool NymExport(const string & nymName, bool dryrun);
-		EXEC bool NymImport(bool dryrun);
+		EXEC bool NymImport(const string & filename, bool dryrun);
 		EXEC bool NymRefresh(const string & nymName, bool all, bool dryrun);
 		EXEC bool NymRegister(const string & nymName, const string & serverName, bool dryrun);
 		EXEC bool NymRemove(const string & nymName, bool dryrun);

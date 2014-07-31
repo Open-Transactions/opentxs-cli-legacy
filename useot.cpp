@@ -1040,7 +1040,7 @@ bool cUseOT::MsgDisplayForNymBox(eBoxType boxType, const string & nymName, int m
 	return true;
 }
 
-bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, string filename, bool dryrun) {
+bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, const string & filename, bool dryrun) {
 	_fact("MsgSend " << nymSender << " to " << DbgVector(nymRecipient) << " msg=" << msg << " subj="<<subject<<" prio="<<prio);
 	if(dryrun) return true;
 	if(!Init()) return false;
@@ -1194,21 +1194,27 @@ bool cUseOT::NymExport(const string & nymName, bool dryrun) {
 	return true;
 }
 
-bool cUseOT::NymImport(bool dryrun) {
+bool cUseOT::NymImport(const string & filename, bool dryrun) {
 	if(dryrun) return true;
 	if(!Init()) return false;
 
 	std:string toImport;
 	nUtils::cEnvUtils envUtils;
-	toImport = envUtils.Compose();
 
+	if(!filename.empty()) {
+		_dbg3("Loading from file: " << filename);
+		toImport = envUtils.ReadFromFile(filename);
+		_dbg3("Loaded: " << toImport);
+	}
+
+	if ( toImport.empty()) toImport = envUtils.Compose();
 	if( toImport.empty() ) {
 		_warn("Can't import, empty input");
 		return false;
 	}
 
 	std::string nym = OTAPI_Wrap::Wallet_ImportNym(toImport);
-	cout << nym << endl;
+	//cout << nym << endl;
 	return true;
 }
 
