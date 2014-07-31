@@ -838,10 +838,8 @@ bool cUseOT::CashShow(const string & account, bool dryrun) {
 	}
 
   int64_t amount = OTAPI_Wrap::Purse_GetTotalValue(accountServerID, accountAssetID, purseValue);
+  cout << zkr::cc::fore::lightyellow << "Total value: " << zkr::cc::fore::red << OTAPI_Wrap::FormatAmount(accountAssetID, amount) << endl;
 
-  DisplayStringEndl(cout, "Total value: " + OTAPI_Wrap::FormatAmount(purseValue, amount));
-
-  // Loop through purse contents and display tokens.
 	int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
 	if (count < 0) { // TODO check if integer?
 		DisplayStringEndl(cout, "Error: Unexpected bad value returned from OT_API_Purse_Count.");
@@ -849,69 +847,72 @@ bool cUseOT::CashShow(const string & account, bool dryrun) {
 	}
 
 	if (count > 0) {
-		DisplayStringEndl(cout, "Token count: " + to_string(count) + "\n");
-		DisplayStringEndl(cout, "Index\tValue\tSeries\tValidFrom\tValidTo\t\tStatus");
 
-		int32_t nIndex = -1;
+		cout << zkr::cc::fore::lightyellow << "Token count: " << zkr::cc::fore::red << count << endl;
 
-		while (count > 0) {
+		bprinter::TablePrinter tp(&std::cout);
+		tp.AddColumn("ID", 4);
+		tp.AddColumn("Value", 10);
+		tp.AddColumn("Series", 10);
+		tp.AddColumn("Valid From", 20);
+		tp.AddColumn("Valid To", 20);
+		tp.AddColumn("Status", 20);
+		tp.PrintHeader();
+
+		int32_t index = -1;
+		while (count > 0) { // Loop through purse contents and display tokens
 			--count;
-			++nIndex;  // on first iteration, this is now 0.
+			++index;  // on first iteration, this is now 0.
 
-			string strToken = OTAPI_Wrap::Purse_Peek(accountServerID, accountAssetID, accountNymID, purseValue);
-			if (strToken.empty()) {
+			string token = OTAPI_Wrap::Purse_Peek(accountServerID, accountAssetID, accountNymID, purseValue);
+			if (token.empty()) {
 				_erro("OT_API_Purse_Peek unexpectedly returned NULL instead of token.");
 				return false;
 			}
 
-			string strNewPurse = OTAPI_Wrap::Purse_Pop(accountServerID, accountAssetID, accountNymID, purseValue);
+			string newPurse = OTAPI_Wrap::Purse_Pop(accountServerID, accountAssetID, accountNymID, purseValue);
 
-			if (strNewPurse.empty()) {
+			if (newPurse.empty()) {
 				_erro("OT_API_Purse_Pop unexpectedly returned NULL instead of updated purse.\n");
 				return false;
 			}
 
-			purseValue = strNewPurse;
+			purseValue = newPurse;
 
-			int64_t lDenomination = OTAPI_Wrap::Token_GetDenomination(accountServerID, accountAssetID, purseValue);
-			int32_t nSeries = OTAPI_Wrap::Token_GetSeries(accountServerID, accountAssetID, purseValue);
-			time64_t tValidFrom = OTAPI_Wrap::Token_GetValidFrom(accountServerID, accountAssetID, purseValue);
-			time64_t tValidTo = OTAPI_Wrap::Token_GetValidTo(accountServerID, accountAssetID, purseValue);
-			time64_t lTime = OTAPI_Wrap::GetTime();
+			int64_t denomination = OTAPI_Wrap::Token_GetDenomination(accountServerID, accountAssetID, token);
+			int32_t series = OTAPI_Wrap::Token_GetSeries(accountServerID, accountAssetID, token);
+			time64_t validFrom = OTAPI_Wrap::Token_GetValidFrom(accountServerID, accountAssetID, token);
+			time64_t validTo = OTAPI_Wrap::Token_GetValidTo(accountServerID, accountAssetID, token);
+			time64_t time = OTAPI_Wrap::GetTime();
 
-//			if (0 > lDenomination)
-//			{
-//					OTAPI_Wrap::Output(0, "Error while showing purse: bad lDenomination.\n");
-//					return -1;
-//			}
-//			if (!VerifyIntVal(nSeries))
-//			{
-//					OTAPI_Wrap::Output(0, "Error while showing purse: bad nSeries.\n");
-//					return -1;
-//			}
-//			if (!VerifyTimeVal(tValidFrom))
-//			{
-//					OTAPI_Wrap::Output(0, "Error while showing purse: bad tValidFrom.\n");
-//					return -1;
-//			}
-//			if (!VerifyTimeVal(tValidTo))
-//			{
-//					OTAPI_Wrap::Output(0, "Error while showing purse: bad tValidTo.\n");
-//					return -1;
-//			}
-//			if (OT_TIME_ZERO > lTime)
-//			{
-//					OTAPI_Wrap::Output(0, "Error while showing purse: bad strTime.\n");
-//					return -1;
-//			}
+			if (denomination < 0){
+					_erro( "Error while showing purse: bad denomination");
+					return false;
+			}
+			if (series < 0) {
+					_erro("Error while showing purse: bad series");
+					return false;
+			}
+			if (validFrom < 0) {
+					_erro("Error while showing purse: bad validFrom");
+					return false;
+			}
+			if (validTo < 0) {
+					_erro("Error while showing purse: bad validTo");
+					return false;
+			}
+			if (OT_TIME_ZERO > time) {
+					_erro("Error while showing purse: bad time");
+					return false;
+			}
 
-			// Output the token...
+			string status = (time > validTo) ? "expired" : "valid";
 
-			string strStatus = (lTime > tValidTo) ? "expired" : "valid";
-
-			DisplayStringEndl(cout, to_string(nIndex) + "\t" + to_string(lDenomination) + "\t" + to_string(nSeries) + "\t" + to_string(tValidFrom) + "\t" + to_string(tValidTo) + "\t" + strStatus);
+			// Display token
+			tp << to_string(index) << to_string(denomination) << to_string(series) << to_string(validFrom) << to_string(validTo) << status;
 
 		} // while
+		tp.PrintFooter();
 	} // if count > 0
 	return true;
 }
