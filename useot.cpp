@@ -804,7 +804,9 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 	string retainedCopy = "";
 	string indices = "";
 	bool passwordProtected = false; // TODO check if password protected
-	string exportedCashPurse = CashExport(accountServerID, accountNymID, accountAssetID, nymRecipientID, indices, passwordProtected, retainedCopy);
+	string exportedCashPurse = CashExport(account, nymRecipientID, indices, passwordProtected, retainedCopy);
+
+	_mark(exportedCashPurse);
 
   if (!exportedCashPurse.empty()) {
 		string response = mMadeEasy.send_user_cash(accountServerID, nymSender, nymRecipientID, exportedCashPurse, retainedCopy);
@@ -928,7 +930,9 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 	} // if count > 0
 	return true;
 }
-string cUseOT::CashExport(const string & account, const string & recNym, string & retained_copy, bool dryrun) {
+
+string cUseOT::CashExport(const string & account, const string & recNym, const string & indices, const bool passwordProtected, string & retained_copy) {
+	_fact("cash export from purse with account" << account << " to " << recNym);
 	ID accountID = AccountGetId(account);
 	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
@@ -936,13 +940,9 @@ string cUseOT::CashExport(const string & account, const string & recNym, string 
 
 	ID recipientNymID = NymGetId(recNym);
 
-	string indicies = "";
-
-    bool bPasswordProtected = false;
-
-    string exported = mMadeEasy.export_cash(accountServerID,accountID,accountAssetID,recipientNymID,indicies,bPasswordProtected,retained_copy);
-    _dbg3("Exported cash");
-    return exported;
+	string exported = mMadeEasy.export_cash(accountServerID,accountID,accountAssetID,recipientNymID,indices,passwordProtected,retained_copy);
+	_dbg3("Exported cash");
+	return exported;
 }
 
 bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {

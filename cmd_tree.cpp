@@ -5,6 +5,14 @@
 #include "lib_common2.hpp"
 #include "ccolor.hpp"
 
+//#if CFG_USE_EDITLINE
+	#ifdef __unix__
+		#include <editline/readline.h>
+	#else // not unix
+		// TODO: do support MinGWEditline for windows)
+	#endif // not unix
+//#endif // not use editline
+
 namespace nOT {
 namespace nNewcli {
 
@@ -171,7 +179,7 @@ void cCmdParser::Init() {
 			return true; // option's value should be null
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			return vector<string> { "" }; // this should be empty option, let's continue
+			return vector<string> {}; // this should be empty option, let's continue
 		}
 		, 0
 	);
@@ -186,7 +194,7 @@ void cCmdParser::Init() {
 			return true;
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			return vector<string> { "" }; // this should be empty option, let's continue
+			return vector<string> {}; // this should be empty option, let's continue
 		}
 	);
 
@@ -226,7 +234,7 @@ void cCmdParser::Init() {
 			return false;
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			return vector<string> { "" }; //TODO hinting function for msg index
+			return vector<string> {}; //TODO hinting function for msg index
 		}
 	);
 
@@ -241,7 +249,7 @@ void cCmdParser::Init() {
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 
-			return vector<string> { "" }; //TODO hinting function for msg index
+			return vector<string> {}; //TODO hinting function for msg index
 		}
 	);
 
@@ -251,7 +259,7 @@ void cCmdParser::Init() {
 			return true; //TODO
 		} ,
 		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			return vector<string> { "" }; //TODO hinting function for msg index
+			return vector<string> {}; //TODO hinting function for msg index
 		}
 	);
 
@@ -261,7 +269,10 @@ void cCmdParser::Init() {
 				return true; //TODO
 			} ,
 			[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-				return vector<string> { "" }; //TODO hinting function for files
+				// Enable filename autocompletion
+				rl_attempted_completion_over = 0;
+				rl_attempted_completion_function = NULL;
+				return vector<string> {}; //TODO hinting function for files
 			}
 		);
 

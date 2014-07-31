@@ -595,7 +595,7 @@ static char* CompletionReadlineWrapper(const char *sofar , int number) {
 	// http://www.delorie.com/gnu/docs/readline/rlman_28.html
 
 	bool dbg = my_rl_wrapper_debug;
-	dbg=false; // XXX
+	dbg=false || 1; // XXX
 	ASRT( !(gReadlineHandleParser == nullptr) ); // must be set before calling this function
 	ASRT( !(gReadlineHandlerUseOT == nullptr) ); // must be set before calling this function
 
@@ -635,7 +635,8 @@ char ** completion(const char* text, int start, int end __attribute__((__unused_
 	char **matches;
 	matches = (char **)NULL;
 	matches = rl_completion_matches (text, CompletionReadlineWrapper);
-	if ( matches == (char **)NULL ) // Disable filename autocompletion
+	rl_attempted_completion_function = completion;
+	if ( matches == (char **)NULL ) // Disable filename autocompletion. Autocompletion can be explicitly enabled for filename arguments completion
 		rl_attempted_completion_over = 1;
 	return (matches);
 }

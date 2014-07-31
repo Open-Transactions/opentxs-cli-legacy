@@ -551,9 +551,9 @@ void hintingToTxt(std::fstream & file, string command, vector<string> &commands)
 		file<<endl;
 	}
 }
-void generateQuestions (std::fstream & file, string command)  {	
+void generateQuestions (std::fstream & file, string command)  {
 	if(file.good()) {
-			file <<command<<endl;	
+			file <<command<<endl;
 			file.flush();
 	}
 }
