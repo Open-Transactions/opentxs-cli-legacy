@@ -3,25 +3,35 @@ New Open-Transactions Command Line Interface
 
 Work summary:
 
-- Tree of commands - full model of possible commands and options understood by program.
-- Scalability - adding new command, with the validation, completion for all arguments and options, and with binding to OT command, takes usually 2 lines of C++ code.
-- Validation - checking syntax as well as data correctness (e.g. check with wallet/address book) of the data before executing OT command.
-- Hinting - auto completion and display possible propositions of the commands and arguments.
-- EditLine library integration - History functionality with scrolling through history and saving to file. Display prepared hints, and or files. Planning to use compatible with EditLine - WinEditLine for Windows.
-- Support for multiple words names through quotes.
+- [works, more todo] Tree of commands - full model of possible commands and options understood by program.
+- Scalability - adding new command, with the validation, completion for all arguments and options, and with binding to OT command, takes usually 2 lines of C++ code to bind.
+- [testing] Validation - checking syntax as well as data correctness (e.g. check with wallet/address book) of the data before executing OT command.
+- [works, more todo] Hinting - auto completion and display possible propositions of the commands and arguments.
+- EditLine library integration - History functionality with scrolling through history and saving to file. Display prepared hints, and or files. 
+- Planning to use compatible with EditLine - WinEditLine for Windows.
+
+- [testing] Support for multiple words names through quotes.
+
 - Commands take both IDs and aliases as arguments (ID must be prepend by special prefix character '^') - so local nyms etc. are easy to use and remember. Aliases are obligatory.
 - So far there is over 40 working  commands including messaging, managing nyms, assets and servers. 
+
 - Application can be run in different modes - easy modifying of application parameters (e.g. redirecting debug to file, no debug).
 - Working completion and command execution in bash shell
-- Linux daemon for bash auto completion prevents from multiple initialization of OTAPI.
+- [testing, prove of concept] Linux daemon for fast bash auto completion without reload of OTAPI 
 - Use of external text editor (unix only), when entering multi line text. 
+
 - Test commands  - that we are using to test specific CLI functionalities, like tab completions or building tree of commands.
-- Secure code - asserts in many places, rich debug.
+- [pending code review] Secure code - asserts in many places, advanced debug.
+
 - Working on unit tests that will be checking of validity of all commands, hinting.
 - Local configuration files - read and save defaults IDs: account, asset, nym, server.
 - We are preparing graphical documentation that will present tree of all CLI commands in clear and simple way.
-- Colorful debug and help displaying
 - Help - named arguments, types of arguments and description for each command. Detailed help for single commands.  Automatically generated list of all commands with variables and options (colorful output):
+
+- Colorful debug and help displaying
+- Colored nicks, tables, account ballance
+
+Commands:
 
   ot account [--dryrun] 
   ot account ls [--dryrun] 

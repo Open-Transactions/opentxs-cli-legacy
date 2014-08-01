@@ -3,8 +3,10 @@
  *  OTNewcli  -- Open Transactions new command line interface
  *  (including parts like: othint, otcli, some util libs, and more)
  *
- * 	Written in 2013 by rfree (rfree@gmx.us) and other members of
- * 	open-source community.
+ * 	Written in 2013,2014 by <rfree> "Rafal Freeman" (rfree@gmx.us , rfree@i2pmail.org 
+ *  pgp 21A5 9D31 7421 F02E C3C3  81F3 4623 E8F7 4595 3F23, and jabber rfree@jit.si 
+ *  otr FA8A2DB5 35C2AB1D 0C9D501D F10B5F88 7A9D59ED)
+ *  and other members of open-source community.
  *
  * 	To the extent possible under law, the author(s) have dedicated all
  * 	copyright and related and neighboring rights to this software to
