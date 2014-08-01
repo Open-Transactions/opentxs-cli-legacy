@@ -135,8 +135,10 @@ namespace nUse {
 		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool withdraw, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
 		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse connected with account
 		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse
-		string CashExport(const string & account, const string & recNym, const string & indices, const bool passwordProtected, string & retained_copy);
+		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);
 
+		EXEC bool PaymentShow(const string & nym, const string & server, bool dryrun); ///< show payments
+		EXEC bool PaymentAccept(const string & account, bool dryrun);
 		//================= ?contract =================
 
 		const string ContractSign(const std::string & nymID, const std::string & contract);

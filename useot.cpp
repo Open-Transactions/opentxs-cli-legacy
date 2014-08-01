@@ -768,7 +768,7 @@ bool cUseOT::AssetSetDefault(const std::string & asset, bool dryrun){
 }
 
 bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool withdraw, bool dryrun) { // TODO make it work with longer version: asset, server, nym
-	_fact("cash send from purse with account" << account << " to " << nymRecipient);
+	_fact("cash send from " << nymSender << " to " << nymRecipient << " account " << account << " withdraw: " << withdraw);
 	if (dryrun) return false;
 	if(!Init()) return false;
 
@@ -777,6 +777,7 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
+	ID nymSenderID = NymGetId(nymSender);
 	ID nymRecipientID = NymGetId(nymRecipient);
 
 	string purseValue = OTAPI_Wrap::LoadPurse(accountServerID, accountAssetID, accountNymID); // returns NULL, or a purse
@@ -804,12 +805,10 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 	string retainedCopy = "";
 	string indices = "";
 	bool passwordProtected = false; // TODO check if password protected
-	string exportedCashPurse = CashExport(account, nymRecipientID, indices, passwordProtected, retainedCopy);
-
-	_mark(exportedCashPurse);
+	string exportedCashPurse = CashExport(nymSenderID, nymRecipientID, account, indices, passwordProtected, retainedCopy);
 
   if (!exportedCashPurse.empty()) {
-		string response = mMadeEasy.send_user_cash(accountServerID, nymSender, nymRecipientID, exportedCashPurse, retainedCopy);
+		string response = mMadeEasy.send_user_cash(accountServerID, nymSenderID, nymRecipientID, exportedCashPurse, retainedCopy);
 
 		int32_t returnVal = mMadeEasy.VerifyMessageSuccess(response);
 
@@ -817,7 +816,7 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 			// It failed sending the cash to the recipient Nym.
 			// Re-import strRetainedCopy back into the sender's cash purse.
 			//
-			bool bImported = OTAPI_Wrap::Wallet_ImportPurse(accountServerID, accountAssetID, nymSender, retainedCopy);
+			bool bImported = OTAPI_Wrap::Wallet_ImportPurse(accountServerID, accountAssetID, nymSenderID, retainedCopy);
 
 			if (bImported) {
 				DisplayStringEndl(cout, "Failed sending cash, but at least: success re-importing purse.\nServer: " + accountServerID + "\nAsset Type: " + accountServerID + "\nNym: " + nymSender + "\n\n");
@@ -826,12 +825,172 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 				DisplayStringEndl(cout, " Failed sending cash AND failed re-importing purse.\nServer: " + accountServerID + "\nAsset Type: " + accountServerID + "\nNym: " + nymSender + "\n\nPurse (SAVE THIS SOMEWHERE!):\n\n" + retainedCopy);
 			}
 		}
+		else {
+			DisplayStringEndl(cout, "Success in sending cash from " + nymSender + " to " + nymRecipient + " account " + account );
+		}
   }
-
 
 	return true;
 }
 
+bool cUseOT::PaymentAccept(const string & account, bool dryrun) { // TODO make it work with longer version: asset, server, nym
+	_fact("Accept incoming payments type " << account);
+	if (dryrun) return false;
+	if(!Init()) return false;
+
+	ID accountID = AccountGetId(account);
+	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
+
+	//payment instrument and myacct must both have same asset type
+  //int32_t nAcceptedPurses = accept_from_paymentbox(strMyAcctID, strIndices, "PURSE");
+  // Voucher is already interpreted as a form of cheque, so this is redundant.
+  //
+  //  int32_t nAcceptedVouchers = accept_from_paymentbox(strMyAcctID, strIndices, "VOUCHER")
+  //int32_t nAcceptedCheques = accept_from_paymentbox(strMyAcctID, strIndices, "CHEQUE");
+
+
+  if (accountID.empty()){
+		 OTAPI_Wrap::Output(0, "Failure: strMyAcctID not a valid string.\n");
+		 return false;
+	}
+
+	// HERE, WE LOOK UP THE NYM ID, BASED ON THE ACCOUNT ID.
+	//
+	if (accountNymID.empty()) {
+		 OTAPI_Wrap::Output(0, "Failure: Unable to find NymID based on myacct. Use: --myacct ACCT_ID\n");
+		 OTAPI_Wrap::Output(0, "The designated asset account must be yours. OT will find the Nym based on the account.\n\n");
+		 return false;
+	}
+
+	// HERE, WE LOOK UP THE SERVER ID, BASED ON THE ACCOUNT ID.
+	//
+	if (accountServerID.empty()) {
+		 OTAPI_Wrap::Output(0, "Failure: Unable to find Server ID based on myacct. Use: --myacct ACCT_ID\n");
+		 OTAPI_Wrap::Output(0, "The designated asset account must be yours. OT will find the Server based on the account.\n\n");
+		 return false;
+	}
+	// ******************************************************************
+	//
+	string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(accountServerID, accountNymID); // Returns NULL, or an inbox.
+
+	if (paymentInbox.empty()) {
+		 OTAPI_Wrap::Output(0, "\n\n accept_from_paymentbox:  OT_API_LoadPaymentInbox Failed.\n\n");
+		 return false;
+	}
+
+//	int32_t nCount = OTAPI_Wrap::Ledger_GetCount(accountServerID, strMyNymID, strMyNymID, paymentInbox);
+//	if (!VerifyIntVal(nCount))
+//	{
+//		 OTAPI_Wrap::Output(0, "Unable to retrieve size of payments inbox ledger. (Failure.)\n");
+//		 return -1;
+//	}
+//
+//	int32_t nIndicesCount = VerifyStringVal(strIndices) ? OTAPI_Wrap::NumList_Count(strIndices) : 0;
+//
+//	// Either we loop through all the instruments and accept them all, or
+//	// we loop through all the instruments and accept the specified indices.
+//	//
+//	// (But either way, we loop through all the instruments.)
+//	//
+//	for (int32_t nIndex = (nCount - 1); nIndex >= 0; --nIndex) // Loop from back to front, so if any are removed, the indices remain accurate subsequently.
+//	{
+//		 bool bContinue = false;
+//
+//		 // - If indices are specified, but the current index is not on
+//		 //   that list, then continue...
+//		 //
+//		 // - If NO indices are specified, accept all the ones matching MyAcct's asset type.
+//		 //
+//		 if ((nIndicesCount > 0) && !OTAPI_Wrap::NumList_VerifyQuery(strIndices, to_string(nIndex)))
+//		 {
+//				 //          continue  // apparently not supported by the language.
+//				 bContinue = true;
+//		 }
+//		 else if (!bContinue)
+//		 {
+//				 int32_t nHandled = handle_payment_index(strMyAcctID, nIndex, strPaymentType, paymentInbox);
+//		 }
+//	}
+  return true;
+}
+
+bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun) { // TODO make it work with longer version: asset, server, nym
+	_fact("Show incoming payments inbox for nym: " << nym << " and server: " << server);
+	if (dryrun) return false;
+	if(!Init()) return false;
+
+	ID nymID = NymGetId(nym);
+	ID serverID = ServerGetId(server);
+
+	string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(serverID, nymID); // Returns NULL, or an inbox.
+
+	if (paymentInbox.empty()) {
+		DisplayStringEndl(cout, "Unable to load the payments inbox (probably doesn't exist yet.)\n(Nym/Server: " + nym + " / " + server + " )");
+		return false;
+	}
+
+  int32_t count = OTAPI_Wrap::Ledger_GetCount(serverID, nymID, nymID, paymentInbox);
+	if (count > 0) {
+		OTAPI_Wrap::Output(0, "Show payments inbox (Nym/Server)\n( " + nym + " / " + server + " )\n");
+		OTAPI_Wrap::Output(0, "Idx  Amt   Type      Txn#  Asset_Type\n");
+		OTAPI_Wrap::Output(0, "---------------------------------------\n");
+
+		for (int32_t index = 0; index < count; ++index)
+		{
+			string instrument = OTAPI_Wrap::Ledger_GetInstrument(serverID, nymID, nymID, paymentInbox, index);
+
+			if (instrument.empty()) {
+				 OTAPI_Wrap::Output(0, "Failed trying to get payment instrument from payments box.\n");
+				 return false;
+			}
+			string strTrans = OTAPI_Wrap::Ledger_GetTransactionByIndex(serverID, nymID, nymID, paymentInbox, index);
+			int64_t lTransNumber = OTAPI_Wrap::Ledger_GetTransactionIDByIndex(serverID, nymID, nymID, paymentInbox, index);
+
+			string strTransID = to_string(lTransNumber);
+
+			int64_t lRefNum = OTAPI_Wrap::Transaction_GetDisplayReferenceToNum(serverID, nymID, nymID, strTrans);
+
+			int64_t lAmount = OTAPI_Wrap::Instrmnt_GetAmount(instrument);
+			string strType = OTAPI_Wrap::Instrmnt_GetType(instrument);
+			string strAssetType = OTAPI_Wrap::Instrmnt_GetAssetID(instrument);  // todo: output this.
+			string strSenderUserID = OTAPI_Wrap::Instrmnt_GetSenderUserID(instrument);
+			string strSenderAcctID = OTAPI_Wrap::Instrmnt_GetSenderAcctID(instrument);
+			string strRecipientUserID = OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument);
+			string strRecipientAcctID = OTAPI_Wrap::Instrmnt_GetRecipientAcctID(instrument);
+
+			string strUserID = strSenderUserID.empty() ? strSenderUserID : strRecipientUserID;
+			string strAcctID = strSenderAcctID.empty() ? strSenderAcctID : strRecipientAcctID;
+
+			bool bHasAmount = lAmount >= 0;
+			bool bHasAsset = !strAssetType.empty();
+
+			string strAmount = (bHasAmount && bHasAsset) ? OTAPI_Wrap::FormatAmount(strAssetType, lAmount) : "UNKNOWN_AMOUNT";
+
+			bool bUserIDExists = !strUserID.empty();
+			bool bAcctIDExists = !strAcctID.empty();
+			bool bAssetIDExists = !strAssetType.empty();
+
+			string strAssetDenoter = (bAssetIDExists ? " - " : "");
+
+			string strAssetName = (bAssetIDExists ? ("\"" + OTAPI_Wrap::GetAssetType_Name(strAssetType) + "\"") : "");
+			if ( strAssetName.empty() )     { strAssetName = ""; strAssetDenoter = ""; }
+
+			string strOut1 = to_string(index) + "    ";
+			string strOut2 = strAmount + (strAmount.size() < 3 ? "    " : "   ");
+			string strOut3 = strType;
+			string strOut4 = strType.size() > 10 ? " " : "    ";
+			string strOut5 = strTransID + (strTransID.size() < 2 ? "    " : "   ");
+			string strOut6 = strAssetType + strAssetDenoter + strAssetName;
+
+			DisplayStringEndl(cout, strOut1 + strOut2 + strOut3 + strOut4 + strOut5 + strOut6);
+		} // for
+	}
+
+
+	return true;
+}
 
 bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it work with longer version: asset, server, nym
 	_fact("cash show for purse with account: " << account);
@@ -852,11 +1011,12 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 	}
 
   int64_t amount = OTAPI_Wrap::Purse_GetTotalValue(accountServerID, accountAssetID, purseValue);
-  cout << zkr::cc::fore::lightyellow << "Total value: " << zkr::cc::fore::red << OTAPI_Wrap::FormatAmount(accountAssetID, amount) << endl;
+  cout << zkr::cc::fore::lightyellow << "Total value: " << zkr::cc::fore::red << OTAPI_Wrap::FormatAmount(accountAssetID, amount) << zkr::cc::fore::console << endl;
 
 	int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
 	if (count < 0) { // TODO check if integer?
 		DisplayStringEndl(cout, "Error: Unexpected bad value returned from OT_API_Purse_Count.");
+		_erro("Unexpected bad value returned from OT_API_Purse_Count.");
 		return false;
 	}
 
@@ -931,18 +1091,72 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 	return true;
 }
 
-string cUseOT::CashExport(const string & account, const string & recNym, const string & indices, const bool passwordProtected, string & retained_copy) {
-	_fact("cash export from purse with account" << account << " to " << recNym);
+string cUseOT::CashExport(const ID & nymSenderID, const ID & nymRecipientID, const string & account, const string & indices, const bool passwordProtected, string & retained_copy) {
+	_fact("cash export from " << nymSenderID << " to " << nymRecipientID << " account " << account << " indices: " << indices << "passwordProtected: " << passwordProtected);
 	ID accountID = AccountGetId(account);
 	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
-	ID recipientNymID = NymGetId(recNym);
+	string contract = mMadeEasy.load_or_retrieve_contract(accountServerID, nymSenderID, accountAssetID);
 
-	string exported = mMadeEasy.export_cash(accountServerID,accountID,accountAssetID,recipientNymID,indices,passwordProtected,retained_copy);
-	_dbg3("Exported cash");
-	return exported;
+	if (contract.empty()) {
+		_erro("Unable to load asset contract: " + accountAssetID);
+		DisplayStringEndl(cout, "Unable to load asset contract: " + accountAssetID);
+		return "";
+	}
+
+	string purseValue = OTAPI_Wrap::LoadPurse(accountServerID, accountAssetID, nymSenderID); // returns NULL, or a purse.
+
+	if (purseValue.empty()) {
+		_erro("Unable to load purse from local storage. Does it even exist?");
+		DisplayStringEndl(cout,  "Unable to load purse from local storage. Does it even exist?");
+		return "";
+	}
+
+  int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
+	if (count < 0) { // TODO check if integer?
+		DisplayStringEndl(cout, "Error: Unexpected bad value returned from OT_API_Purse_Count.");
+		_erro("Unexpected bad value returned from OT_API_Purse_Count.");
+		return "";
+	}
+  if (count < 1){
+		DisplayStringEndl(cout, "Error: The purse is empty. Export aborted.");
+		_erro("The purse is empty. Export aborted.");
+		return "";
+  }
+
+  int32_t index = -1;
+	_dbg3("Loop through purse contents");
+	while (count > 0) { // Loop through purse contents
+		--count;
+		++index;  // on first iteration, this is now 0.
+		string token = OTAPI_Wrap::Purse_Peek(accountServerID, accountAssetID, accountNymID, purseValue);
+		if (token.empty()) {
+			_erro("OT_API_Purse_Peek unexpectedly returned NULL instead of token.");
+			return "";
+		}
+
+		string newPurse = OTAPI_Wrap::Purse_Pop(accountServerID, accountAssetID, accountNymID, purseValue);
+
+		if (newPurse.empty()) {
+			_erro("OT_API_Purse_Pop unexpectedly returned NULL instead of updated purse.\n");
+			return "";
+		}
+
+		purseValue = newPurse;
+
+		string tokenID = OTAPI_Wrap::Token_GetID(accountServerID, accountAssetID, token);
+
+		if (tokenID.empty()) {
+			_erro("Error while exporting purse: bad token ID");
+			return "";
+		}
+	} // while
+
+	string exportedCash = mMadeEasy.export_cash(accountServerID, nymSenderID, accountAssetID, nymRecipientID, indices, passwordProtected, retained_copy);
+	_info("Cash was exported");
+	return exportedCash;
 }
 
 bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
@@ -960,8 +1174,7 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	if (assetContract.empty()) {
 		string strResponse = mMadeEasy.retrieve_contract(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
 
-		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse))
-		{
+		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse)) {
 			_erro( "Unable to retreive asset contract for nym " << accountNymID << " and server " << mDefaultIDs.at(nUtils::eSubjectType::Server) );
 			DisplayStringEndl(cout, "Unable to retreive asset contract for nym " + accountNymID + " and server " + mDefaultIDs.at(nUtils::eSubjectType::Server) );
 			return false;
@@ -1167,19 +1380,19 @@ bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, cons
 	return true;
 }
 
-bool cUseOT::MsgInCheckIndex(const string & nymName, const int32_t & nIndex) {
+bool cUseOT::MsgInCheckIndex(const string & nymName, const int32_t & index) {
 	if(!Init())
 			return false;
-	if ( nIndex >= 0 && nIndex < OTAPI_Wrap::GetNym_MailCount(NymGetId(nymName)) ) {
+	if ( index >= 0 && index < OTAPI_Wrap::GetNym_MailCount(NymGetId(nymName)) ) {
 		return true;
 	}
 	return false;
 }
 
-bool cUseOT::MsgOutCheckIndex(const string & nymName, const int32_t & nIndex) {
+bool cUseOT::MsgOutCheckIndex(const string & nymName, const int32_t & index) {
 	if(!Init())
 			return false;
-	if ( nIndex >= 0 && nIndex < OTAPI_Wrap::GetNym_OutmailCount(NymGetId(nymName)) ) {
+	if ( index >= 0 && index < OTAPI_Wrap::GetNym_OutmailCount(NymGetId(nymName)) ) {
 		return true;
 	}
 	return false;
