@@ -3,8 +3,8 @@
 Template for new files, replace word "template" and later delete this line here.
 */
 
-#ifndef INCLUDE_OT_NEWCLI_template
-#define INCLUDE_OT_NEWCLI_template
+#ifndef INCLUDE_OT_NEWCLI_runoptions_hpp
+#define INCLUDE_OT_NEWCLI_runoptions_hpp
 
 #include "lib_common1.hpp"
 
