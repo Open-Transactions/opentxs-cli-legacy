@@ -833,8 +833,11 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 	return true;
 }
 
-bool cUseOT::PaymentAccept(const string & account, bool dryrun) { // TODO make it work with longer version: asset, server, nym
-	_fact("Accept incoming payments type " << account);
+bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dryrun) {
+	// TODO make it work with longer version: asset, server, nym
+	// TODO accept all payments
+	// TODO accept various instruments types
+	_fact("Accept incoming payment nr " << index << " for account " << account);
 	if (dryrun) return false;
 	if(!Init()) return false;
 
@@ -873,29 +876,28 @@ bool cUseOT::PaymentAccept(const string & account, bool dryrun) { // TODO make i
 	}
 	// ******************************************************************
 	//
+	_dbg3("Loading payment inbox");
 	string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(accountServerID, accountNymID); // Returns NULL, or an inbox.
 
 	if (paymentInbox.empty()) {
 		 OTAPI_Wrap::Output(0, "\n\n accept_from_paymentbox:  OT_API_LoadPaymentInbox Failed.\n\n");
 		 return false;
 	}
+	_dbg3("Get size of inbox ledger");
+	int32_t nCount = OTAPI_Wrap::Ledger_GetCount(accountServerID, accountNymID, accountNymID, paymentInbox);
+	if (nCount < 0) {
+		 OTAPI_Wrap::Output(0, "Unable to retrieve size of payments inbox ledger. (Failure.)\n");
+		 return false;
+	}
 
-//	int32_t nCount = OTAPI_Wrap::Ledger_GetCount(accountServerID, strMyNymID, strMyNymID, paymentInbox);
-//	if (!VerifyIntVal(nCount))
-//	{
-//		 OTAPI_Wrap::Output(0, "Unable to retrieve size of payments inbox ledger. (Failure.)\n");
-//		 return -1;
-//	}
-//
-//	int32_t nIndicesCount = VerifyStringVal(strIndices) ? OTAPI_Wrap::NumList_Count(strIndices) : 0;
-//
-//	// Either we loop through all the instruments and accept them all, or
-//	// we loop through all the instruments and accept the specified indices.
-//	//
-//	// (But either way, we loop through all the instruments.)
-//	//
-//	for (int32_t nIndex = (nCount - 1); nIndex >= 0; --nIndex) // Loop from back to front, so if any are removed, the indices remain accurate subsequently.
-//	{
+	//int32_t nIndicesCount = VerifyStringVal(strIndices) ? OTAPI_Wrap::NumList_Count(strIndices) : 0;
+
+	// Either we loop through all the instruments and accept them all, or
+	// we loop through all the instruments and accept the specified indices.
+	//
+	// (But either way, we loop through all the instruments.)
+	//
+//	for (int32_t nIndex = (nCount - 1); nIndex >= 0; --nIndex) { // Loop from back to front, so if any are removed, the indices remain accurate subsequently.
 //		 bool bContinue = false;
 //
 //		 // - If indices are specified, but the current index is not on
@@ -903,18 +905,191 @@ bool cUseOT::PaymentAccept(const string & account, bool dryrun) { // TODO make i
 //		 //
 //		 // - If NO indices are specified, accept all the ones matching MyAcct's asset type.
 //		 //
-//		 if ((nIndicesCount > 0) && !OTAPI_Wrap::NumList_VerifyQuery(strIndices, to_string(nIndex)))
-//		 {
+//		 if ((nIndicesCount > 0) && !OTAPI_Wrap::NumList_VerifyQuery(strIndices, to_string(nIndex))) {
 //				 //          continue  // apparently not supported by the language.
 //				 bContinue = true;
 //		 }
-//		 else if (!bContinue)
-//		 {
+//		 else if (!bContinue) {
 //				 int32_t nHandled = handle_payment_index(strMyAcctID, nIndex, strPaymentType, paymentInbox);
 //		 }
 //	}
-  return true;
+	string strInstrument = mMadeEasy.get_payment_instrument(accountServerID, accountNymID, index, paymentInbox); // strInbox is optional and avoids having to load it multiple times. This function will just load it itself, if it has to.
+	if (strInstrument.empty()) {
+		OTAPI_Wrap::Output(0, "\n\n Unable to get payment instrument based on index: " + to_string(index) + ".\n\n");
+		return false;
+	}
+	string strType = OTAPI_Wrap::Instrmnt_GetType(strInstrument);
+
+	if (strType.empty()) {
+			OTAPI_Wrap::Output(0, "\n\nFailure: Unable to determine strInstrument's type. Expected CHEQUE, VOUCHER, INVOICE, or (cash) PURSE.\n");
+			return false;
+	}
+
+	// If there's a payment type,
+	// and it's not "ANY", and it's the wrong type,
+	// then skip this one.
+	//
+//	if (VerifyStringVal(strPaymentType) && (strPaymentType != "ANY") && (strPaymentType != strType))
+//	{
+//			if ((("CHEQUE" == strPaymentType) && ("VOUCHER" == strType)) || (("VOUCHER" == strPaymentType) && ("CHEQUE" == strType)))
+//			{
+//					// in this case we allow it to drop through.
+//			}
+//			else
+//			{
+//					OTAPI_Wrap::Output(0, "The instrument " + strIndexErrorMsg + "is not a " + strPaymentType + ". (It's a " + strType + ". Skipping.)\n");
+//					return -1;
+//			}
+//	}
+
+	// But we need to make sure the invoice is made out to strMyNymID (or to no one.)
+	// Because if it IS endorsed to a Nym, and strMyNymID is NOT that nym, then the
+	// transaction will fail. So let's check, before we bother sending it...
+
+	string strRecipientUserID = OTAPI_Wrap::Instrmnt_GetRecipientUserID(strInstrument);
+  if ( !CheckIfExists(eSubjectType::User, strRecipientUserID) ) {
+  	OTAPI_Wrap::Output(0, "The instrument " + to_string(index) + " is endorsed to a specific recipient (" + strRecipientUserID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.) \n");
+  	return false;
+  }
+
+  string strInstrumentAssetType = OTAPI_Wrap::Instrmnt_GetAssetID(strInstrument);
+
+  if (accountAssetID != strInstrumentAssetType) {
+  	OTAPI_Wrap::Output(0, "The instrument at index " + to_string(index) + " has a different asset type than the selected account. (Skipping.) \n");
+  	return false;
+  }
+
+  time64_t tFrom = OTAPI_Wrap::Instrmnt_GetValidFrom(strInstrument);
+  time64_t tTo = OTAPI_Wrap::Instrmnt_GetValidTo(strInstrument);
+  time64_t tTime = OTAPI_Wrap::GetTime();
+
+  if (tTime < tFrom) {
+		OTAPI_Wrap::Output(0, "The instrument at index " + to_string(index) + " is not yet within its valid date range. (Skipping.)\n");
+		return false;
+	}
+	if (tTo > OT_TIME_ZERO && tTime > tTo) {
+		OTAPI_Wrap::Output(0, "The instrument at index " + to_string(index) + " is expired. (Moving it to the record box.)\n");
+
+		// Since this instrument is expired, remove it from the payments inbox, and move to record box.
+
+		// Note: this harvests
+		if ((index >= 0) && OTAPI_Wrap::RecordPayment(accountServerID, accountNymID, true, // bIsInbox = true;
+				index, true)) {// bSaveCopy = true. (Since it's expired, it'll go into the expired box.)
+				return false;
+		}
+		return false;
+	}
+
+	// TODO, IMPORTANT: After the below deposits are completed successfully, the wallet
+	// will receive a "successful deposit" server reply. When that happens, OT (internally)
+	// needs to go and see if the deposited item was a payment in the payments inbox. If so,
+	// it should REMOVE it from that box and move it to the record box.
+	//
+	// That's why you don't see me messing with the payments inbox even when these are successful.
+	// They DO need to be removed from the payments inbox, but just not here in the script. (Rather,
+	// internally by OT itself.)
+	//
+	if ("CHEQUE" == strType || "VOUCHER" == strType || "INVOICE" == strType) {
+			//return details_deposit_cheque(strServerID, strMyAcctID, strMyNymID, strInstrument, strType); //TODO implement CheckDeposit
+		return true;
+	}
+
+	if ("PURSE" == strType) {
+		int32_t nDepositPurse = PurseDeposit( accountID, accountNymID, accountServerID, strInstrument, false); // strIndices is left blank in this case
+
+		// if nIndex !=  -1, go ahead and call RecordPayment on the purse at that index, to
+		// remove it from payments inbox and move it to the recordbox.
+		//
+		if ((index != -1) && (1 == nDepositPurse)) {
+				int32_t nRecorded = OTAPI_Wrap::RecordPayment(accountServerID, accountNymID, true, //bIsInbox=true
+						index, true); // bSaveCopy=true.
+		}
+
+		return true;
+	}
+
+			OTAPI_Wrap::Output(0, "\nSkipping this instrument: Expected CHEQUE, VOUCHER, INVOICE, or (cash) PURSE.\n");
+
+	return false;
 }
+
+bool cUseOT::PurseDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun){
+	_fact("Deposit purse on account: " << account);
+	if (dryrun) return false;
+	if(!Init()) return false;
+
+	ID accountID = AccountGetId(account);
+	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
+
+	string strTHE_Instrument = "";
+	if (strInstrument.empty()){
+			// LOAD PURSE
+
+			strTHE_Instrument = OTAPI_Wrap::LoadPurse(strServerID, accountAssetID, strFromNymID); // returns NULL, or a purse.
+
+			if (strTHE_Instrument.empty()) {
+					OTAPI_Wrap::Output(0, " Unable to load purse from local storage. Does it even exist?\n");
+					return false;
+			}
+	}
+	string purseValue = strTHE_Instrument;
+
+	vector<string> vecSelectedTokenIDs;
+
+	int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
+	if (count < 0) { // TODO check if integer?
+		DisplayStringEndl(cout, "Error: Unexpected bad value returned from OT_API_Purse_Count.");
+		_erro("Unexpected bad value returned from OT_API_Purse_Count.");
+		return false;
+	}
+
+	if (count > 0) {
+
+		int32_t index = -1;
+		while (count > 0) { // Loop through purse contents and display tokens
+			--count;
+			++index;  // on first iteration, this is now 0.
+
+			string token = OTAPI_Wrap::Purse_Peek(accountServerID, accountAssetID, accountNymID, purseValue);
+			if (token.empty()) {
+				_erro("OT_API_Purse_Peek unexpectedly returned NULL instead of token.");
+				return false;
+			}
+
+			string newPurse = OTAPI_Wrap::Purse_Pop(accountServerID, accountAssetID, accountNymID, purseValue);
+
+			if (newPurse.empty()) {
+				_erro("OT_API_Purse_Pop unexpectedly returned NULL instead of updated purse.\n");
+				return false;
+			}
+
+			purseValue = newPurse;
+
+			string strTokenID = OTAPI_Wrap::Token_GetID(strServerID, accountAssetID, token);
+
+			if (strTokenID.empty()) {
+				OTAPI_Wrap::Output(0, "Error while depositing purse: bad strTokenID.\n");
+				return false;
+			}
+
+
+			vecSelectedTokenIDs.push_back(strTokenID);
+
+		} // while
+
+	} // if count > 0
+
+	int32_t nResult = mMadeEasy.deposit_cash(strServerID, accountNymID, accountID, purseValue);
+//			(strServerID, strAssetTypeID, strFromNymID, strTHE_Instrument, vecSelectedTokenIDs, strMyAcct, bLoadedPurse);
+	if (nResult < 1) {
+		DisplayStringEndl(cout, "Unable to deposit purse");
+		return false;
+	}
+	return true;
+}
+
 
 bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun) { // TODO make it work with longer version: asset, server, nym
 	_fact("Show incoming payments inbox for nym: " << nym << " and server: " << server);
