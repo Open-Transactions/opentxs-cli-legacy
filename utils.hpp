@@ -57,15 +57,32 @@ extern cNullstream g_nullstream; // a stream that does nothing (eats/discards da
 
 // _dbg_ignore is moved to global namespace (on purpose)
 
-#define _dbg3(X) do { if (_dbg_ignore< 20) gCurrentLogger.write_stream( 20) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0)
-#define _dbg2(X) do { if (_dbg_ignore< 30) gCurrentLogger.write_stream( 30) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0)
-#define _dbg1(X) do { if (_dbg_ignore< 40) gCurrentLogger.write_stream( 40) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // details
-#define _info(X) do { if (_dbg_ignore< 50) gCurrentLogger.write_stream( 50) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // more boring info
-#define _note(X) do { if (_dbg_ignore< 70) gCurrentLogger.write_stream( 70) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // info
-#define _fact(X) do { if (_dbg_ignore< 75) gCurrentLogger.write_stream( 75) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // interesting event
-#define _mark(X) do { if (_dbg_ignore< 80) gCurrentLogger.write_stream( 80) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // marked action
-#define _warn(X) do { if (_dbg_ignore< 90) gCurrentLogger.write_stream( 90) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // some problem
-#define _erro(X) do { if (_dbg_ignore<100) gCurrentLogger.write_stream(100) << OT_CODE_STAMP << ' ' << X << gCurrentLogger.endline() << std::flush; } while(0) // error - report
+// TODO make _dbg_ignore thread-safe everywhere
+#define _debug_level_c(CHANNEL,LEVEL,VAR) do { if (_dbg_ignore< LEVEL) { \
+		gCurrentLogger.write_stream(LEVEL,CHANNEL) << OT_CODE_STAMP << ' ' << VAR << gCurrentLogger.endline() << std::flush; \
+	} } while(0)
+
+#define _debug_level(LEVEL,VAR) _debug_level_c("",LEVEL,VAR)
+
+#define _dbg3(VAR) _debug_level( 20,VAR)
+#define _dbg2(VAR) _debug_level( 30,VAR)
+#define _dbg1(VAR) _debug_level( 40,VAR) // details
+#define _info(VAR) _debug_level( 50,VAR) // more boring info
+#define _note(VAR) _debug_level( 70,VAR) // info
+#define _fact(VAR) _debug_level( 75,VAR) // interesting event
+#define _mark(VAR) _debug_level( 80,VAR) // marked action
+#define _warn(VAR) _debug_level( 90,VAR) // some problem
+#define _erro(VAR) _debug_level(100,VAR) // error - report
+
+#define _dbg3_c(C,VAR) _debug_level_c(C, 20,VAR)
+#define _dbg2_c(C,VAR) _debug_level_c(C, 30,VAR)
+#define _dbg1_c(C,VAR) _debug_level_c(C, 40,VAR) // details
+#define _info_c(C,VAR) _debug_level_c(C, 50,VAR) // more boring info
+#define _note_c(C,VAR) _debug_level_c(C, 70,VAR) // info
+#define _fact_c(C,VAR) _debug_level_c(C, 75,VAR) // interesting event
+#define _mark_c(C,VAR) _debug_level_c(C, 80,VAR) // marked action
+#define _warn_c(C,VAR) _debug_level_c(C, 90,VAR) // some problem
+#define _erro_c(C,VAR) _debug_level_c(C,100,VAR) // error - report
 
 const char* DbgShortenCodeFileName(const char *s);
 
@@ -77,8 +94,9 @@ std::string cSpaceFromEscape(const std::string &s);
 class cLogger {
 	public:
 		cLogger();
-		~cLogger(){}
+		~cLogger();
 		std::ostream & write_stream(int level);
+		std::ostream & write_stream(int level, const std::string & channel);
 
 		void setOutStreamFromGlobalOptions(); // set debug level, file etc - according to global Options
 		void setOutStreamFile(const std::string &fname); // switch to using this file
@@ -91,7 +109,13 @@ class cLogger {
 		unique_ptr<std::ofstream> mOutfile;
 		std::ostream * mStream; // pointing only! can point to our own mOutfile, or maye to global null stream
 
+		std::map< std::string , std::ofstream * > mChannels; // the ofstream objects are owned by this class
+
 		int mLevel; // current debug level
+
+		std::ostream & SelectOutput(int level, const std::string & channel);
+		void OpenNewChannel(const std::string & channel);
+		std::string GetLogBaseDir() const;
 };
 
 
@@ -138,7 +162,7 @@ void DisplayMap(std::ostream & out, const std::map<T, T2> &m, const std::string 
 	auto *no_color = zkr::cc::fore::console;
 	for(auto var : m) {
 	    out << stringToColor(var.first) << var.first << delim << var.second << no_color << endl;
- 	}
+	}
 
 }
 
@@ -147,7 +171,7 @@ void EndlDisplayMap(std::ostream & out, const std::map<T, T2> &m, const std::str
 	out << endl;
 	for(auto var : m) {
 		out << var.first << delim << var.second << endl;
- 	}
+	}
 }
 
 template <class T, class T2>
@@ -231,6 +255,15 @@ eSubjectType String2SubjectType(const string & type);
 
 // ====================================================================
 // operation on files
+
+class cFilesystemUtils { // if we do not want to use boost in given project (or we could optionally write boost here later)
+	public:
+		static bool CreateDirTree(const std::string & dir, bool only_below=false);
+		static char GetDirSeparator(); // eg '/' or '\'
+};
+
+// ====================================================================
+// operation on files 2
 
 class cConfigManager {
 public:

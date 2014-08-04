@@ -23,18 +23,26 @@ int cOTCli::Run(const vector<string> args_without_programname) {
 int cOTCli::_Run(const vector<string> args_without_programname) {
 	LoadScript("autostart-dev.local", "autostart script"); // todo depending on execution mode? +devel ?
 
+	_dbg3_c("testdbg/x","Starting debug");
 	if (nOT::gRunOptions.getDoRunDebugshow()) {
 		_note("Running test Debugshow:");
 		string msg="Testing debug system.";
+		_erro_c("testdbg/x",msg);
 		_erro(msg);
 		_warn(msg);
 		_mark(msg);
+		_mark_c("testdbg/x",msg);
 		_fact(msg);
 		_note(msg);
 		_info(msg);
+		_info_c("testdbg/x",msg);
 		_dbg1(msg);
 		_dbg2(msg);
 		_dbg3(msg);
+
+		_note_c("testdbg/aaa", "Debug to channel aaa") ;
+		_note_c("testdbg/aaa", "Debug to channel aaa again") ;
+		_note_c("testdbg/bbb", "Debug to channel bbb") ;
 	}
 
 	auto args = args_without_programname;

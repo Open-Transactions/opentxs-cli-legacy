@@ -5,6 +5,7 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <fstream>
 
 #include "utils.hpp"
 
@@ -13,6 +14,18 @@
 #include "lib_common1.hpp"
 
 #include "runoptions.hpp"
+
+#include <unistd.h>
+
+// TODO nicer os detection?
+#if defined(__unix__) || defined(__posix) || defined(__linux)
+	#include <sys/types.h>
+	#include <sys/stat.h>
+#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
+	#include <Windows.h>
+#else
+	#error "Do not know how to compile this for your platform."
+#endif
 
 namespace nOT {
 namespace nUtils {
@@ -70,19 +83,130 @@ const char* DbgShortenCodeFileName(const char *s) {
 	return a;
 }
 
-
-// ====================================================================
-
-std::ostream & cLogger::write_stream(int level) {
-	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; }
-	return g_nullstream;
-}
-
 template<typename T, typename ...Args>
 std::unique_ptr<T> make_unique( Args&& ...args )
 {
     return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
 }
+
+// ====================================================================
+
+char cFilesystemUtils::GetDirSeparator() {
+	// TODO nicer os detection?
+	#if defined(__unix__) || defined(__posix) || defined(__linux)
+		return '/';
+	#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
+		return '\\';
+	#else
+		#error "Do not know how to compile this for your platform."
+	#endif
+}
+
+bool cFilesystemUtils::CreateDirTree(const std::string & dir, bool only_below) {
+	const bool dbg=true;
+	//struct stat st;
+	const char dirch = cFilesystemUtils::GetDirSeparator();
+	std::istringstream iss(dir);
+	string part, sofar="";
+	if (dir.size()<1) return false; // illegal name
+	// dir[0] is valid from here
+	if  (only_below && (dir[0]==dirch)) return false; // no jumping to top (on any os)
+	while (getline(iss,part,dirch)) {
+		if (dbg) cout << '['<<part<<']' << endl;
+		sofar += part;
+		if (part.size()<1) return false; // bad format?
+		if ((only_below) && (part=="..")) return false; // going up
+
+		if (dbg) cout << "test ["<<sofar<<"]"<<endl;
+		// TODO nicer os detection?
+		#if defined(__unix__) || defined(__posix) || defined(__linux)
+			struct stat st;
+			bool exists = stat(sofar.c_str() ,&st) == 0; // *
+			if (exists) {
+				if (! S_ISDIR(st.st_mode)) {
+					// std::cerr << "This exists, but as a file: [" << sofar << "]" << (size_t)st.st_ino << endl;
+					return false; // exists but is a file nor dir
+				}
+			}
+		#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
+		  DWORD dwAttrib = GetFileAttributes(szPath);
+		  bool exists = (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+		#else
+			#error "Do not know how to compile this for your platform."
+		#endif
+
+		if (!exists) {
+			if (dbg) cout << "mkdir ["<<sofar<<"]"<<endl;
+			#if defined(__unix__) || defined(__posix) || defined(__linux)
+				bool ok = 0==  mkdir(sofar.c_str(), 0700); // ***
+			#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
+				bool ok = 0==  _mkdir(sofar.c_str()); // *** http://msdn.microsoft.com/en-us/library/2fkk4dzw.aspx
+			#else
+				#error "Do not know how to compile this for your platform."
+			#endif
+			if (!ok) return false;
+		}
+		sofar += cFilesystemUtils::GetDirSeparator();
+	}
+	return true;
+}
+
+// ====================================================================
+
+cLogger::cLogger() : mStream(NULL), mLevel(20) { mStream = & std::cout; }
+
+cLogger::~cLogger() {
+	for (auto pair : mChannels) {
+		std::ofstream *ptr = pair.second;
+		delete ptr;
+		pair.second=NULL;
+	}
+}
+
+std::ostream & cLogger::write_stream(int level) {
+	return write_stream(level,"");
+}
+
+std::ostream & cLogger::write_stream(int level, const std::string & channel ) {
+	if ((level >= mLevel) && (mStream)) {
+		ostream & output = SelectOutput(level,channel);
+		output << icon(level) << ' ';
+		return output;
+	}
+	return g_nullstream;
+}
+
+std::string cLogger::GetLogBaseDir() const {
+	return "log";
+}
+
+void cLogger::OpenNewChannel(const std::string & channel) {
+	size_t last_split = channel.find_last_of(cFilesystemUtils::GetDirSeparator());
+	// log/test/aaa
+	//         ^----- last_split
+	string dir = GetLogBaseDir() + cFilesystemUtils::GetDirSeparator() + channel.substr(0, last_split);
+	string basefile = channel.substr(last_split+1) + ".log";
+	string fname = dir + cFilesystemUtils::GetDirSeparator() + cFilesystemUtils::GetDirSeparator() + basefile;
+	_dbg1("Starting debug to channel file: " + fname + " in directory ["+dir+"]");
+	bool dirok = cFilesystemUtils::CreateDirTree(dir);
+	if (!dirok) { const string msg = "In logger failed to open directory (" + dir +")."; _erro(msg); throw std::runtime_error(msg); }
+	std::ofstream * thefile = new std::ofstream( fname.c_str() );
+	*thefile << "====== (Log opened: " << fname << ") ======" << endl;
+	mChannels.insert( std::pair<string,std::ofstream*>(channel , thefile ) );
+}
+
+std::ostream & cLogger::SelectOutput(int level, const std::string & channel) {
+	if (channel=="") return *mStream;
+	auto obj = mChannels.find(channel);
+	if (obj == mChannels.end()) { // new channel
+		OpenNewChannel(channel);
+		return SelectOutput(level,channel);
+	}
+	else { // existing
+		return * obj->second;
+	}
+}
+
 
 void cLogger::setOutStreamFile(const string &fname) { // switch to using this file
 	_mark("WILL SWITCH DEBUG NOW to file: " << fname);
@@ -115,8 +239,6 @@ void cLogger::setDebugLevel(int level) {
 	mLevel = level;
 	if (!note_before) _note("Setting debug level to "<<level);
 }
-
-cLogger::cLogger() : mStream(NULL), mLevel(20) { mStream = & std::cout; }
 
 std::string cLogger::icon(int level) const {
 	// TODO replan to avoid needles converting back and forth char*, string etc

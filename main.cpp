@@ -47,10 +47,10 @@ int main(int argc, const char **argv) {
 		_dbg1("Main after application with ret="<<ret);
 	}
 	catch (const std::exception &e) {
-  	_erro("\n*** Captured exception:" << e.what());
+		_erro("\n*** Captured exception:" << e.what());
 	}
 	catch (...) {
-  	_erro("\n*** Captured UNKNOWN exception:");
+		_erro("\n*** Captured UNKNOWN exception:");
 	}
 
 	// nOT::nTests::exampleOfOT(); // TODO from script
