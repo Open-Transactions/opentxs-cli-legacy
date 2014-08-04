@@ -262,7 +262,9 @@ std::string cLogger::endline() const {
 	return ToStr("") + zkr::cc::console + ToStr("\n"); // TODO replan to avoid needles converting back and forth char*, string etc
 }
 
+// ====================================================================
 
+// object gCurrentLogger is defined later - in global namespace below
 
 // ====================================================================
 // vector debug
@@ -639,4 +641,8 @@ std::string GetObjectName() {
 	//if (!name) name = new std::string("(global)");
 	return "";
 }
+
+// ====================================================================
+
+nOT::nUtils::cLogger gCurrentLogger;
 

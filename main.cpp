@@ -7,8 +7,6 @@
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1
 
-nOT::nUtils::cLogger gCurrentLogger;
-
 int main(int argc, const char **argv) {
 	int ret=0;
 
