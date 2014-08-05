@@ -838,6 +838,36 @@ string cUseOT::CashExport(const ID & nymSenderID, const ID & nymRecipientID, con
 	return exportedCash;
 }
 
+bool cUseOT::CashImport(bool dryrun) {
+	_fact("cash import ");
+	if (dryrun) return false;
+	if(!Init()) return false;
+
+	_dbg3("Open text editor for user to paste payment instrument");
+	nUtils::cEnvUtils envUtils;
+	string instrument = envUtils.Compose();
+
+	if (instrument.empty()) {
+		return false;
+	}
+
+	string instrumentType = OTAPI_Wrap::Instrmnt_GetType(instrument);
+
+	if (instrumentType.empty()) {
+		OTAPI_Wrap::Output(0, "\n\nFailure: Unable to determine instrument type. Expected (cash) PURSE.\n");
+		return false;
+	}
+
+	string serverID = OTAPI_Wrap::Instrmnt_GetServerID(instrument);
+
+	if (serverID.empty()) {
+			OTAPI_Wrap::Output(0, "\n\nFailure: Unable to determine server ID from purse.\n");
+			return false;
+	}
+
+	return true;
+}
+
 bool cUseOT::CashDeposit(const string & accountID, const string & nymFromID, const string & serverID,  const string & instrument, bool dryrun){
 	//FIXME cleaning arguments
 	_fact("Deposit purse to account: " << accountID);
