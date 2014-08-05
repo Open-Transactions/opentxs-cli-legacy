@@ -132,13 +132,14 @@ namespace nUse {
 
 		//================= cash =================
 
+		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);
+		bool CashDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun);
+
+		EXEC bool CashImport(bool dryrun); ///< import cash from file or by pasting to editor
 		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
 		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse connected with account
 		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse
-		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);
-		bool CashDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun);
-		EXEC bool PaymentShow(const string & nym, const string & server, bool dryrun); ///< show payments
-		EXEC bool PaymentAccept(const string & account, const int64_t index, bool dryrun);
+
 		//================= ?contract =================
 
 		string ContractSign(const std::string & nymID, const std::string & contract);
@@ -182,6 +183,11 @@ namespace nUse {
 		EXEC bool NymRemove(const string & nymName, bool dryrun);
 		EXEC bool NymRename(const string & oldNymName, const string & newNymName, bool dryrun);
 		EXEC bool NymSetDefault(const string & nymName, bool dryrun);
+
+		//================= payment ==================
+
+		EXEC bool PaymentShow(const string & nym, const string & server, bool dryrun); ///< show payments inbox
+		EXEC bool PaymentAccept(const string & account, const int64_t index, bool dryrun); ///< accept specified payment from payment inbox
 
 		//================= purse ==================
 
