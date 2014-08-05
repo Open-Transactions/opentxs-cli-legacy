@@ -55,7 +55,7 @@ namespace nUse {
 		const string mDataFolder;
 		const string mDefaultIDsFile;
 
-		typedef const ID ( cUseOT::*FPTR ) (const string &);
+		typedef ID ( cUseOT::*FPTR ) (const string &);
 
 		map<nUtils::eSubjectType, FPTR> subjectGetIDFunc; ///< Map to store pointers to GetID functions
 		map<nUtils::eSubjectType, FPTR> subjectGetNameFunc; ///< Map to store pointers to GetName functions
@@ -87,14 +87,14 @@ namespace nUse {
 		bool Refresh(bool dryrun);
 		//================= account =================
 
-		const vector<ID> AccountGetAllIds();
-		const int64_t AccountGetBalance(const string & accountName);
-		const string AccountGetDefault();
-		const ID AccountGetId(const string & account); ///< Gets account ID both from name and ID with prefix
-		const string AccountGetName(const ID & accountID);
+		vector<ID> AccountGetAllIds();
+		int64_t AccountGetBalance(const string & accountName);
+		string AccountGetDefault();
+		ID AccountGetId(const string & account); ///< Gets account ID both from name and ID with prefix
+		string AccountGetName(const ID & accountID);
 		bool AccountSetName(const string & accountID, const string & NewAccountName);
 
-		HINT const vector<string> AccountGetAllNames();
+		HINT vector<string> AccountGetAllNames();
 
 		EXEC bool AccountCreate(const string & nym, const string & asset, const string & newAccountName, bool dryrun);
 		EXEC bool AccountDisplay(const string & account, bool dryrun);
@@ -117,12 +117,12 @@ namespace nUse {
 
 		//================= asset =================
 
-		const ID AssetGetId(const string & asset); ///< Gets asset ID both from name and ID with prefix
-		const string AssetGetName(const ID & accountID);
-		const string AssetGetContract(const string & asset);
-		const string AssetGetDefault(); // Get default asset, also known as purse
+		ID AssetGetId(const string & asset); ///< Gets asset ID both from name and ID with prefix
+		string AssetGetName(const ID & accountID);
+		string AssetGetContract(const string & asset);
+		string AssetGetDefault(); // Get default asset, also known as purse
 
-		HINT const vector<string> AssetGetAllNames();
+		HINT vector<string> AssetGetAllNames();
 
 		EXEC bool AssetSetDefault(const std::string & asset, bool dryrun); // Set default asset, also known as purse
 		EXEC bool AssetDisplayAll(bool dryrun);
@@ -132,20 +132,20 @@ namespace nUse {
 
 		//================= cash =================
 
-		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool withdraw, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
+		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
 		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse connected with account
 		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse
 		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);
-		bool PurseDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun);
+		bool CashDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun);
 		EXEC bool PaymentShow(const string & nym, const string & server, bool dryrun); ///< show payments
 		EXEC bool PaymentAccept(const string & account, const int64_t index, bool dryrun);
 		//================= ?contract =================
 
-		const string ContractSign(const std::string & nymID, const std::string & contract);
+		string ContractSign(const std::string & nymID, const std::string & contract);
 
 		//================= msg =================
 
-		const vector<string> MsgGetAll();
+		vector<string> MsgGetAll();
 		bool MsgSend(const string & nymSender, const string & nymRecipient, const string & msg);
 
 		VALID bool MsgInCheckIndex(const string & nymName, const int32_t & nIndex);
@@ -163,13 +163,13 @@ namespace nUse {
 		//================= nym =================
 
 		void NymGetAll(bool force=false);
-		const vector<string> NymGetAllIDs();
-		const string NymGetDefault();
-		const ID NymGetId(const string & nym); ///< Gets Nym ID both from name and ID with prefix
-		const string NymGetName(const ID & nymID);
+		vector<string> NymGetAllIDs();
+		string NymGetDefault();
+		ID NymGetId(const string & nym); ///< Gets Nym ID both from name and ID with prefix
+		string NymGetName(const ID & nymID);
 		bool NymSetName(const ID & nymID, const string & newNymName);
 
-		HINT const vector<string> NymGetAllNames();
+		HINT vector<string> NymGetAllNames();
 
 		EXEC bool NymCheck(const string & nymName, bool dryrun);
 		EXEC bool NymCreate(const string & nymName, bool registerOnServer, bool dryrun);
@@ -190,11 +190,11 @@ namespace nUse {
 		//================= server =================
 
 		void ServerCheck(); ///< Check server availability (ping server)
-		const ID ServerGetDefault(); ///< Gets ID of default server
-		const ID ServerGetId(const string & server); ///< Gets server ID both from name and ID with prefix
-		const string ServerGetName(const string & serverID); ///< Gets Name of default server
+		ID ServerGetDefault(); ///< Gets ID of default server
+		ID ServerGetId(const string & server); ///< Gets server ID both from name and ID with prefix
+		string ServerGetName(const string & serverID); ///< Gets Name of default server
 
-		HINT const vector<string> ServerGetAllNames();
+		HINT vector<string> ServerGetAllNames();
 
 		EXEC bool ServerAdd(bool dryrun); ///< Add new server contract
 		EXEC bool ServerCreate(const string & nymName, bool dryrun); ///< Create new server contract

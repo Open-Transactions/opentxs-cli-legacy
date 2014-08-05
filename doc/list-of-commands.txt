@@ -132,18 +132,28 @@ ot cash withdraw-from <server>  					# ERROR: Missing required variable
 ot cash withdraw-from <server> <account> 			# ERROR: Missing required variable
 ot cash withdraw-from <server> <account> <amount> 	# Withdraw amount of cash from account on server
 
-cash send  					# ERROR: Missing required variable
-cash send <account>			# ERROR: Missing required variable
-cash send <account> <nym> 	# send cash from mypurse to recipient if there is enough cash in purse
-cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
+ot cash send  					# ERROR: Missing required variable
+ot cash send <account>			# ERROR: Missing required variable
+ot cash send <account> <nym> 	# send cash from mypurse to recipient if there is enough cash in purse
+ot cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
 
-cash show				# ERROR: Missing required variable
-cash show <account>		# show cash purse connected with account asset type
+ot cash show				# ERROR: Missing required variable
+ot cash show <account>		# show cash purse connected with account asset type
 
-cash export
-cash import
+ot cash export
+ot cash import
 
-cash deposit
+ot cash deposit
+
+ot payment show 									# ERROR: Missing required variable
+ot payment show <nym-my>					# Show payment inbox for nym-my for default server
+ot payment show <nym-my> [server]	# Show payment inbox for nym-my for server
+
+ot payment accept 														# ERROR: Missing required variable
+ot payment accept <account> 									# ERROR: Missing required variable
+ot payment accept <account> <payment-index>		# Deposit <payment-index> payment from payment inbox to <account>
+
+
 
 cheque new
 contract? new  # Managed by asset new / server new
