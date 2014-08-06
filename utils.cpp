@@ -365,7 +365,7 @@ void Assert(bool result, const std::string &stamp, const std::string &condition)
 // ====================================================================
 // advanced string
 
-const std::string GetMultiline(string endLine) {
+std::string GetMultiline(string endLine) {
 	std::string result(""); // Taken from OT_CLI_ReadUntilEOF
 	while (true) {
 		std::string input_line("");
@@ -401,7 +401,7 @@ vector<string> SplitString(const string & str){
 		return vec;
 }
 
-const bool checkPrefix(const string & str, char prefix){
+bool checkPrefix(const string & str, char prefix){
 	if (str.at(0) == prefix)
 		return true;
 	return false;

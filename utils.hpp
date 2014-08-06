@@ -240,10 +240,10 @@ void Assert(bool result, const std::string &stamp, const std::string &condition)
 // ====================================================================
 // advanced string
 
-const std::string GetMultiline(string endLine = "~");
+std::string GetMultiline(string endLine = "~");
 vector<string> SplitString(const string & str);
 
-const bool checkPrefix(const string & str, char prefix = '^');
+bool checkPrefix(const string & str, char prefix = '^');
 
 // ====================================================================
 // nUse utils

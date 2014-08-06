@@ -772,17 +772,17 @@ bool cUseOT::AssetSetDefault(const std::string & asset, bool dryrun){
 }
 
 bool cUseOT::CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool dryrun) {
+	// TODO get indices
 	_fact("cash export from " << nymSender << " to " << nymRecipient << " account " << account );
 	if(dryrun) return true;
 	if(!Init()) return false;
 
 	ID nymSenderID = NymGetId(nymSender);
 	ID nymRecipientID = NymGetId(nymRecipient);
-	ID accountID = NymGetId(account);
 
 	string indices = "";
 	string retained_copy = "";
-	bool passwordProtected = false;
+	bool passwordProtected = true;
 
 	string exportedCash = CashExport( nymSenderID, nymRecipientID, account, indices, passwordProtected, retained_copy);
 
@@ -797,38 +797,12 @@ bool cUseOT::CashExportWrap(const ID & nymSender, const ID & nymRecipient, const
 
 string cUseOT::CashExport(const ID & nymSenderID, const ID & nymRecipientID, const string & account, const string & indices, const bool passwordProtected, string & retained_copy) {
 	_fact("cash export from " << nymSenderID << " to " << nymRecipientID << " account " << account << " indices: " << indices << "passwordProtected: " << passwordProtected);
+
 	ID accountID = AccountGetId(account);
-	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
 	string contract = mMadeEasy.load_or_retrieve_contract(accountServerID, nymSenderID, accountAssetID);
-
-	if (contract.empty()) {
-		_erro("Unable to load asset contract: " + accountAssetID);
-		DisplayStringEndl(cout, "Unable to load asset contract: " + accountAssetID);
-		return "";
-	}
-
-	string purseValue = OTAPI_Wrap::LoadPurse(accountServerID, accountAssetID, nymSenderID); // returns NULL, or a purse.
-
-	if (purseValue.empty()) {
-		_erro("Unable to load purse from local storage. Does it even exist?");
-		DisplayStringEndl(cout,  "Unable to load purse from local storage. Does it even exist?");
-		return "";
-	}
-
-  int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
-	if (count < 0) { // TODO check if integer?
-		DisplayStringEndl(cout, "Error: Unexpected bad value returned from OT_API_Purse_Count.");
-		_erro("Unexpected bad value returned from OT_API_Purse_Count.");
-		return "";
-	}
-  if (count < 1){
-		DisplayStringEndl(cout, "Error: The purse is empty. Export aborted.");
-		_erro("The purse is empty. Export aborted.");
-		return "";
-  }
 
 	string exportedCash = mMadeEasy.export_cash(accountServerID, nymSenderID, accountAssetID, nymRecipientID, indices, passwordProtected, retained_copy);
 	_info("Cash was exported");
