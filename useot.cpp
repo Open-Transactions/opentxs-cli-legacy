@@ -771,6 +771,30 @@ bool cUseOT::AssetSetDefault(const std::string & asset, bool dryrun){
 	return true;
 }
 
+bool cUseOT::CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool dryrun) {
+	_fact("cash export from " << nymSender << " to " << nymRecipient << " account " << account );
+	if(dryrun) return true;
+	if(!Init()) return false;
+
+	ID nymSenderID = NymGetId(nymSender);
+	ID nymRecipientID = NymGetId(nymRecipient);
+	ID accountID = NymGetId(account);
+
+	string indices = "";
+	string retained_copy = "";
+	bool passwordProtected = false;
+
+	string exportedCash = CashExport( nymSenderID, nymRecipientID, account, indices, passwordProtected, retained_copy);
+
+	if (exportedCash.empty()) {
+		_erro("Exported string is empty");
+		return false;
+	}
+
+	DisplayStringEndl(cout, exportedCash);
+	return true;
+}
+
 string cUseOT::CashExport(const ID & nymSenderID, const ID & nymRecipientID, const string & account, const string & indices, const bool passwordProtected, string & retained_copy) {
 	_fact("cash export from " << nymSenderID << " to " << nymRecipientID << " account " << account << " indices: " << indices << "passwordProtected: " << passwordProtected);
 	ID accountID = AccountGetId(account);
@@ -806,42 +830,19 @@ string cUseOT::CashExport(const ID & nymSenderID, const ID & nymRecipientID, con
 		return "";
   }
 
-  int32_t index = -1;
-	_dbg3("Loop through purse contents");
-	while (count > 0) { // Loop through purse contents
-		--count;
-		++index;  // on first iteration, this is now 0.
-		string token = OTAPI_Wrap::Purse_Peek(accountServerID, accountAssetID, accountNymID, purseValue);
-		if (token.empty()) {
-			_erro("OT_API_Purse_Peek unexpectedly returned NULL instead of token.");
-			return "";
-		}
-
-		string newPurse = OTAPI_Wrap::Purse_Pop(accountServerID, accountAssetID, accountNymID, purseValue);
-
-		if (newPurse.empty()) {
-			_erro("OT_API_Purse_Pop unexpectedly returned NULL instead of updated purse.\n");
-			return "";
-		}
-
-		purseValue = newPurse;
-
-		string tokenID = OTAPI_Wrap::Token_GetID(accountServerID, accountAssetID, token);
-
-		if (tokenID.empty()) {
-			_erro("Error while exporting purse: bad token ID");
-			return "";
-		}
-	} // while
 	string exportedCash = mMadeEasy.export_cash(accountServerID, nymSenderID, accountAssetID, nymRecipientID, indices, passwordProtected, retained_copy);
 	_info("Cash was exported");
 	return exportedCash;
 }
 
-bool cUseOT::CashImport(bool dryrun) {
+bool cUseOT::CashImport(const string & nym, bool dryrun) {
+                               //optional?
+	//TODO add input from file support
 	_fact("cash import ");
 	if (dryrun) return false;
-	if(!Init()) return false;
+	if (!Init()) return false;
+
+	ID nymID = NymGetId(nym);
 
 	_dbg3("Open text editor for user to paste payment instrument");
 	nUtils::cEnvUtils envUtils;
@@ -865,7 +866,85 @@ bool cUseOT::CashImport(bool dryrun) {
 			return false;
 	}
 
-	return true;
+	if ("PURSE" == instrumentType) {
+	}
+	// Todo: case "TOKEN"
+	//
+	// NOTE: This is commented out because since it is guessing the NymID as MyNym,
+	// then it will just create a purse for MyNym and import it into that purse, and
+	// then later when doing a deposit, THAT's when it tries to DECRYPT that token
+	// and re-encrypt it to the SERVER's nym... and that's when we might find out that
+	// it never was encrypted to MyNym in the first place -- we had just assumed it
+	// was here, when we did the import. Until I can look at that in more detail, it
+	// will remain commented out.
+	else {
+			//            // This version supports cash tokens (instead of purse...)
+			//            bool bImportedToken = importCashPurse(strServerID, MyNym, strAssetID, userInput, isPurse)
+			//
+			//            if (bImportedToken)
+			//            {
+			//                OTAPI_Wrap::Output(0, "\n\n Success importing cash token!\nServer: "+strServerID+"\nAsset Type: "+strAssetID+"\nNym: "+MyNym+"\n\n");
+			//                return 1;
+			//; }
+
+			OTAPI_Wrap::Output(0, "\n\nFailure: Unable to determine instrument type. Expected (cash) PURSE.\n");
+			return false;
+	}
+
+	// This tells us if the purse is password-protected. (Versus being owned
+	// by a Nym.)
+	bool hasPassword = OTAPI_Wrap::Purse_HasPassword(serverID, instrument);
+
+	// Even if the Purse is owned by a Nym, that Nym's ID may not necessarily
+	// be present on the purse itself (it's optional to list it there.)
+	// OTAPI_Wrap::Instrmnt_GetRecipientUserID tells us WHAT the recipient User ID
+	// is, IF it's on the purse. (But does NOT tell us WHETHER there is a
+	// recipient. The above function is for that.)
+	//
+	ID purseOwner = "";
+
+	if (!hasPassword) {
+			purseOwner = OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument); // TRY and get the Nym ID (it may have been left blank.)
+	}
+
+	// Whether the purse was password-protected (and thus had no Nym ID)
+	// or whether it does have a Nym ID (but it wasn't listed on the purse)
+	// Then either way, in those cases strPurseOwner will still be NULL.
+	//
+	// (The third case is that the purse is Nym protected and the ID WAS available,
+	// in which case we'll skip this block, since we already have it.)
+	//
+	// But even in the case where there's no Nym at all (password protected)
+	// we STILL need to pass a Signer Nym ID into OTAPI_Wrap::Wallet_ImportPurse.
+	// So if it's still NULL here, then we use --mynym to make the call.
+	// And also, even in the case where there IS a Nym but it's not listed,
+	// we must assume the USER knows the appropriate NymID, even if it's not
+	// listed on the purse itself. And in that case as well, the user can
+	// simply specify the Nym using --mynym.
+	//
+	// Bottom line: by this point, if it's still not set, then we just use
+	// MyNym, and if THAT's not set, then we return failure.
+	//
+	if (purseOwner.empty()) {
+			OTAPI_Wrap::Output(0, "\n\n The NymID isn't evident from the purse itself... (listing it is optional.)\nThe purse may have no Nym at all--it may instead be password-protected.) Either way, a signer nym is still necessary, even for password-protected purses.\n\n Trying MyNym...\n");
+			purseOwner = nymID;
+	}
+
+	string assetID = OTAPI_Wrap::Instrmnt_GetAssetID(instrument);
+
+	if (assetID.empty()) {
+			OTAPI_Wrap::Output(0, "\n\nFailure: Unable to determine asset type ID from purse.\n");
+			return false;
+	}
+
+	bool imported = OTAPI_Wrap::Wallet_ImportPurse(serverID, assetID, purseOwner, instrument);
+
+	if (imported) {
+			OTAPI_Wrap::Output(0, "\n\n Success importing purse!\nServer: " + serverID + "\nAsset Type: " + assetID + "\nNym: " + purseOwner + "\n\n");
+			return true;
+	}
+
+	return false;
 }
 
 bool cUseOT::CashDeposit(const string & accountID, const string & nymFromID, const string & serverID,  const string & instrument, bool dryrun){

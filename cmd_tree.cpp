@@ -16,7 +16,7 @@
 namespace nOT {
 namespace nNewcli {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 // <=== namespaces
 
 using namespace nUse;
 
@@ -423,6 +423,13 @@ void cCmdParser::Init() {
 		LAMBDA { auto &D=*d; return U.AssetSetDefault( D.V(1), D.has("--dryrun") ); } );
 
 	//======== ot cash ========
+
+	AddFormat("cash export", {pNymFrom, pNymTo, pAccountMy}, {}, {},
+		LAMBDA { auto &D=*d; return U.CashExportWrap( D.V(1), D.V(2), D.V(3), D.has("--dryrun") ); } );
+
+	AddFormat("cash import", {pNymMy}, {}, {},
+		LAMBDA { auto &D=*d; return U.CashImport( D.V(1), D.has("--dryrun") ); } );
+
 	AddFormat("cash send-to", {pTo, pAccount, pAmount}, {}, {},
 		LAMBDA { auto &D=*d; return U.CashSend( U.NymGetName(U.NymGetDefault()), D.V(1), D.V(2), stoi(D.V(3)), D.has("--dryrun") ); } );
 
@@ -436,7 +443,7 @@ void cCmdParser::Init() {
 		LAMBDA { auto &D=*d; return U.PaymentShow( D.V(1), D.v(2, U.ServerGetName(U.ServerGetDefault())), D.has("--dryrun") ); } );
 
 	AddFormat("payment accept", {pAccount, pInt}, {}, {}, //TODO replace pInt
-			LAMBDA { auto &D=*d; return U.PaymentAccept( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.PaymentAccept( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
 
 	//======== ot msg-in and msg-out ========
 

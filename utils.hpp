@@ -31,7 +31,7 @@ class myexception : public std::runtime_error {
 		virtual void Report() const;
 };
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 // ======================================================================================
 // text trimming
@@ -404,9 +404,9 @@ value_init<T, INIT>::value_init() :	data(INIT) { }
 
 string FindMapValue(const map<string, string> & map, const string value);
 
-}; // namespace nUtils
+} // namespace nUtils
 
-}; // namespace nOT
+} // namespace nOT
 
 
 // global namespace
