@@ -704,8 +704,9 @@ void cInteractiveShell::_RunEditline(shared_ptr<nUse::cUseOT> use) {
 			_erro("Error while reading command: " << e.what() );
 		}
 	} // while
-	int maxHistory = 100; //TODO move this to settings
-	history_truncate_file("otcli-history.txt", maxHistory);
+	// history_truncate_file not available in 2.11-20080614-5 and in wineditline?
+	// int maxHistory = 100; //TODO move this to settings
+	// history_truncate_file("otcli-history.txt", maxHistory);
 	if (buf) { free(buf); buf=NULL; }
 	clear_history(); // http://cnswww.cns.cwru.edu/php/chet/readline/history.html#IDX11
 

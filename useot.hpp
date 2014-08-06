@@ -16,7 +16,7 @@ Template for new files, replace word "template" and later delete this line here.
 namespace nOT {
 namespace nUse {
 
-	INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
+	INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 // <=== namespaces
 
 	using ID = string;
 	using name = string;
@@ -135,7 +135,8 @@ namespace nUse {
 		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);
 		bool CashDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun);
 
-		EXEC bool CashImport(bool dryrun); ///< import cash from file or by pasting to editor
+		EXEC bool CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool dryrun);
+		EXEC bool CashImport(const string & nym, bool dryrun); ///< import cash from file or by pasting to editor
 		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
 		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse connected with account
 		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse
