@@ -48,6 +48,12 @@ Agruments:
 <> - reqired
 [] - extra
 
+
+<nym> 		- can be name(alias) or ID with prefix '^'
+<acconut>	- can be name(alias) or ID with prefix '^'
+<asset> 	- can be name(alias) or ID with prefix '^'
+<server> 	- can be name(alias) or ID with prefix '^'
+
 #------List of all included commands-----#
 *account		# display active (default) account
 
@@ -124,34 +130,44 @@ basket exchange
 
 ------------------------------
 
-ot cash withdraw  									# ERROR: Missing required variable
-ot cash withdraw <amount> 							# Withdraw amount of cash from default account on default server. Should display if account isn't issuer account
+*ot cash withdraw  									# ERROR: Missing required variable
+*ot cash withdraw <amount> 							# Withdraw amount of cash from default account on default server. Should display if account isn't issuer account
 
-ot cash withdraw-from  								# ERROR: Missing required variable
-ot cash withdraw-from <server>  					# ERROR: Missing required variable
-ot cash withdraw-from <server> <account> 			# ERROR: Missing required variable
-ot cash withdraw-from <server> <account> <amount> 	# Withdraw amount of cash from account on server
+*ot cash withdraw-from   					# ERROR: Missing required variable
+*ot cash withdraw-from <account> 			# ERROR: Missing required variable
+*ot cash withdraw-from <account> <amount> 	# Withdraw amount of cash from account on server
 
-ot cash send  					# ERROR: Missing required variable
-ot cash send <account>			# ERROR: Missing required variable
-ot cash send <account> <nym> 	# send cash from mypurse to recipient if there is enough cash in purse
-ot cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
-
-ot cash show				# ERROR: Missing required variable
-ot cash show <account>		# show cash purse connected with account asset type
-
-ot cash export
-ot cash import
+withdraw != deposit
 
 ot cash deposit
 
-ot payment show 									# ERROR: Missing required variable
-ot payment show <nym-my>					# Show payment inbox for nym-my for default server
-ot payment show <nym-my> [server]	# Show payment inbox for nym-my for server
+ot cash deposit-to
 
-ot payment accept 														# ERROR: Missing required variable
-ot payment accept <account> 									# ERROR: Missing required variable
-ot payment accept <account> <payment-index>		# Deposit <payment-index> payment from payment inbox to <account>
+*ot cash send  													# ERROR: Missing required variable
+*ot cash send <account>									# ERROR: Missing required variable
+*ot cash send <account> <nym> 						# send cash from mypurse to recipient if there is enough cash in purse
+*ot cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
+
+*ot cash show						# ERROR: Missing required variable
+*ot cash show <account>	# show cash purse connected with account asset type
+
+*ot cash export	# ERROR: Missing required variable
+*ot cash export <nym-from>		# ERROR: Missing required variable
+*ot cash export <nym-from> <nym-to>	# ERROR: Missing required variable
+*ot cash export <nym-from> <nym-to> <account>	# Export cash purse and display it to screen
+
+*ot cash import					# ERROR: Missing required variable
+*ot cash import <nym-my>		# import cash purse (user-paste)
+
+
+
+*ot payment show 									# ERROR: Missing required variable
+*ot payment show <nym-my>					# Show payment inbox for nym-my for default server
+*ot payment show <nym-my> [server]	# Show payment inbox for nym-my for server
+
+*ot payment accept 														# ERROR: Missing required variable
+*ot payment accept <account> 									# ERROR: Missing required variable
+*ot payment accept <account> <payment-index>		# Deposit <payment-index> payment from payment inbox to <account>
 
 
 
@@ -192,44 +208,58 @@ msg rm --all		# remove all messages from mail box for current nym
 *msg rm <nymName> <index> # remove <index> message from mail inbox for <nymName>
 msg rm-out nymName> <index> # proposition for command removing msg from mail outbox
 ------------------------------
-*nym 			# can display active (default) nym
-*nym ls			# list of all nyms
-nym new			# make new nym with UI (it should ask potential user to give the name
-*nym new <nymName>			# make new nym by giving name without UI
-nym rm <name>			# remove nym with such <name>
-nym rm <nymID>		# remove nym with such <nymID>
-*nym info <nymName>		# show information about such <nymName>
-*nym info <nymID>		# show information about such <nymID>
-nym edit <nymID>		# allows to edit information about such <nymID>
-*nym register <nymName>	# register nym defined by nymName on default server
-nym register <nymID>	# register nym defined by nymID on default server
-/nym register <nymID> <serverID>	# register this specific <nymID> to specific <serverID> server
-nym set-default <nymID> # set default nym
-nym import		# import saved (somewhere?) nyms
-nym export		# export nyms to (outerspace) :) ?
-*nym check <nymID>			# returns Public Key of this <nymID> nym
-*nym refresh			# refresh nym's list and its included informations
+
+*ot nym 			# display active (default) nym
+
+*ot nym ls			# list of all nyms
+
+*ot nym new			# ERROR: Missing required variable
+*ot nym new <nymName>	# make new nym with <nymName>
+
+*ot nym rm <nym>			# remove <nym> if wasn't registered oon server TODO: It is possible to remove registered nym?
+
+*ot nym info <nym>		# show information about such <nym>
+*ot nym info <nym>		# show information about such <nym>
+
+ot nym edit <nym>		# allows to edit information about such <nymID>
+
+*ot nym register <nym>	# register nym defined by nym on default server
+*ot nym register <nym> [server]	# register <nym> on <server>
+*ot nym set-default <nymID> # set default nym
+
+*ot nym import		# import nyms from file or by user-paste
+*ot nym export		# export nyms to file or display exported nym string
+
+*ot nym check <nymID>			# returns Public Key of this <nymID> nym
+*ot nym refresh			# refresh nym's list and its included informations
+
 nym-cred new 			# change credential to trust?
 nym-cred revoke
 nym-cred show			# show all credential to trust?
 ------------------------------
 receipt?
 ------------------------------
-server			# can display active (default) server
-/server ls			# as above but all servers are listed TODO: Display more information about servers
-server add		# add new server contract
-server new 	# like newserver
-server set-default # set default server
+*ot server			# can display active (default) server
+*ot server ls			# as above but all servers are listed TODO: Display more information about servers
+*ot server add		# add new server contract
+*ot server new 	# like newserver
+*ot server set-default # set default server
 ------------------------------
-*text encode	# interactively get multiline text
-*text encode <text>
-text encode <textfile>
-*text decode # interactively get multiline text
-text decode <textfile>
-*text encrypt <recipientNymName> <text>
-text encrypt <textfile>
-*text decrypt # interactively get multiline text
-text decrypt <textfile>
+
+*ot text decode	# get multiline text (user paste in editor)
+*ot text decode [text] # decode decoded text
+
+*ot text decrypt # ERROR: Missing required variable
+*ot text decrypt nym-my	# get multiline encrypted text (user paste in editor) and display decrypted text
+*ot text decrypt nym-my [text] # decrypt and display decrypted text
+
+*ot text encode	# get multiline text (user paste in editor)
+*ot text encode [text] # encode and display encoded text
+
+*ot text encrypt # ERROR: Missing required variable
+*ot text encrypt nym-to # get multiline text (user paste in editor) and display encrypted text
+*ot text encrypt nym-to [text] # encrypt and display encrypted text
+
 ------------------------------
 voucher new
 wallet? status
