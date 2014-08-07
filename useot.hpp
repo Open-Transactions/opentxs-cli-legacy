@@ -132,11 +132,12 @@ namespace nUse {
 
 		//================= cash =================
 
-		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);
-		bool CashDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument, bool dryrun);
+		string CashExport(const string & nymSender, const string & nymRecipient, const string & account, const string & indices, const bool passwordProtected, string & retained_copy);  ///< Used by CashSend and CashExportWrap to export cash purse
+		bool CashDeposit(const string & account, const string & strFromNymID, const string & strServerID,  const string & strInstrument); ///< Used by CashDepositWrap and PaymentAccept to deposit cash purse on account
 
-		EXEC bool CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool dryrun);
-		EXEC bool CashImport(const string & nym, bool dryrun); ///< import cash from file or by pasting to editor
+		EXEC bool CashDepositWrap(const string & accountID, bool dryrun); ///< deposit cash purse to account
+		EXEC bool CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool passwordProtected, bool dryrun); ///< Export cash purse and display it to screen
+		EXEC bool CashImport(const string & nym, bool dryrun); ///< Import cash from file or by pasting to editor
 		EXEC bool CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool dryrun); ///< Send amount of cash from purse connected with account to Recipient, withdraw if necessary.
 		EXEC bool CashShow(const string & account, bool dryrun); ///< Show purse connected with account
 		EXEC bool CashWithdraw(const string & account, int64_t amount, bool dryrun); ///< withdraw cash from account on server into local purse

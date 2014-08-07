@@ -76,7 +76,7 @@ File format of sources: identation with \t char, which we assume is 2 spaces wid
 
 namespace nOT {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 /*
 
@@ -145,7 +145,7 @@ class cCmdfuncProvider {
 	public:
 };
 
-}; // nOT
+} // nOT
 
 // ====================================================================
 
@@ -713,8 +713,8 @@ void cInteractiveShell::_RunEditline(shared_ptr<nUse::cUseOT> use) {
 	gReadlineHandlerUseOT->CloseApi(); // Close OT_API at the end of shell runtime
 }
 
-}; // namespace nOTHint
-}; // namespace nOT
+} // namespace nOTHint
+} // namespace nOT
 // ########################################################################
 // ########################################################################
 // ########################################################################

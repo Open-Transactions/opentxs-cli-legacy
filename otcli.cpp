@@ -12,7 +12,7 @@
 namespace nOT {
 namespace nNewcli {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 int cOTCli::Run(const vector<string> args_without_programname) {
 	try {
@@ -151,7 +151,7 @@ void cOTCli::LoadScript(const std::string &script_filename, const std::string &t
 }
 
 
-}; // namespace nNewcli
-}; // namespace OT
+} // namespace nNewcli
+} // namespace OT
 
 

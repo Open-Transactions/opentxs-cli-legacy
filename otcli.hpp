@@ -14,7 +14,7 @@ that runs either in mode:
 namespace nOT {
 namespace nNewcli {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 // <=== namespaces
 
 class cOTCli {
 	private:
@@ -28,8 +28,8 @@ class cOTCli {
 };
 
 
-}; // namespace nNewcli
-}; // namespace nOT
+} // namespace nNewcli
+} // namespace nOT
 
 
 

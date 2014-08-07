@@ -10,7 +10,7 @@ Tools for writting a daemon
 
 namespace nOT {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 class cDaemoninfo {
 	protected:
@@ -36,7 +36,7 @@ class cDaemoninfoComplete : public cDaemoninfo {
 };
 
 
-}; // namespace nOT
+} // namespace nOT
 
 
 
