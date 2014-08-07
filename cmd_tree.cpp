@@ -73,7 +73,7 @@ void cCmdParser::Init() {
 	cParamInfo pNymTo = pNym << cParamInfo("nym-to","nym of recipient that exists on a server"); // TODO suggest not the same nym as was used already before
 	cParamInfo pNymFrom = pNymMy << cParamInfo("nym-from", "one of your nyms, as the sender");
 
-	cParamInfo pNymNewName( "nym-new", "alias name that will be created",
+	cParamInfo pNymNewName( "nym-new-name", "alias name that will be created",
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Nym name validation");
 				return true; // Takes all input TODO check if Nym with tis name exists
@@ -263,16 +263,26 @@ void cCmdParser::Init() {
 		}
 	);
 
+	cParamInfo pPaymetInboxIndex( "payment-inbox-index", "index of incoming payment",
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			const int nr = curr_word_ix+1;
+			return true; //TODO
+		} ,
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			return vector<string> {}; //TODO
+		}
+	);
+
 	cParamInfo pReadFile( "file", "input file",
-			[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
-				const int nr = curr_word_ix+1;
-				return true; //TODO
-			} ,
-			[this] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-				mEnableFilenameCompletion = true; // Enable filename autocompletion
-				return vector<string> {};
-			}
-		);
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			const int nr = curr_word_ix+1;
+			return true; //TODO
+		} ,
+		[this] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			mEnableFilenameCompletion = true; // Enable filename autocompletion
+			return vector<string> {};
+		}
+	);
 
 	// ===========================================================================
 	// COMMON OPTIONS
@@ -424,26 +434,32 @@ void cCmdParser::Init() {
 
 	//======== ot cash ========
 
-	AddFormat("cash export", {pNymFrom, pNymTo, pAccountMy}, {}, {},
-		LAMBDA { auto &D=*d; return U.CashExportWrap( D.V(1), D.V(2), D.V(3), D.has("--dryrun") ); } );
+	AddFormat("cash export-from", {pNymFrom, pNymTo, pAccountMy}, {}, { {"--pass",pBool} },
+		LAMBDA { auto &D=*d; return U.CashExportWrap( D.V(1), D.V(2), D.V(3), D.has("--pass"), D.has("--dryrun") ); } );
+
+	AddFormat("cash export-to", {pNymTo, pAccountMy}, {}, { {"--pass",pBool} },
+		LAMBDA { auto &D=*d; return U.CashExportWrap( U.NymGetName(U.NymGetDefault()), D.V(1), D.V(2), D.has("--pass"), D.has("--dryrun") ); } );
+
+	AddFormat("cash deposit", {pAccountMy}, {}, {},
+		LAMBDA { auto &D=*d; return U.CashDepositWrap( D.V(1), D.has("--dryrun") ); } );
 
 	AddFormat("cash import", {pNymMy}, {}, {},
 		LAMBDA { auto &D=*d; return U.CashImport( D.V(1), D.has("--dryrun") ); } );
 
-	AddFormat("cash send-to", {pTo, pAccount, pAmount}, {}, {},
+	AddFormat("cash send-to", {pTo, pAccountMy, pAmount}, {}, {},
 		LAMBDA { auto &D=*d; return U.CashSend( U.NymGetName(U.NymGetDefault()), D.V(1), D.V(2), stoi(D.V(3)), D.has("--dryrun") ); } );
 
-	AddFormat("cash show", {pAccount}, {}, {},
-		LAMBDA { auto &D=*d; return U.CashShow( D.V(1), D.has("--dryrun") ); } );
+	AddFormat("cash send-from", {pFrom, pTo, pAccountMy, pAmount}, {}, {},
+		LAMBDA { auto &D=*d; return U.CashSend( D.V(1), D.V(2), D.V(3), stoi(D.V(4)), D.has("--dryrun") ); } );
 
-	AddFormat("cash withdraw", {pAccount, pAmount}, {}, {},
+	AddFormat("cash ls", {}, {pAccountMy}, {},
+		LAMBDA { auto &D=*d; return U.CashShow( D.v(1, U.AccountGetName(U.AccountGetDefault())), D.has("--dryrun") ); } );
+
+	AddFormat("cash withdraw", {pAmount}, {}, {},
+		LAMBDA { auto &D=*d; return U.CashWithdraw(U.AccountGetName(U.AccountGetDefault()), stoi(D.V(1)), D.has("--dryrun") ); } );
+
+	AddFormat("cash withdraw-from", {pAccountMy, pAmount}, {}, {},
 		LAMBDA { auto &D=*d; return U.CashWithdraw( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
-
-	AddFormat("payment show", {pNymMy}, {pServer}, {},
-		LAMBDA { auto &D=*d; return U.PaymentShow( D.V(1), D.v(2, U.ServerGetName(U.ServerGetDefault())), D.has("--dryrun") ); } );
-
-	AddFormat("payment accept", {pAccount, pInt}, {}, {}, //TODO replace pInt
-		LAMBDA { auto &D=*d; return U.PaymentAccept( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
 
 	//======== ot msg-in and msg-out ========
 
@@ -478,16 +494,16 @@ void cCmdParser::Init() {
 		LAMBDA { auto &D=*d; return U.NymCheck( D.V(1), D.has("--dryrun") ); } );
 
 	AddFormat("nym export", {pNym}, {}, {},
-			LAMBDA { auto &D=*d; return U.NymExport( D.V(1), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.NymExport( D.V(1), D.has("--dryrun") ); } );
 
 	AddFormat("nym import", {}, {}, {{"--file",pReadFile}},
-			LAMBDA { auto &D=*d; return U.NymImport( D.o1("--file",""), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.NymImport( D.o1("--file",""), D.has("--dryrun") ); } );
 
 	AddFormat("nym info", {pNym}, {}, {},
 		LAMBDA { auto &D=*d; return U.NymDisplayInfo( D.V(1), D.has("--dryrun") ); } );
 
 	AddFormat("nym register", {pNym}, {pServer}, {} ,
-	LAMBDA { auto &D=*d; return U.NymRegister( D.V(1), D.v(2, U.ServerGetName(U.ServerGetDefault())), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.NymRegister( D.V(1), D.v(2, U.ServerGetName(U.ServerGetDefault())), D.has("--dryrun") ); } );
 
 	AddFormat("nym rm", {pNym}, {}, { },
 		LAMBDA { auto &D=*d; return U.NymRemove( D.V(1), D.has("--dryrun") ); } );
@@ -505,10 +521,17 @@ void cCmdParser::Init() {
 		LAMBDA { auto &D=*d; return U.NymDisplayAll( D.has("--dryrun") ); } );
 
 	AddFormat("nym rename", {pNymMy, pNymNewName}, {}, {},
-			LAMBDA { auto &D=*d; return U.NymRename(D.V(1), D.V(2), D.has("--dryrun") ); } );
-//		EXEC bool PurseDisplay(const string & serverName, const string & asset, const string & nymName, bool dryrun);
+		LAMBDA { auto &D=*d; return U.NymRename(D.V(1), D.V(2), D.has("--dryrun") ); } );
 
-	//======== ot purse  ========
+	//======== ot payment ========
+
+	AddFormat("payment ls", {}, {pNymMy, pServer}, {},
+		LAMBDA { auto &D=*d; return U.PaymentShow( D.v(1, U.NymGetName( U.NymGetDefault())), D.v(2, U.ServerGetName(U.ServerGetDefault())), D.has("--dryrun") ); } );
+
+	AddFormat("payment accept", {pAccountMy, pPaymetInboxIndex}, {}, {},
+		LAMBDA { auto &D=*d; return U.PaymentAccept( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
+
+	//======== ot purse ========
 
 	AddFormat("purse create", {pServer, pAsset, pNym, pNym}, {}, { },
 		LAMBDA { auto &D=*d; return U.PurseCreate( D.V(1), D.V(2), D.V(3), D.V(4), D.has("--dryrun") ); } );
@@ -518,8 +541,8 @@ void cCmdParser::Init() {
 
 	//======== ot server ========
 
-		AddFormat("server", {}, {}, {},
-			LAMBDA { auto &D=*d; return U.DisplayDefaultSubject(nUtils::eSubjectType::Server, D.has("--dryrun") ); } );
+	AddFormat("server", {}, {}, {},
+		LAMBDA { auto &D=*d; return U.DisplayDefaultSubject(nUtils::eSubjectType::Server, D.has("--dryrun") ); } );
 
 	AddFormat("server ls", {}, {}, {},
 		LAMBDA { auto &D=*d; return U.ServerDisplayAll(D.has("--dryrun") ); } );
@@ -537,21 +560,21 @@ void cCmdParser::Init() {
 		LAMBDA { auto &D=*d; return U.ServerSetDefault( D.V(1), D.has("--dryrun") ); } );
 
 	AddFormat("server show-contract", {pServer}, {}, {},
-			LAMBDA { auto &D=*d; return U.ServerShowContract(D.V(1), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.ServerShowContract(D.V(1), D.has("--dryrun") ); } );
 
 	//======== ot text ========
 
 	AddFormat("text encode", {}, {pText}, {},
-			LAMBDA { auto &D=*d; return U.TextEncode(D.v(1, ""), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.TextEncode(D.v(1, ""), D.has("--dryrun") ); } );
 
 	AddFormat("text decode", {}, {pText}, {},
-			LAMBDA { auto &D=*d; return U.TextDecode(D.v(1, ""), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.TextDecode(D.v(1, ""), D.has("--dryrun") ); } );
 
 	AddFormat("text encrypt", {pNymTo}, {pText}, {},
-			LAMBDA { auto &D=*d; return U.TextEncrypt(D.V(1), D.v(2, ""), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.TextEncrypt(D.V(1), D.v(2, ""), D.has("--dryrun") ); } );
 
 	AddFormat("text decrypt", {pNymMy}, {pText}, {},
-			LAMBDA { auto &D=*d; return U.TextDecrypt(D.V(1), D.v(2, ""), D.has("--dryrun") ); } );
+		LAMBDA { auto &D=*d; return U.TextDecrypt(D.V(1), D.v(2, ""), D.has("--dryrun") ); } );
 
 	mI->BuildCache_CmdNames();
 }

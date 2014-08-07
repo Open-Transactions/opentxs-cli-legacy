@@ -12,7 +12,7 @@ All for ot hint functionality goes here
 namespace nOT {
 namespace nOTHint{
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 // <=== namespaces
 // Data for hinting, e.g. cached or local information.
 
 extern shared_ptr<nNewcli::cCmdParser> gReadlineHandleParser;
@@ -40,8 +40,8 @@ class cInteractiveShell {
 };
 
 
-}; // namespace nOTHint
-}; // namespace nOT
+} // namespace nOTHint
+} // namespace nOT
 
 
 

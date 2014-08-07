@@ -13,7 +13,7 @@ Template for new files, replace word "template" and later delete this line here.
 namespace nOT {
 namespace nNewcli {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 class cParseEntity;
 
@@ -470,8 +470,8 @@ void cmd_test( shared_ptr<nUse::cUseOT> useOT );
 
 
 
-}; // namespace nNewcli
-}; // namespace nOT
+} // namespace nNewcli
+} // namespace nOT
 
 
 #endif

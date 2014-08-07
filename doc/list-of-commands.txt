@@ -130,6 +130,8 @@ basket exchange
 
 ------------------------------
 
+All cash utilities are using account to determine server, nym, asset
+
 *ot cash withdraw  									# ERROR: Missing required variable
 *ot cash withdraw <amount> 							# Withdraw amount of cash from default account on default server. Should display if account isn't issuer account
 
@@ -137,33 +139,35 @@ basket exchange
 *ot cash withdraw-from <account> 			# ERROR: Missing required variable
 *ot cash withdraw-from <account> <amount> 	# Withdraw amount of cash from account on server
 
-withdraw != deposit
+*ot cash deposit
+*ot cash deposit-to
 
-ot cash deposit
-
-ot cash deposit-to
 
 *ot cash send  													# ERROR: Missing required variable
 *ot cash send <account>									# ERROR: Missing required variable
 *ot cash send <account> <nym> 						# send cash from mypurse to recipient if there is enough cash in purse
 *ot cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
 
-*ot cash show						# ERROR: Missing required variable
-*ot cash show <account>	# show cash purse connected with account asset type
+*ot cash ls						# show cash purse connected with default account asset type
+*ot cash ls [account]	# show cash purse connected with account asset type
 
-*ot cash export	# ERROR: Missing required variable
-*ot cash export <nym-from>		# ERROR: Missing required variable
-*ot cash export <nym-from> <nym-to>	# ERROR: Missing required variable
-*ot cash export <nym-from> <nym-to> <account>	# Export cash purse and display it to screen
+*ot cash export-from	# ERROR: Missing required variable
+*ot cash export-from <nym-from>		# ERROR: Missing required variable
+*ot cash export-from <nym-from> <nym-to>	# ERROR: Missing required variable
+*ot cash export-from <nym-from> <nym-to> <account>	# Export cash purse and display it to screen
+
+*ot cash export-to	# ERROR: Missing required variable
+*ot cash export-to <nym-to>	# ERROR: Missing required variable
+*ot cash export-to <nym-to> <account>	# Export cash purse and display it to screen
 
 *ot cash import					# ERROR: Missing required variable
 *ot cash import <nym-my>		# import cash purse (user-paste)
 
 
 
-*ot payment show 									# ERROR: Missing required variable
-*ot payment show <nym-my>					# Show payment inbox for nym-my for default server
-*ot payment show <nym-my> [server]	# Show payment inbox for nym-my for server
+*ot payment ls 									# Show payment inbox for default nym-my for default server
+*ot payment ls [nym-my]					# Show payment inbox for nym-my for default server
+*ot payment ls [nym-my] [server]	# Show payment inbox for nym-my for server
 
 *ot payment accept 														# ERROR: Missing required variable
 *ot payment accept <account> 									# ERROR: Missing required variable

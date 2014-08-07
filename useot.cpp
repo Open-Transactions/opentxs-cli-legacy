@@ -771,7 +771,7 @@ bool cUseOT::AssetSetDefault(const std::string & asset, bool dryrun){
 	return true;
 }
 
-bool cUseOT::CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool dryrun) {
+bool cUseOT::CashExportWrap(const ID & nymSender, const ID & nymRecipient, const string & account, bool passwordProtected, bool dryrun) {
 	// TODO get indices
 	_fact("cash export from " << nymSender << " to " << nymRecipient << " account " << account );
 	if(dryrun) return true;
@@ -782,7 +782,6 @@ bool cUseOT::CashExportWrap(const ID & nymSender, const ID & nymRecipient, const
 
 	string indices = "";
 	string retained_copy = "";
-	bool passwordProtected = true;
 
 	string exportedCash = CashExport( nymSenderID, nymRecipientID, account, indices, passwordProtected, retained_copy);
 
@@ -921,15 +920,11 @@ bool cUseOT::CashImport(const string & nym, bool dryrun) {
 	return false;
 }
 
-bool cUseOT::CashDeposit(const string & accountID, const string & nymFromID, const string & serverID,  const string & instrument, bool dryrun){
-	//FIXME cleaning arguments
-	_fact("Deposit purse to account: " << accountID);
-	if (dryrun) return false;
+bool cUseOT::CashDeposit(const string & accountID, const string & nymFromID, const string & serverID, const string & instrument) {
 	if(!Init()) return false;
 
 	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
-	//ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
 	string purseValue = instrument;
 
@@ -945,12 +940,32 @@ bool cUseOT::CashDeposit(const string & accountID, const string & nymFromID, con
 	}
 
 	_dbg3("Processing cash deposit to account");
-	int32_t nResult = mMadeEasy.deposit_cash(serverID, accountNymID, accountID, purseValue); // TODO pass reciever nym if exists in purse //<<<------------------------- BROKEN???
+	int32_t nResult = mMadeEasy.deposit_cash(serverID, accountNymID, accountID, purseValue); // TODO pass reciever nym if exists in purse
 	if (nResult < 1) {
 		DisplayStringEndl(cout, "Unable to deposit purse");
 		return false;
 	}
 	return true;
+}
+
+bool cUseOT::CashDepositWrap(const string & account, bool dryrun) {
+	//TODO accept indices as arguments
+	//FIXME cleaning arguments
+	_fact("Deposit purse to account: " << account);
+	if (dryrun) return false;
+	if (!Init()) return false;
+
+	ID accountID = AccountGetId(account);
+
+	ID accountNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountID);
+	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
+	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
+
+	_dbg3("Open text editor for user to paste payment instrument");
+	nUtils::cEnvUtils envUtils;
+	string instrument = envUtils.Compose();
+
+	return CashDeposit(accountID, accountNymID, accountServerID, instrument);
 }
 
 bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, const string & account, int64_t amount, bool dryrun) { // TODO make it work with longer version: asset, server, nym
@@ -1014,6 +1029,12 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 	ID accountAssetID = OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 	ID accountServerID = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
+	int alignCenter = 15;
+
+	cout << zkr::cc::fore::lightyellow << std::setw(alignCenter) <<"Server: " << zkr::cc::fore::green << ServerGetName(accountServerID) << endl
+			<< zkr::cc::fore::lightyellow << std::setw(alignCenter) << "Asset: " << zkr::cc::fore::green << AssetGetName(accountAssetID) << endl
+			<< zkr::cc::fore::lightyellow << std::setw(alignCenter) << "Nym: " << zkr::cc::fore::green << NymGetName(accountNymID) << endl;
+
 	string purseValue = OTAPI_Wrap::LoadPurse(accountServerID, accountAssetID, accountNymID); // returns NULL, or a purse
 
   if (purseValue.empty()) {
@@ -1023,7 +1044,7 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 	}
 
   int64_t amount = OTAPI_Wrap::Purse_GetTotalValue(accountServerID, accountAssetID, purseValue);
-  cout << zkr::cc::fore::lightyellow << "Total value: " << zkr::cc::fore::red << OTAPI_Wrap::FormatAmount(accountAssetID, amount) << zkr::cc::fore::console << endl;
+  cout << zkr::cc::fore::lightyellow << std::setw(alignCenter) << "Total value: " << zkr::cc::fore::green << OTAPI_Wrap::FormatAmount(accountAssetID, amount) << zkr::cc::fore::console << endl;
 
 	int32_t count = OTAPI_Wrap::Purse_Count(accountServerID, accountAssetID, purseValue);
 	if (count < 0) { // TODO check if integer?
@@ -1034,7 +1055,7 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 
 	if (count > 0) {
 
-		cout << zkr::cc::fore::lightyellow << "Token count: " << zkr::cc::fore::red << count << endl;
+		cout << zkr::cc::fore::lightyellow << std::setw(alignCenter) << "Token count: " << zkr::cc::fore::green << count << endl;
 
 		bprinter::TablePrinter tp(&std::cout);
 		tp.AddColumn("ID", 4);
@@ -1797,10 +1818,10 @@ bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dry
 	// Not all instruments have a specified recipient. But if they do, let's make
 	// sure the Nym matches.
 
-	string strRecipientUserID = OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument);
-  if ( !strRecipientUserID.empty() && !CheckIfExists(eSubjectType::User, strRecipientUserID) ) {
-  	_erro("The instrument " + to_string(index) + " is endorsed to a specific recipient (" + strRecipientUserID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.)");
-  	OTAPI_Wrap::Output(0, "The instrument " + to_string(index) + " is endorsed to a specific recipient (" + strRecipientUserID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.) \n");
+	string recipientNymID = OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument);
+  if ( !recipientNymID.empty() && !CheckIfExists(eSubjectType::User, recipientNymID) ) {
+  	_erro("The instrument " + to_string(index) + " is endorsed to a specific recipient (" + recipientNymID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.)");
+  	OTAPI_Wrap::Output(0, "The instrument " + to_string(index) + " is endorsed to a specific recipient (" + recipientNymID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.) \n");
   	return false;
   }
   _dbg3("Get instrument assetID");
@@ -1851,7 +1872,7 @@ bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dry
 
 	if ("PURSE" == strType) {
 		_dbg3("Type of instrument: " << strType );
-		int32_t nDepositPurse = CashDeposit( accountID, accountNymID, accountServerID, instrument, false); // strIndices is left blank in this case
+		int32_t nDepositPurse = CashDeposit( accountID, accountNymID, accountServerID, instrument); // strIndices is left blank in this case
 		// if nIndex !=  -1, go ahead and call RecordPayment on the purse at that index, to
 		// remove it from payments inbox and move it to the recordbox.
 		//
@@ -1886,8 +1907,13 @@ bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun)
   int32_t count = OTAPI_Wrap::Ledger_GetCount(serverID, nymID, nymID, paymentInbox);
 	if (count > 0) {
 		OTAPI_Wrap::Output(0, "Show payments inbox (Nym/Server)\n( " + nym + " / " + server + " )\n");
-		OTAPI_Wrap::Output(0, "Idx  Amt   Type      Txn#  Asset_Type\n");
-		OTAPI_Wrap::Output(0, "---------------------------------------\n");
+		bprinter::TablePrinter tp(&std::cout);
+		tp.AddColumn("ID", 4);
+		tp.AddColumn("Amount", 10);
+		tp.AddColumn("Type", 10);
+		tp.AddColumn("Txn", 10);
+		tp.AddColumn("Asset Type", 60);
+		tp.PrintHeader();
 
 		for (int32_t index = 0; index < count; ++index)
 		{
@@ -1897,47 +1923,35 @@ bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun)
 				 OTAPI_Wrap::Output(0, "Failed trying to get payment instrument from payments box.\n");
 				 return false;
 			}
-			string strTrans = OTAPI_Wrap::Ledger_GetTransactionByIndex(serverID, nymID, nymID, paymentInbox, index);
-			int64_t lTransNumber = OTAPI_Wrap::Ledger_GetTransactionIDByIndex(serverID, nymID, nymID, paymentInbox, index);
+			string transaction = OTAPI_Wrap::Ledger_GetTransactionByIndex(serverID, nymID, nymID, paymentInbox, index);
+			int64_t transNumber = OTAPI_Wrap::Ledger_GetTransactionIDByIndex(serverID, nymID, nymID, paymentInbox, index);
 
-			string strTransID = to_string(lTransNumber);
+			string transactionNumber = to_string(transNumber);
 
-			int64_t lRefNum = OTAPI_Wrap::Transaction_GetDisplayReferenceToNum(serverID, nymID, nymID, strTrans);
+			int64_t refNum = OTAPI_Wrap::Transaction_GetDisplayReferenceToNum(serverID, nymID, nymID, transaction); // FIXME why we need this?
 
-			int64_t lAmount = OTAPI_Wrap::Instrmnt_GetAmount(instrument);
-			string strType = OTAPI_Wrap::Instrmnt_GetType(instrument);
-			string strAssetType = OTAPI_Wrap::Instrmnt_GetAssetID(instrument);  // todo: output this.
-			string strSenderUserID = OTAPI_Wrap::Instrmnt_GetSenderUserID(instrument);
-			string strSenderAcctID = OTAPI_Wrap::Instrmnt_GetSenderAcctID(instrument);
-			string strRecipientUserID = OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument);
-			string strRecipientAcctID = OTAPI_Wrap::Instrmnt_GetRecipientAcctID(instrument);
+			int64_t amount = OTAPI_Wrap::Instrmnt_GetAmount(instrument);
+			string instrumentType = OTAPI_Wrap::Instrmnt_GetType(instrument);
+			string instrAssetID = OTAPI_Wrap::Instrmnt_GetAssetID(instrument);
+			string senderNymID = OTAPI_Wrap::Instrmnt_GetSenderUserID(instrument);
+			string senderAccountID = OTAPI_Wrap::Instrmnt_GetSenderAcctID(instrument);
+			string recipientNymID = OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument);
+			string recipientAccountID = OTAPI_Wrap::Instrmnt_GetRecipientAcctID(instrument);
 
-			string strUserID = strSenderUserID.empty() ? strSenderUserID : strRecipientUserID;
-			string strAcctID = strSenderAcctID.empty() ? strSenderAcctID : strRecipientAcctID;
+			string finalNymID = senderNymID.empty() ? senderNymID : recipientNymID;
+			string finalAccountID = senderAccountID.empty() ? senderAccountID : recipientAccountID;
 
-			bool bHasAmount = lAmount >= 0;
-			bool bHasAsset = !strAssetType.empty();
+			bool hasAmount = amount >= 0;
+			bool hasAsset = !instrAssetID.empty();
 
-			string strAmount = (bHasAmount && bHasAsset) ? OTAPI_Wrap::FormatAmount(strAssetType, lAmount) : "UNKNOWN_AMOUNT";
+			string formattedAmount = (hasAmount && hasAsset) ? OTAPI_Wrap::FormatAmount(instrAssetID, amount) : "UNKNOWN_AMOUNT";
 
-			bool bUserIDExists = !strUserID.empty();
-			bool bAcctIDExists = !strAcctID.empty();
-			bool bAssetIDExists = !strAssetType.empty();
+ 			string assetDescr = AssetGetName(instrAssetID) + "(" + instrAssetID + ")";
+			string recipientDescr = recipientNymID; // FIXME Is recipient needed in purse?
 
-			string strAssetDenoter = (bAssetIDExists ? " - " : "");
-
-			string strAssetName = (bAssetIDExists ? ("\"" + OTAPI_Wrap::GetAssetType_Name(strAssetType) + "\"") : "");
-			if ( strAssetName.empty() )     { strAssetName = ""; strAssetDenoter = ""; }
-
-			string strOut1 = to_string(index) + "    ";
-			string strOut2 = strAmount + (strAmount.size() < 3 ? "    " : "   ");
-			string strOut3 = strType;
-			string strOut4 = strType.size() > 10 ? " " : "    ";
-			string strOut5 = strTransID + (strTransID.size() < 2 ? "    " : "   ");
-			string strOut6 = strAssetType + strAssetDenoter + strAssetName;
-			string strOut7 = strRecipientUserID;
-			DisplayStringEndl(cout, strOut1 + strOut2 + strOut3 + strOut4 + strOut5 + strOut6 + strOut7);
+			tp << to_string(index) <<  formattedAmount << instrumentType << transactionNumber << assetDescr;
 		} // for
+		tp.PrintFooter();
 	}
 
 

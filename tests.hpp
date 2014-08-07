@@ -13,7 +13,7 @@ Template for new files, replace word "template" and later delete this line here.
 namespace nOT {
 namespace nTests {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 bool testcase_run_all_tests();
 
