@@ -7,6 +7,7 @@
 
 #include "utils.hpp"
 #include "runoptions.hpp"
+#include "text.hpp"
 
 #define INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 \
 	INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 \

@@ -1,0 +1,5 @@
+nym Nym istniejący na serwerze
+nym-my
+nym-to
+nym-from
+nym-new-name

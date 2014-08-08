@@ -1,0 +1,5 @@
+nym nym existing on a server
+nym-my one of my own nyms
+nym-to nym of recipient that exists on a server
+nym-from one of your nyms, as the sender
+nym-new-name alias name that will be created
