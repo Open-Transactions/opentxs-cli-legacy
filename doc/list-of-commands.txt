@@ -43,6 +43,7 @@ List of commands
 * - works
 / - wip
 % - broken
+? - not sure if it will appear in main program
 
 Agruments:
 <> - reqired
@@ -55,100 +56,101 @@ Agruments:
 <server> 	- can be name(alias) or ID with prefix '^'
 
 #------List of all included commands-----#
-*account		# display active (default) account
+*ot account		# display active (default) account
 
-*account ls			# list all accounts
+*ot account ls			# list all accounts
 
-*account set-default 	# ERROR: Missing required variable
-*account set-default <account> 	# set default account
+*ot account set-default 	# ERROR: Missing required variable
+*ot account set-default <account> 	# set default account
 
-*account new			# ERROR: Missing required variable | proposition: make new account with interactive UI
-*account new <nym-my>			# ERROR: Missing required variable
-*account new <nym-my> <asset> 			# ERROR: Missing required variable
-*account new <nym-my> <asset> <accountName>			# Create account accountName with asset for nym-my
-*account new <nym-my> <asset> <accountName>	--dryrun 	# Display in logs executed action only
+*ot account new			# ERROR: Missing required variable | proposition: make new account with interactive UI
+*ot account new <nym-my>			# ERROR: Missing required variable
+*ot account new <nym-my> <asset> 			# ERROR: Missing required variable
+*ot account new <nym-my> <asset> <accountName>			# Create account accountName with asset for nym-my
+*ot account new <nym-my> <asset> <accountName>	--dryrun 	# Display in logs executed action only
 
-*account mv 	# ERROR: Missing required variable
-*account mv <oldAccount> 		# ERROR: Missing required variable
-*account mv <oldAccount> <newAccount>		# rename account oldAccount to newAccount
+*ot account mv 	# ERROR: Missing required variable
+*ot account mv <oldAccount> 		# ERROR: Missing required variable
+*ot account mv <oldAccount> <newAccount>		# rename account oldAccount to newAccount
 
-*account rm 			# ERROR: Missing required variable
-*account rm <account>			# delete account
+*ot account rm 			# ERROR: Missing required variable
+*ot account rm <account>			# delete account
 
-*account transfer-from 		# ERROR: Missing required variable
-*account transfer-from <account-from> 		# ERROR: Missing required variable
-*account transfer-from <account-from> <account-to> 		# ERROR: Missing required variable
-*account transfer-from <account-from> <account-to> <amount> 		# Send transfer without text message
-*account transfer-from <account-from> <account-to> <amount> [message] 		# Send transfer with text message
+*ot account transfer-from 		# ERROR: Missing required variable
+*ot account transfer-from <account-from> 		# ERROR: Missing required variable
+*ot account transfer-from <account-from> <account-to> 		# ERROR: Missing required variable
+*ot account transfer-from <account-from> <account-to> <amount> 		# Send transfer without text message
+*ot account transfer-from <account-from> <account-to> <amount> [message] 		# Send transfer with text message
 
-*account refresh			# refresh default account
-*account refresh <account>			# refresh account <account>
-*account refresh --all			# refresh all accounts
-*account refresh --all	--dryrun		# Display in logs executed action only
+*ot account refresh			# refresh default account
+*ot account refresh <account>			# refresh account <account>
+*ot account refresh --all			# refresh all accounts
+*ot account refresh --all	--dryrun		# Display in logs executed action only
 
 --- Account inbox actions ---
 
-*account-in		# ERROR: Missing required variable
+*ot account-in		# ERROR: Missing required variable
 
-*account-in ls			# list account inbox for default account
-*account-in ls [account]	 # list account inbox for specific <account>
+*ot account-in ls			# list account inbox for default account
+*ot account-in ls [account]	 # list account inbox for specific <account>
 
-*account-in accept 		# accept last incoming transfer for default account inbox
-*account-in accept [account] 	# accept last incoming transfer transfer for account inbox
-*account-in accept [account] [inbox-index]	# accept inbox-index incoming transfer transfer for account inbox
-*account-in accept [account] --all		# accept all incoming transfers for account
+*ot account-in accept 		# accept last incoming transfer for default account inbox
+*ot account-in accept [account] 	# accept last incoming transfer transfer for account inbox
+*ot account-in accept [account] [inbox-index]	# accept inbox-index incoming transfer transfer for account inbox
+*ot account-in accept [account] --all		# accept all incoming transfers for account
 
-*account-in accept-all 		# accept all incoming transfers for all accounts
+*ot account-in accept-all 		# accept all incoming transfers for all accounts
 
 --- Account outbox actions ---
 
-*account-out 		# ERROR: Missing required variable
+*ot account-out 		# ERROR: Missing required variable
 
-*account-out ls		# ERROR: Missing required variable
+*ot account-out ls		# ERROR: Missing required variable
 
-account-out cancel 							# cancel last outgoing transaction for default account outbox
-account-out cancel [account]				# cancel last outgoing transaction for account outbox
-account-out cancel [account] [outbox-index] # cancel outgoing transaction inbox-index for account
-account-out cancel [account] --all 			# cancel all outgoing transactions for account
-account-out cancel-all						# cancel all outgoing transactions for all accounts
-
-------------------------------
-
-*asset			# can display active (default) asset - TODO check differences beetween asset and purse
-
-*asset ls		# display all assets
-
-*asset issue 	# Issue asset for default nym and server
-
-*asset new 		# add new asset to the wallet
+ot account-out cancel 							# cancel last outgoing transaction for default account outbox
+ot account-out cancel [account]				# cancel last outgoing transaction for account outbox
+ot account-out cancel [account] [outbox-index] # cancel outgoing transaction inbox-index for account
+ot account-out cancel [account] --all 			# cancel all outgoing transactions for account
+ot account-out cancel-all						# cancel all outgoing transactions for all accounts
 
 ------------------------------
 
-basket new
-basket ls
-basket exchange
+*ot asset	# can display active (default) asset - TODO check differences beetween asset and purse
+
+*ot asset ls # display all assets
+
+*ot asset issue	# Issue asset for default nym and server
+
+*ot asset new # add new asset to the wallet
 
 ------------------------------
 
-All cash utilities are using account to determine server, nym, asset
+ot basket new
+ot basket ls
+ot basket exchange
 
-*ot cash withdraw  									# ERROR: Missing required variable
-*ot cash withdraw <amount> 							# Withdraw amount of cash from default account on default server. Should display if account isn't issuer account
+------------------------------
 
-*ot cash withdraw-from   					# ERROR: Missing required variable
-*ot cash withdraw-from <account> 			# ERROR: Missing required variable
-*ot cash withdraw-from <account> <amount> 	# Withdraw amount of cash from account on server
+All cash utilities are using account to determine server, nym, asset.
+In case if you want to export cash you will need account with the same asset to proccess.
+
+*ot cash withdraw # ERROR: Missing required variable
+*ot cash withdraw <amount> # Withdraw amount of cash from default account on default server. Should display if account isn't issuer account
+
+*ot cash withdraw-from # ERROR: Missing required variable
+*ot cash withdraw-from <account> 	# ERROR: Missing required variable
+*ot cash withdraw-from <account> <amount>	# Withdraw amount of cash from account on server
 
 *ot cash deposit
 *ot cash deposit-to
 
 
-*ot cash send  													# ERROR: Missing required variable
-*ot cash send <account>									# ERROR: Missing required variable
-*ot cash send <account> <nym> 						# send cash from mypurse to recipient if there is enough cash in purse
-*ot cash send <account> <nym> --withdraw	# send cash from mypurse to recipient, withdraw if necessary
+*ot cash send # ERROR: Missing required variable
+*ot cash send <account>	# ERROR: Missing required variable
+*ot cash send <account> <nym> # send cash from mypurse to recipient if there is enough cash in purse
+*ot cash send <account> <nym> --withdraw # send cash from mypurse to recipient, withdraw if necessary
 
-*ot cash ls						# show cash purse connected with default account asset type
+*ot cash ls	# show cash purse connected with default account asset type
 *ot cash ls [account]	# show cash purse connected with account asset type
 
 *ot cash export-from	# ERROR: Missing required variable
@@ -160,94 +162,106 @@ All cash utilities are using account to determine server, nym, asset
 *ot cash export-to <nym-to>	# ERROR: Missing required variable
 *ot cash export-to <nym-to> <account>	# Export cash purse and display it to screen
 
-*ot cash import					# ERROR: Missing required variable
-*ot cash import <nym-my>		# import cash purse (user-paste)
-
-
-
-*ot payment ls 									# Show payment inbox for default nym-my for default server
-*ot payment ls [nym-my]					# Show payment inbox for nym-my for default server
-*ot payment ls [nym-my] [server]	# Show payment inbox for nym-my for server
-
-*ot payment accept 														# ERROR: Missing required variable
-*ot payment accept <account> 									# ERROR: Missing required variable
-*ot payment accept <account> <payment-index>		# Deposit <payment-index> payment from payment inbox to <account>
-
-
-
-cheque new
-contract? new  # Managed by asset new / server new
-contract? get <contractID>
-contract? sign
+*ot cash import	# ERROR: Missing required variable
+*ot cash import <nym-my> # import cash purse (user-paste) TODO: Import from file
 
 ------------------------------
 
-market # can't test markets for now
-market ls
+ot cheque new
 
 ------------------------------
 
-mint new
+ot contract? new  # Managed by asset new / server new
+ot contract? get <contractID>
+ot contract? sign
 
 ------------------------------
-*msg			# ERROR: Missing required variable
 
-*msg send-to		# ERROR: Missing required variable
+ot market # can't test markets for now
+ot market ls
 
-*msg send-to <nym> 		# Open default system editor. After closing editor send message from default nym to <nym>
-*msg send-to <nym> 		# Send message from default nym to <nym>
-*msg send-to <nym> 		# Send message from default nym to <nym>
-*msg send-to <nym> [subject] [subject] [--bcc nym] [--cc nym] [--prio int] [--dryrun]
-*msg send-from <nym-my> <nym> message 		# Send message from <mynym> to <hisnym>
-msg send-from <nym-my> <nym> --push     	# TODO option "--push" has no sense because msg will be already on the server. Implement msg draft?
-msg send-from <nym-my> <nym> --no-footer   # action option
-msg send-from <nym-my> <nym> --cc <ccnym>  # action option with value
-msg send-from <nym-my> <nym> --cc <ccnym> --cc <ccnym2>
-msg send-from <nym-my> <nym> --cc <ccnym> --cc <ccnym2> --push  	 # example of force send (?) - not sure if it will appear
-*msg ls			# list all messages for all nyms
-/msg ls <mynym> # list all messages for nym
-msg mv			# move message to different directory in your mail box
-msg rm <index>		# remove message with <index> number for current nym
-msg rm --all		# remove all messages from mail box for current nym
-*msg rm <nymName> <index> # remove <index> message from mail inbox for <nymName>
-msg rm-out nymName> <index> # proposition for command removing msg from mail outbox
 ------------------------------
 
-*ot nym 			# display active (default) nym
+ot mint new
 
-*ot nym ls			# list of all nyms
+------------------------------
 
-*ot nym new			# ERROR: Missing required variable
+*ot msg	# ERROR: Missing required variable
+*ot msg send-to	# ERROR: Missing required variable
+*ot msg send-to <nym> # Open default system editor. After closing editor send message from default nym to <nym>
+*ot msg send-to <nym> # Send message from default nym to <nym>
+*ot msg send-to <nym> # Send message from default nym to <nym>
+*ot msg send-to <nym> [subject] [subject] [--bcc nym] [--cc nym] [--prio int] [--dryrun]
+
+*ot msg send-from <nym-my> <nym> message # Send message from <mynym> to <hisnym>
+ot msg send-from <nym-my> <nym> --push # TODO option "--push" has no sense because msg will be already on the server. Implement msg draft?
+ot msg send-from <nym-my> <nym> --no-footer # action option
+ot msg send-from <nym-my> <nym> --cc <ccnym> # action option with value
+ot msg send-from <nym-my> <nym> --cc <ccnym> --cc <ccnym2>
+ot msg send-from <nym-my> <nym> --cc <ccnym> --cc <ccnym2> --push # example of force send (?) - not sure if it will appear
+
+*ot msg ls # list all messages for default nym
+*ot msg ls <mynym> # list all messages for nym
+
+ot msg mv	# move message to different directory in your mail box
+
+ot msg rm <index>	# remove message with <index> number for current nym
+ot msg rm --all	# remove all messages from mail box for current nym
+*ot msg rm <nymName> <index> # remove <index> message from mail inbox for <nymName>
+ot msg rm-out nymName> <index> # proposition for command removing msg from mail outbox
+
+------------------------------
+
+*ot nym # display active (default) nym
+
+*ot nym ls # list of all nyms
+
+*ot nym new	# ERROR: Missing required variable
 *ot nym new <nymName>	# make new nym with <nymName>
 
-*ot nym rm <nym>			# remove <nym> if wasn't registered oon server TODO: It is possible to remove registered nym?
+*ot nym rm <nym> # remove <nym> if wasn't registered oon server TODO: It is possible to remove registered nym?
 
-*ot nym info <nym>		# show information about such <nym>
-*ot nym info <nym>		# show information about such <nym>
+*ot nym info <nym> # show information about such <nym>
+*ot nym info <nym> # show information about such <nym>
 
-ot nym edit <nym>		# allows to edit information about such <nymID>
+ot nym edit <nym>	# allows to edit information about <nym>
 
 *ot nym register <nym>	# register nym defined by nym on default server
 *ot nym register <nym> [server]	# register <nym> on <server>
-*ot nym set-default <nymID> # set default nym
+*ot nym set-default <nym> # set default nym
 
-*ot nym import		# import nyms from file or by user-paste
-*ot nym export		# export nyms to file or display exported nym string
+*ot nym import # import nyms from file or by user-paste
+*ot nym export # export nyms to file or display exported nym string
 
-*ot nym check <nymID>			# returns Public Key of this <nymID> nym
-*ot nym refresh			# refresh nym's list and its included informations
+*ot nym check <nym> # returns Public Key of this <nym> nym
+*ot nym refresh	# refresh nym's list and its included informations
 
-nym-cred new 			# change credential to trust?
-nym-cred revoke
-nym-cred show			# show all credential to trust?
+ot nym-cred new # change credential to trust?
+ot nym-cred revoke
+ot nym-cred show # show all credential to trust?
+
 ------------------------------
-receipt?
+
+*ot payment ls # Show payment inbox for default nym-my for default server
+*ot payment ls [nym-my]	# Show payment inbox for nym-my for default server
+*ot payment ls [nym-my] [server] # Show payment inbox for nym-my for server
+
+*ot payment accept # ERROR: Missing required variable
+*ot payment accept <account> # ERROR: Missing required variable
+*ot payment accept <account> <payment-index> # Deposit <payment-index> payment from payment inbox to <account>
+
 ------------------------------
-*ot server			# can display active (default) server
-*ot server ls			# as above but all servers are listed TODO: Display more information about servers
-*ot server add		# add new server contract
-*ot server new 	# like newserver
+
+ot receipt?
+
+------------------------------
+
+*ot server # can display active (default) server
+*ot server ls	# as above but all servers are listed TODO: Display more information about servers
+*ot server add # add new server contract
+*ot server new # like newserver
 *ot server set-default # set default server
+
 ------------------------------
 
 *ot text decode	# get multiline text (user paste in editor)
@@ -265,39 +279,10 @@ receipt?
 *ot text encrypt nym-to [text] # encrypt and display encrypted text
 
 ------------------------------
-voucher new
-wallet? status
-#------List of all included commands-----#
 
-That's all commands included to OTHint for now.
-(?) means that we're not sure if it will appear in main program, those keywords are implemente but commented for now
+ot voucher new
 
-------------------------------------------------------------------------
-older opentxs commands:
+------------------------------
 
-acceptall	acceptinbox	acceptinvoices	acceptmoney
-acceptpayments	acceptreceipts	accepttransfers	addasset
-addserver	addsignature	balance		buyvoucher
-cancel		changepw	nymCheck	clearexpired
-clearrecords	confirm		credentials	decode
-decrypt		delmail		deloutmail	deposit
-discard		editacct	editasset	editnym
-editserver	encode		encrypt		exchange
-expired		exportcash	exportnym	getboxreceipt
-getcontract	getmarkets	getmyoffers	getoffers
-importcash	importnym	inbox		issueasset
-killoffer	killplan	mail		newacct
-newasset	newbasket	newcred		newkey
-newnym		newoffer	newserver	outbox
-outmail		outpayment	pass_decrypt	pass_encrypt
-paydividend	payinvoice	payments	propose
-records		refresh		refreshacct	refreshnym
-register	revokecred	sendcash	sendcheque
-sendinvoice	msgSend		sendvoucher	showaccounts
-showacct	showassets	showbasket	showcred
-showincoming	showmarkets	showmint	showmyoffers
-shownym		shownyms	showoffers	showoutgoing
-showpayment	showpurse	showservers	sign
-stat		transfer	trigger		verifyreceipt
-verifysig	withdraw	writecheque	writeinvoice
-------------------------------------------------------------------------
+ot wallet? status
+
