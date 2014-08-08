@@ -48,6 +48,13 @@ void cCmdParser::Init() {
 	weak_ptr<cCmdParser> this_weak( this_shared_do_not_use );
 
 // TODO hinting for ID?
+
+	nText::gTranslations->LoadLang("en", true);
+	nText::gTranslations->LoadLang("pl");
+
+	_mark( nText::gTranslations->GetText(nText::eDictType::help, "nym") );
+	_mark( nText::gTranslations->GetText(nText::eDictType::help, "nym-my") );
+
 	cParamInfo pNym( "nym", "nym existing on a server",
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Nym validation");

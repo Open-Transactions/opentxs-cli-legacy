@@ -7,9 +7,9 @@
 
 namespace nOT {
 
-INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
+INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 
-}; // namespace OT
+} // namespace OT
 
 
