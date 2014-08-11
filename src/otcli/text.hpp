@@ -27,13 +27,13 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1 // <=== namespaces
 
 enum class eDictType { help, helpdev }; ///< Type of language for different modules
 
-
 using textType = string;
 
 class cDict;
 
 class cTranslations {
 	// Singleton
+	// TODO get list of languages - best option is to get it from file names
 	public:
 		static cTranslations& getInstance() {
 			static cTranslations instance; // Guaranteed to be destroyed. Instantiated on first use.
@@ -47,10 +47,11 @@ class cTranslations {
 	private:
 		map<eDictType, cDict> mDefaultLang; ///< Default language (eng)
 		map<eDictType, cDict> mCurrentLang; ///< Current chosen language
-
+		vector <string> mLanguages;
 	public:
 		bool LoadLang(const string & lang, bool def = false); ///< Set language
 		textType GetText(eDictType type, const string & key) const; ///< Get text from dictionary of specific type
+		vector<string> GetLanguages(bool forceReload); ///< Get all supported languages
 };
 
 extern cTranslations * gTranslations;

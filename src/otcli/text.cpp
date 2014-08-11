@@ -43,6 +43,22 @@ textType cTranslations::GetText(eDictType type, const string & key) const {
 	return text;
 }
 
+vector<string> cTranslations::GetLanguages(bool forceReload) {
+	_mark("mLanguages.empty() - " << std::to_string(mLanguages.empty()) << " forceReload - " << std::to_string(forceReload) );
+	if (mLanguages.empty() || forceReload) { // load list of supported languages
+		std::ifstream list("translations/supported-languages.txt");
+		string line;
+		if (list.is_open()) {
+			_mark("File was opened" );
+			while ( std::getline(list, line) ) {
+				DisplayStringEndl(cout, line);
+				mLanguages.push_back(line);
+			}
+		}
+	}
+	return mLanguages;
+}
+
 //===============================================================================
 
 map<textType, textType> cDict::ParseFile(const string & fileName) {
@@ -53,11 +69,20 @@ map<textType, textType> cDict::ParseFile(const string & fileName) {
 	textType text;
 	if (DictFile.is_open()) {
 		while ( std::getline(DictFile, line) ) {
-			auto pos = line.find_first_of(' ');
-			key = line.substr(0, pos);
-			text = line.erase(0, pos);
-			data.insert( std::pair<textType, textType>(key,text) );
+			if (!line.empty()) {
+				if (line.at(0) == ':') {
+					if (!key.empty()) { // insert element if not first line
+						data.insert( std::pair<textType, textType>(key,text) );
+					}
+					key = line.erase(0,1);
+					text.clear();
+				}
+				else { // handle multiline text
+					text += line;
+				}
+			}
 		}
+		data.insert( std::pair<textType, textType>(key,text) ); // insert last element in dictionary
 		DictFile.close();
 	}
 	return data;

@@ -796,18 +796,18 @@ void cValidateError::Print() const {
 
 // ========================================================================================================================
 
-cParamInfo::cParamInfo(const string &name, const string &descr, tFuncValid valid, tFuncHint hint, tFlags mFlags)
-	: mName(name), mDescr(descr), funcValid(valid), funcHint(hint), mFlags(mFlags)
+cParamInfo::cParamInfo(const string &name, tFuncDescr descr, tFuncValid valid, tFuncHint hint, tFlags mFlags)
+	: mName(name), funcDescr(descr), funcValid(valid), funcHint(hint), mFlags(mFlags)
 { }
 
-cParamInfo::cParamInfo(const string &name, const string &descr)
-	: mName(name), mDescr(descr)
+cParamInfo::cParamInfo(const string &name, tFuncDescr descr)
+	: mName(name), funcDescr(descr)
 { }
 
 cParamInfo cParamInfo::operator<<(const cParamInfo &B) const {
 	cParamInfo A = *this;
 	A.mName = B.mName;
-	A.mDescr = B.mDescr;
+	A.funcDescr = B.funcDescr;
 	if (B.funcValid) A.funcValid = B.funcValid;
 	if (B.funcHint) A.funcHint = B.funcHint;
 	return A;
