@@ -553,7 +553,13 @@ void cCmdParser::Init() {
 
 	AddFormat("payment accept", {pAccountMy, pPaymetInboxIndex}, {}, {},
 		LAMBDA { auto &D=*d; return U.PaymentAccept( D.V(1), stoi(D.V(2)), D.has("--dryrun") ); } );
-
+		
+	AddFormat("payment discard", {}, {pNymMy, pPaymetInboxIndex}, {},
+		LAMBDA { auto &D=*d; return U.PaymentDiscard( D.v(1), D.v(2), D.has("--all"), D.has("--dryrun") ); } );
+			
+	AddFormat("payment discard-all", {}, {}, {},
+		LAMBDA { auto &D=*d; return U.PaymentDiscardAll( D.has("--dryrun") ); } );
+		
 	//======== ot purse ========
 
 	AddFormat("purse create", {pServer, pAsset, pNym, pNym}, {}, { },

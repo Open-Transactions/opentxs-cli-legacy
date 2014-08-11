@@ -1958,6 +1958,73 @@ bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun)
 	return true;
 }
 
+bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, bool dryrun) {
+	_mark("Discard incoming payment");
+	
+	if (dryrun) return false;
+	if(!Init()) return false;
+	
+	if(nym.empty()) {
+		auto nymID = NymGetDefault();
+		string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(ServerGetDefault(), nymID); // Returns NULL, or an inbox.
+		int32_t count = OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
+		_dbg1("Count: " << count);
+		count --;
+		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));		
+		return true;
+	}
+	
+	if(index.empty()) {
+		auto nymID = NymGetId(nym);
+		string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(ServerGetDefault(), nymID); // Returns NULL, or an inbox.
+		int32_t count = OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
+		_dbg1("Count: " << count);
+		count --;
+		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));		
+		return true;
+	}
+	
+	_dbg1("All = " << all);
+	_dbg1("Dryrun = " << dryrun);
+	
+	ID nymID = NymGetId(nym);
+	if(!all) {
+		_dbg1("Not all");
+		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, index);
+		return true;
+	}
+
+	_dbg2("string paymentInbox = ");
+	string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(ServerGetDefault(), nymID); // Returns NULL, or an inbox.
+	_dbg2("int32_t count =");
+	if (paymentInbox.empty()) {
+		 OTAPI_Wrap::Output(0, "\n\n accept_from_paymentbox:  OT_API_LoadPaymentInbox Failed.\n\n");
+		 return false;
+	}
+	int32_t count = OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
+	_dbg2(" PaymentDiscard() count =  " << count);
+	for (int32_t i = 0; i < count; i++) {
+		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(0));
+	}	
+	
+	return true;
+}
+
+bool cUseOT::PaymentDiscardAll(bool dryrun) {
+	_fact("Discard incoming payment for all nyms");
+	
+	if (dryrun) return false;
+	if(!Init()) return false;
+	
+	vector<string> nymIDs = NymGetAllIDs();
+	for(auto nymID : nymIDs) {
+		_dbg1("Discard for nym: " << NymGetName(nymID));
+		PaymentDiscard(NymGetName(nymID), " ", true, false);
+	}
+	
+	return true;
+}
+
 bool cUseOT::PurseCreate(const string & serverName, const string & asset, const string & ownerName, const string & signerName, bool dryrun) {
 	_fact("purse create ");
 	if(dryrun) return true;
