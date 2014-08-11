@@ -421,6 +421,8 @@ class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 		// ot msg sendfrom alice bob hel<TAB> --prio 4   ( use , data["alice", "bob", "hel"  ], 2 )
 		typedef function< vector<string> ( nUse::cUseOT &, cCmdData &, size_t ) > tFuncHint;
 
+		typedef function< string () > tFuncDescr;
+
 		enum eFlags {
 				takesValue = 1 << 0,// if used as option, then: YES it take a value, or NO is it an boolean option like --dry-run
 				isBoring = 2 << 0, // is the option boring option like --dry-run
@@ -438,23 +440,24 @@ class cParamInfo {  MAKE_CLASS_NAME("cParamInfo");
 
 	protected:
 		string mName; // short name
-		string mDescr; // medium description
+//		string mDescr; // medium description
 
+		tFuncDescr funcDescr;
 		tFuncValid funcValid;
 		tFuncHint funcHint;
 
 		tFlags mFlags;
 	public:
 		cParamInfo()=default;
-		cParamInfo(const string &name, const string &descr, tFuncValid valid, tFuncHint hint, tFlags mFlags = tFlags());
-		cParamInfo(const string &name, const string &descr); // to be used for renaming
+		cParamInfo(const string &name, tFuncDescr descr, tFuncValid valid, tFuncHint hint, tFlags mFlags = tFlags());
+		cParamInfo(const string &name, tFuncDescr descr); // to be used for renaming
 
 		bool IsValid() const;
 
 		operator string() const noexcept { return mName; }
 		std::string getName() const noexcept { return mName; }
-		std::string getName2() const noexcept { return mName+"("+mDescr+")"; }
-		std::string getDescr() const noexcept { return mDescr; }
+		std::string getName2() const noexcept { return mName+"("+funcDescr()+")"; }
+		std::string getDescr() const noexcept { return funcDescr(); }
 		bool getTakesValue() const noexcept { return mFlags.n.takesValue; }
 		tFlags getFlags() const noexcept { return mFlags; }
 

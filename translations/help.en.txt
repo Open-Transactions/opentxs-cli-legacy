@@ -1,5 +1,50 @@
-nym nym existing on a server
-nym-my one of my own nyms
-nym-to nym of recipient that exists on a server
-nym-from one of your nyms, as the sender
-nym-new-name alias name that will be created
+:nym
+Nym existing on a server
+:nym-my
+One of my own nyms
+:nym-to
+Nym of recipient that exists on a server
+:nym-from
+One of your nyms, as the sender
+:nym-new-name
+Alias name that will be created
+:account
+Account existing on a server
+:account-my
+One of my accounts
+:account-to
+Account that exists on a server
+:account-from
+one of your accounts, as the outgoing account
+:account-new
+A new account to be created
+:asset
+Asset that exists on a server
+:server
+Identifier of existing server
+:int
+Integer number
+:mount
+Amount of asset
+:subject
+Message subject
+:yes-no
+True or False
+:text
+Message text
+:cmdword1
+A first word of an OT command name
+:cmdword2
+A second word of an OT command name
+:msg-index-inbox
+Index of message in our inbox
+:msg-index-outbox
+Index of message in our outbox
+:inbox-index
+Index of incoming transaction
+:payment-inbox-index
+Index of incoming payment
+:file
+Input filename
+:lang
+User interface language

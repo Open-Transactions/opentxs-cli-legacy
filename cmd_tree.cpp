@@ -19,6 +19,7 @@ namespace nNewcli {
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 // <=== namespaces
 
 using namespace nUse;
+using namespace nText;
 
 void cCmdParser::_AddFormat( const cCmdName &name, shared_ptr<cCmdFormat> format ) {
 	if (!format->IsValid()) { _erro("Can not add invalid format, named " << (string)(name) ) ; return ; } // <--- RET
@@ -49,13 +50,12 @@ void cCmdParser::Init() {
 
 // TODO hinting for ID?
 
-	nText::gTranslations->LoadLang("en", true);
-	nText::gTranslations->LoadLang("pl");
+	#define Tr(x,y) gTranslations->GetText(x,y);
 
-	_mark( nText::gTranslations->GetText(nText::eDictType::help, "nym") );
-	_mark( nText::gTranslations->GetText(nText::eDictType::help, "nym-my") );
+	gTranslations->LoadLang("en", true); // Load default language
+	gTranslations->LoadLang("pl"); // Load language
 
-	cParamInfo pNym( "nym", "nym existing on a server",
+	cParamInfo pNym( "nym", [] () -> string { return Tr(eDictType::help, "nym") } ,
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Nym validation");
 			return use.CheckIfExists(nUtils::eSubjectType::User, data.Var(curr_word_ix + 1));
@@ -66,7 +66,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pNymMy( "nym-my", "one of my own nyms",
+	cParamInfo pNymMy( "nym-my", [] () -> string { return Tr(eDictType::help, "nym-my") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Nym validation");
 				return use.CheckIfExists(nUtils::eSubjectType::User, data.Var(curr_word_ix + 1));
@@ -77,10 +77,10 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pNymTo = pNym << cParamInfo("nym-to","nym of recipient that exists on a server"); // TODO suggest not the same nym as was used already before
-	cParamInfo pNymFrom = pNymMy << cParamInfo("nym-from", "one of your nyms, as the sender");
+	cParamInfo pNymTo = pNym << cParamInfo("nym-to",[] () -> string { return Tr(eDictType::help, "nym-to") }); // TODO suggest not the same nym as was used already before
+	cParamInfo pNymFrom = pNymMy << cParamInfo("nym-from", [] () -> string { return Tr(eDictType::help, "nym-from") });
 
-	cParamInfo pNymNewName( "nym-new-name", "alias name that will be created",
+	cParamInfo pNymNewName( "nym-new-name", [] () -> string { return Tr(eDictType::help, "nym-new-name") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Nym name validation");
 				return true; // Takes all input TODO check if Nym with tis name exists
@@ -92,7 +92,7 @@ void cCmdParser::Init() {
 	);
 	// ot send cash
 
-	cParamInfo pAccount( "account", "account existing on a server",
+	cParamInfo pAccount( "account", [] () -> string { return Tr(eDictType::help, "account") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Account validation");
 				return use.CheckIfExists(nUtils::eSubjectType::Account, data.Var(curr_word_ix + 1));
@@ -103,7 +103,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pAccountMy( "account", "on of my accounts",
+	cParamInfo pAccountMy( "account-my", [] () -> string { return Tr(eDictType::help, "account-my") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Account validation");
 				return use.CheckIfExists(nUtils::eSubjectType::Account, data.Var(curr_word_ix + 1));
@@ -113,10 +113,10 @@ void cCmdParser::Init() {
 			return use.AccountGetAllNames();
 		}
 	);
-	cParamInfo pAccountTo = pAccount << cParamInfo("account-to", "account that exists on a server"); // TODO suggest not the same account as was used already before
-	cParamInfo pAccountFrom = pAccountMy << cParamInfo("account-from", "one of your accounts, as the outgoing account");
+	cParamInfo pAccountTo = pAccount << cParamInfo("account-to", [] () -> string { return Tr(eDictType::help, "account-to") }); // TODO suggest not the same account as was used already before
+	cParamInfo pAccountFrom = pAccountMy << cParamInfo("account-from", [] () -> string { return Tr(eDictType::help, "account-from") });
 
-	cParamInfo pAccountNewName( "account-new", "a new account to be created",
+	cParamInfo pAccountNewName( "account-new", [] () -> string { return Tr(eDictType::help, "account-new") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Account name validation");
 				return true; // Takes all input TODO check if Account with this name exists
@@ -128,7 +128,7 @@ void cCmdParser::Init() {
 	);
 
 
-	cParamInfo pAsset( "asset", "asset that exists on a server",
+	cParamInfo pAsset( "asset", [] () -> string { return Tr(eDictType::help, "asset") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Asset validation");
 				return use.CheckIfExists(nUtils::eSubjectType::Asset, data.Var(curr_word_ix + 1));
@@ -139,7 +139,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pServer( "server", "identifier of existing server",
+	cParamInfo pServer( "server", [] () -> string { return Tr(eDictType::help, "server") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			_dbg3("Server validation");
 				return use.CheckIfExists(nUtils::eSubjectType::Server, data.Var(curr_word_ix + 1));
@@ -150,7 +150,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pOnceInt( "int", "integer number",
+	cParamInfo pOnceInt( "int", [] () -> string { return Tr(eDictType::help, "int") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			// TODO check if is any integer
 			// TODO check if not present in data
@@ -161,7 +161,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pAmount( "amount", "Amount of asset",
+	cParamInfo pAmount( "amount", [] () -> string { return Tr(eDictType::help, "amount") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			// TODO check if is any integer
 			// TODO check if can send that amount
@@ -172,7 +172,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pSubject( "subject", "the subject",
+	cParamInfo pSubject( "subject", [] () -> string { return Tr(eDictType::help, "subject") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
@@ -181,7 +181,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pBool( "yes-no", "true-false",
+	cParamInfo pBool( "yes-no", [] () -> string { return Tr(eDictType::help, "yes-no") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true; // option's value should be null
 		} ,
@@ -191,12 +191,12 @@ void cCmdParser::Init() {
 		, 0
 	);
 
-	cParamInfo pBoolBoring( "yes-no", "true-false",
+	cParamInfo pBoolBoring( "yes-no", [] () -> string { return Tr(eDictType::help, "yes-no") },
 		pBool.funcValid , pBool.funcHint
 		, cParamInfo::eFlags::isBoring
 	);
 
-	cParamInfo pText( "text", "text",
+	cParamInfo pText( "text", [] () -> string { return Tr(eDictType::help, "text") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
@@ -205,7 +205,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pCmdName1("cmdword1", "A first word of an OT command name",
+	cParamInfo pCmdName1("cmdword1", [] () -> string { return Tr(eDictType::help, "cmdword1") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
@@ -215,7 +215,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pCmdName2("cmdword2", "A second word of an OT command name",
+	cParamInfo pCmdName2("cmdword2", [] () -> string { return Tr(eDictType::help, "cmdword2") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			return true;
 		} ,
@@ -232,7 +232,7 @@ void cCmdParser::Init() {
 	//           arg=1 arg=2           arg=3           arg=4
 	// TODO
 
-	cParamInfo pMsgInIndex( "msg-index-inbox", "index of message in our inbox",
+	cParamInfo pMsgInIndex( "msg-index-inbox", [] () -> string { return Tr(eDictType::help, "msg-index-inbox") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
 			if ( ( data.Var(nr) == "-1" && use.MsgInCheckIndex(data.Var(nr-1), 0) ) || use.MsgInCheckIndex(data.Var(nr-1), std::stoi( data.Var(nr)) ) ) {//TODO check if integer
@@ -245,7 +245,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pMsgOutIndex( "msg-index-outbox", "index of message in our outbox",
+	cParamInfo pMsgOutIndex( "msg-index-outbox", [] () -> string { return Tr(eDictType::help, "msg-index-outbox") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
 			cout << "nym:"  << data.Var(nr-1) << endl;
@@ -260,7 +260,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pInboxIndex( "inbox-index", "index of incoming transaction",
+	cParamInfo pInboxIndex( "inbox-index", [] () -> string { return Tr(eDictType::help, "inbox-index") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
 			return true; //TODO
@@ -270,7 +270,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pPaymetInboxIndex( "payment-inbox-index", "index of incoming payment",
+	cParamInfo pPaymetInboxIndex( "payment-inbox-index", [] () -> string { return Tr(eDictType::help, "payment-inbox-index") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
 			return true; //TODO
@@ -280,7 +280,7 @@ void cCmdParser::Init() {
 		}
 	);
 
-	cParamInfo pReadFile( "file", "input file",
+	cParamInfo pReadFile( "file", [] () -> string { return Tr(eDictType::help, "file") },
 		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
 			const int nr = curr_word_ix+1;
 			return true; //TODO
@@ -288,6 +288,17 @@ void cCmdParser::Init() {
 		[this] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			mEnableFilenameCompletion = true; // Enable filename autocompletion
 			return vector<string> {};
+		}
+	);
+
+	cParamInfo pLang( "lang", [] () -> string { return Tr(eDictType::help, "lang") },
+		[] (cUseOT & use, cCmdData & data, size_t curr_word_ix ) -> bool {
+			const int nr = curr_word_ix+1;
+			return true; //TODO
+		} ,
+		[&] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
+			_mark("Hinting function");
+			return gTranslations->GetLanguages(true);
 		}
 	);
 
@@ -332,6 +343,12 @@ void cCmdParser::Init() {
 			string cmd = D.V(1);
 			if (D.v(2).size()>0) cmd += " " + D.V(2);
 			this_lock->PrintUsageCommand( cmd );
+			return true;
+		} );
+
+	AddFormat("lang", {pLang}, {}, {},
+		[&] (tData d, tUse U) -> tExit { auto &D=*d;
+			gTranslations->LoadLang(D.V(1));
 			return true;
 		} );
 

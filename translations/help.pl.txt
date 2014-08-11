@@ -1,5 +1,28 @@
-nym Nym istniejący na serwerze
-nym-my
-nym-to
-nym-from
-nym-new-name
+:nym
+Nym zarejestrowany na serwerze
+:nym-my
+Nym istniejący w lokalnym portfelu
+:nym-to
+Nym odbiorcy zarejestrowany na serwerze
+:nym-from
+Nym nadawcy, istniejący w lokalnym portfelu
+:nym-new-name
+:account
+:account-my
+:account-to
+:account-new
+:asset
+:server
+:int
+:amount
+:subject
+:yes-no
+:text
+:cmdword1
+:cmdword2
+:msg-index-inbox
+:msg-index-outbox
+:inbox-index
+:payment-inbox-index
+:file
+:lang
