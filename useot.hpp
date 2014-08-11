@@ -190,6 +190,8 @@ namespace nUse {
 
 		EXEC bool PaymentShow(const string & nym, const string & server, bool dryrun); ///< show payments inbox
 		EXEC bool PaymentAccept(const string & account, const int64_t index, bool dryrun); ///< accept specified payment from payment inbox
+		EXEC bool PaymentDiscard(const string & nym, const string & index, bool all, bool dryrun);
+		EXEC bool PaymentDiscardAll(bool dryrun);
 
 		//================= purse ==================
 

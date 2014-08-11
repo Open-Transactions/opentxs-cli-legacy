@@ -250,11 +250,11 @@ ot nym-cred show # show all credential to trust?
 *ot payment accept <account> # ERROR: Missing required variable
 *ot payment accept <account> <payment-index> # Deposit <payment-index> payment from payment inbox to <account>
 
-ot payment discard # Discard last incoming payment for default nym
-ot payment discard [nym-my] # Discard last incoming payment for nym-my
-ot payment discard [nym-my] [payment-index] # Discard incoming payment for nym-my with payment-index
-ot payment discard [nym-my] # Discard all incoming payment for nym-my
-ot payment discard-all # Discard all incoming payment for all nyms
+*ot payment discard # Discard last incoming payment for default nym
+*ot payment discard [nym-my] # Discard last incoming payment for nym-my
+*ot payment discard [nym-my] [payment-index] # Discard incoming payment for nym-my with payment-index
+*ot payment discard [nym-my] --all # Discard all incoming payment for nym-my
+*ot payment discard-all # Discard all incoming payment for all nyms
 
 ------------------------------
 
