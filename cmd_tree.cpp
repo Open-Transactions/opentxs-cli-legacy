@@ -296,8 +296,7 @@ void cCmdParser::Init() {
 			const int nr = curr_word_ix+1;
 			return true; //TODO
 		} ,
-		[&] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
-			_mark("Hinting function");
+		[] ( cUseOT & use, cCmdData & data, size_t curr_word_ix  ) -> vector<string> {
 			return gTranslations->GetLanguages(true);
 		}
 	);
@@ -346,8 +345,8 @@ void cCmdParser::Init() {
 			return true;
 		} );
 
-	AddFormat("lang", {pLang}, {}, {},
-		[&] (tData d, tUse U) -> tExit { auto &D=*d;
+	AddFormat("lang set", { pLang }, {}, {},
+		[] (tData d, tUse U) -> tExit { auto &D=*d;
 			gTranslations->LoadLang(D.V(1));
 			return true;
 		} );
