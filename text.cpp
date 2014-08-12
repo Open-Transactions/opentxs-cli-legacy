@@ -44,14 +44,13 @@ textType cTranslations::GetText(eDictType type, const string & key) const {
 }
 
 vector<string> cTranslations::GetLanguages(bool forceReload) {
-	_mark("mLanguages.empty() - " << std::to_string(mLanguages.empty()) << " forceReload - " << std::to_string(forceReload) );
+	_dbg3("mLanguages.empty() - " << std::to_string(mLanguages.empty()) << " forceReload - " << std::to_string(forceReload) );
 	if (mLanguages.empty() || forceReload) { // load list of supported languages
+		mLanguages.clear();
 		std::ifstream list("translations/supported-languages.txt");
 		string line;
 		if (list.is_open()) {
-			_mark("File was opened" );
 			while ( std::getline(list, line) ) {
-				DisplayStringEndl(cout, line);
 				mLanguages.push_back(line);
 			}
 		}
