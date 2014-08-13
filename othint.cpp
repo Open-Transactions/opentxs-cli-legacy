@@ -300,7 +300,9 @@ bool cInteractiveShell::Execute(const string cmd) {
 		write_history("otcli-history.txt"); // Save new history line to file
 		try {
 			_dbg1("Processing command");
-			auto processing = gReadlineHandleParser->StartProcessing(cmd, gReadlineHandlerUseOT); // <---
+			int offset = 0;
+			string cmd_ = nUtils::SpecialFromEscape(cmd,offset);
+			auto processing = gReadlineHandleParser->StartProcessing(cmd_, gReadlineHandlerUseOT); // <---
 			_info("Executing command");
 			processing.UseExecute(); // <--- ***
 			all_ok=true;
@@ -635,6 +637,7 @@ char ** completion(const char* text, int start, int end __attribute__((__unused_
 	matches = (char **)NULL;
 	matches = rl_completion_matches (text, CompletionReadlineWrapper);
 	rl_attempted_completion_function = completion;
+	rl_completer_quote_characters = "\"";
 	if (gReadlineHandleParser->mEnableFilenameCompletion) {
 		rl_attempted_completion_over = 0;
 		gReadlineHandleParser->mEnableFilenameCompletion = false;

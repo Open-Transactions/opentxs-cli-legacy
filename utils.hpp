@@ -192,6 +192,9 @@ void DisplayStringEndl(std::ostream & out, const std::string text);
 
 bool CheckIfBegins(const std::string & beggining, const std::string & all);
 bool CheckIfEnds (std::string const & ending, std::string const & all);
+std::string SpecialFromEscape(const std::string &s, int & pos);
+std::string EscapeFromSpecial(const std::string &s);
+std::string SpaceFromSpecial(const std::string &s);
 std::string SpaceFromEscape(const std::string &s);
 std::string EscapeFromSpace(const std::string &s);
 vector<string> WordsThatMatch(const std::string & sofar, const vector<string> & possib);
