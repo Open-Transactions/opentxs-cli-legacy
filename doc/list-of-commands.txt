@@ -41,7 +41,7 @@ describe the problem and send it to  someone who will fix it, or fix it yourself
 List of commands
 
 * - works
-/ - wip
+/ - work in progress
 % - broken
 ? - not sure if it will appear in main program
 
@@ -226,8 +226,10 @@ ot msg rm-out nymName> <index> # proposition for command removing msg from mail 
 
 ot nym edit <nym>	# allows to edit information about <nym>
 
+*ot nym register 	# ERROR: Missing required variable
 *ot nym register <nym>	# register nym defined by nym on default server
-*ot nym register <nym> [server]	# register <nym> on <server>
+*ot nym register <nym> [server]	# register <nym> on [server]
+
 *ot nym set-default <nym> # set default nym
 
 *ot nym import # import nyms from file or by user-paste
@@ -255,6 +257,8 @@ ot nym-cred show # show all credential to trust?
 *ot payment discard [nym-my] [payment-index] # Discard incoming payment for nym-my with payment-index
 *ot payment discard [nym-my] --all # Discard all incoming payment for nym-my
 *ot payment discard-all # Discard all incoming payment for all nyms
+
+ot payment-out cancel
 
 ------------------------------
 

@@ -274,6 +274,48 @@ void DisplayStringEndl(std::ostream & out, const std::string text) {
 	out << std::endl;
 }
 
+std::string SpecialFromEscape(const std::string &s, int & pos) {
+	std::ostringstream newStr;
+	bool lock = false;
+	for(int i = 0; i < s.length();i++) {
+		if(s[i] == '\\' && s[i+1] == 32) {
+			newStr<<"#";
+			lock = true;
+			pos--;
+		}
+		else if (lock == true  && s[i] == 32 ) {
+			newStr<<"";
+		}
+		else {
+			newStr<<s[i];
+			lock = false;
+		}
+	}
+	return newStr.str();
+}
+
+std::string EscapeFromSpecial(const std::string &s) {
+	std::ostringstream  newStr;
+	for(int i = 0; i < s.length();i++) {
+		if(s[i] == '#')
+			newStr << "\\" << " ";
+		else
+			newStr << s[i];
+	}
+	return newStr.str();
+}
+
+std::string SpaceFromSpecial(const std::string &s) {
+	std::ostringstream  newStr;
+		for(int i = 0; i < s.length();i++) {
+			if(s[i] == '#')
+				newStr<<" ";
+			else
+				newStr<<s[i];
+			}
+	return newStr.str();
+}
+
 std::string SpaceFromEscape(const std::string &s) {
 	std::ostringstream  newStr;
 		for(int i = 0; i < s.length();i++) {
@@ -319,18 +361,21 @@ bool CheckIfBegins(const std::string & beggining, const std::string & all) {
 }
 
 bool CheckIfEnds (std::string const & ending, std::string const & all){
-    if (all.length() >= ending.length()) {
-        return (0 == all.compare (all.length() - ending.length(), ending.length(), ending));
-    } else {
-        return false;
-    }
+	if (all.length() >= ending.length()) {
+		return (0 == all.compare (all.length() - ending.length(), ending.length(), ending));
+	}
+	else {
+		return false;
+	}
 }
-
 
 vector<string> WordsThatMatch(const std::string & sofar, const vector<string> & possib) {
 	vector<string> ret;
+	_mark("Escape From Special: " << sofar);
+	string sofar_ = SpaceFromSpecial(sofar);
+	_mark("After Escape From Special: " << sofar_);
 	for ( auto rec : possib) { // check of possibilities
-		if (CheckIfBegins(sofar,rec)) {
+		if (CheckIfBegins(sofar_,rec)) {
 			rec = EscapeFromSpace(rec);
 			ret.push_back(rec); // this record matches
 		}

@@ -992,7 +992,6 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 	string indices = "";
 	bool passwordProtected = false; // TODO check if password protected
 	string exportedCashPurse = CashExport(nymSenderID, nymRecipientID, account, indices, passwordProtected, retainedCopy);
-	_mark(exportedCashPurse);
 	if (!exportedCashPurse.empty()) {
 		string response = mMadeEasy.send_user_cash(accountServerID, nymSenderID, nymRecipientID, exportedCashPurse, retainedCopy);
 
@@ -1960,33 +1959,33 @@ bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun)
 
 bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, bool dryrun) {
 	_mark("Discard incoming payment");
-	
+
 	if (dryrun) return false;
 	if(!Init()) return false;
-	
+
 	if(nym.empty()) {
 		auto nymID = NymGetDefault();
 		string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(ServerGetDefault(), nymID); // Returns NULL, or an inbox.
 		int32_t count = OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
 		_dbg1("Count: " << count);
 		count --;
-		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));		
+		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));
 		return true;
 	}
-	
+
 	if(index.empty()) {
 		auto nymID = NymGetId(nym);
 		string paymentInbox = OTAPI_Wrap::LoadPaymentInbox(ServerGetDefault(), nymID); // Returns NULL, or an inbox.
 		int32_t count = OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
 		_dbg1("Count: " << count);
 		count --;
-		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));		
+		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));
 		return true;
 	}
-	
+
 	_dbg1("All = " << all);
 	_dbg1("Dryrun = " << dryrun);
-	
+
 	ID nymID = NymGetId(nym);
 	if(!all) {
 		_dbg1("Not all");
@@ -2005,23 +2004,23 @@ bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, 
 	_dbg2(" PaymentDiscard() count =  " << count);
 	for (int32_t i = 0; i < count; i++) {
 		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(0));
-	}	
-	
+	}
+
 	return true;
 }
 
 bool cUseOT::PaymentDiscardAll(bool dryrun) {
 	_fact("Discard incoming payment for all nyms");
-	
+
 	if (dryrun) return false;
 	if(!Init()) return false;
-	
+
 	vector<string> nymIDs = NymGetAllIDs();
 	for(auto nymID : nymIDs) {
 		_dbg1("Discard for nym: " << NymGetName(nymID));
 		PaymentDiscard(NymGetName(nymID), " ", true, false);
 	}
-	
+
 	return true;
 }
 
@@ -2100,6 +2099,12 @@ bool cUseOT::ServerCreate(const string & nym, bool dryrun) {
 	string xmlContents;
 	nUtils::cEnvUtils envUtils;
 	xmlContents = envUtils.Compose();
+
+	if (xmlContents.empty()) {
+		_erro("Contract file is empty - aborting");
+		DisplayStringEndl(cout, "Contract file is empty - aborting");
+		return false;
+	}
 
 	ID nymID = NymGetId(nym);
 	ID serverID = OTAPI_Wrap::CreateServerContract(nymID, xmlContents);

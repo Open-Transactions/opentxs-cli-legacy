@@ -525,6 +525,8 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	_mark("Will complete command line: ["<<mCommandLineString<<"] at char_pos="<<char_pos);  // mCommandLine is not parsed yet
 	const vector<string> allowed_pre_words = {"ot","help"};
 
+	mCommandLineString = nUtils::SpecialFromEscape(mCommandLineString, char_pos); // change all escaped space characters to special character for easier parsing. Need to pass char_pos, because of change in string length
+
 	if (mStateParse == tState::never) {
 		bool ok=0;
 		try {
@@ -593,7 +595,9 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 	try {
 		int word_ix = mData->CharIx2WordIx( char_pos  );
 		bool fake_empty=false; // are we adding fake word "" at end for purpose of completion at end of string?
+		_mark("mCommandLineString: " << mCommandLineString << "char_pos: " << char_pos);
 		if (mCommandLineString.at(char_pos-1) == ' ') {
+			_mark("tryblock2");
 			word_ix++; // jump to next word XXX
 			if (word_ix >= mCommandLine.size()) { fake_empty=true;
 				int add_empty_at_word = mData->CharIx2WordIx(char_pos-1); // choose the word-index after which we should insert the "" new word (if we're completing in middle of string)
@@ -609,7 +613,9 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		}
 		if (allwords.size()==1) {
 			_mark("size==1");
+			_mark("tryblock3");
 			if (!fake_empty) return WordsThatMatch(allwords.at(0), allowed_pre_words);
+			_mark("tryblock4");
 		}
 
 		if (allwords.at(0)=="help") return {}; // there is nothing to complete after "help" alias
@@ -713,7 +719,7 @@ vector<string> cCmdProcessing::UseComplete(int char_pos) {
 		}
 		else if (entity.mKind == cParseEntity::tKind::variable) { _info("Completing variable as arg_nr="<<arg_nr);
 			ASRT( mFormat );
-			if (!fake_empty) ASRT( mData->V(arg_nr) == word_sofar ); // the current work == current arg. (unless this is new word)
+			//if (!fake_empty) ASRT( mData->V(arg_nr) == word_sofar ); // the current work == current arg. (unless this is new word) VYRLY - dont wan't it because there can be more words than args
 			cParamInfo param_info = mFormat->GetParamInfo( arg_nr );  // eg. pNymFrom  <--- info about kind (completion function etc) of argument that we now are tab-completing
 			auto completions = param_info.GetFuncHint()  ( *mUse , *mData , arg_nr );
 			_info("Var completions: " << DbgVector(completions));
@@ -1014,7 +1020,7 @@ string cCmdData::VarDef(int nr, const string &def, bool doThrow) const throw(cEr
 
 string cCmdData::Var(int nr) const throw(cErrArgNotFound) { // nr: 1,2,3,4 including both arg and argExt
 	static string nothing;
-	return VarAccess(nr, nothing, true);
+	return nUtils::SpaceFromSpecial( VarAccess(nr, nothing, true) );
 }
 
 vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
