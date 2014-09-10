@@ -8,7 +8,10 @@
 #include "tests.hpp" // TODO Not needed
 #include "daemon_tools.hpp"
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>

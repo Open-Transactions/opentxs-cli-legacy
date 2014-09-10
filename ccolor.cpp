@@ -42,8 +42,14 @@ namespace zkr
 				static const int size = 20;
         static char command[size];
 
+#ifndef _WIN32
         /* Command is the control command to the terminal */
         snprintf(command, size, "%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
+#else
+        // TODO: Colours on windows!
+        /* Command is the control command to the terminal */
+        _snprintf(command, size, "%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
+#endif
         return command;
 	}
 

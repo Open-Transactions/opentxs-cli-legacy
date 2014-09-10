@@ -6,18 +6,9 @@
 #include "lib_common2.hpp"
 
 // OT - like in Moneychanger
-#ifdef _WIN32
-	// TODO CmakeLists
-	// TODO: return to otapi/OTAPI.hpp (when cmake is corrected to find the right path)
-	#include <OTAPI.hpp>
-	#include <OTAPI_Exec.hpp>
-	#include <OT_ME.hpp>
-#else
-	// TODO: return to opentxs/OTAPI.hpp (when cmake is corrected to find the right path)
-	#include <OTAPI.hpp>
-	#include <OTAPI_Exec.hpp>
-	#include <OT_ME.hpp>
-#endif
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 
 #define INJECT_OT_COMMON_USING_NAMESPACE_COMMON_3 \
 	INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2
