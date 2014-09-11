@@ -1,9 +1,9 @@
 /* See other files here for the LICENCE that applies here. */
 
-#include "lib_common1.hpp"
-#include "runoptions.hpp"
+#include "../base/lib_common1.hpp"
+#include "../base/runoptions.hpp"
 
-#include "otcli.hpp"
+#include "../base/otcli.hpp"
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1
 

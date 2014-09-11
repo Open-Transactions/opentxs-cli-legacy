@@ -3,10 +3,10 @@
 
 #include "tests.hpp"
 
-#include "lib_common2.hpp"
+#include <base/lib_common2.hpp>
 
-#include "othint.hpp"
-#include "otcli.hpp"
+#include <base/othint.hpp>
+#include <base/otcli.hpp>
 
 namespace nOT {
 namespace nTests {
@@ -34,8 +34,6 @@ struct cTestCaseCfg {
 };
 
 std::ostream & operator<<(std::ostream &ostr, const cTestCaseCfg &cfg) { return cfg.print(ostr); }
-
-bool testcase_run_all_tests();
 
 bool testcase_complete_1(const std::string &sofar); // TODO ... testcase or really used???
 bool testcase_complete_1_wrapper(); // TODO ... testcase or really used???

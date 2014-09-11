@@ -6,9 +6,9 @@ Template for new files, replace word "template" and later delete this line here.
 #ifndef INCLUDE_OT_NEWCLI_tests
 #define INCLUDE_OT_NEWCLI_tests
 
-#include "lib_common1.hpp"
+#include <base/lib_common1.hpp>
 
-#include "othint.hpp"
+#include <base/othint.hpp>
 
 namespace nOT {
 namespace nTests {

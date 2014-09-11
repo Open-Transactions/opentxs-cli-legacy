@@ -29,7 +29,15 @@ enum class eDictType { help, helpdev }; ///< Type of language for different modu
 
 using textType = string;
 
-class cDict;
+class cDict {
+	private:
+		map<string, textType> mData; ///< Basic dictionary data
+		map<string, textType> ParseFile(const string & fileName);
+	public:
+		cDict(const string & fileName); ///< Load dictionary from file
+		bool LoadDict(const string & fileName); ///< Load/Reload dictionary from file
+		textType GetValue(const string & key) const; ///< Get text based on the sting key
+    };
 
 class cTranslations {
 	// Singleton
@@ -55,16 +63,6 @@ class cTranslations {
 };
 
 extern cTranslations * gTranslations;
-
-class cDict {
-	private:
-		map<string, textType> mData; ///< Basic dictionary data
-		map<string, textType> ParseFile(const string & fileName);
-	public:
-		cDict(const string & fileName); ///< Load dictionary from file
-		bool LoadDict(const string & fileName); ///< Load/Reload dictionary from file
-		textType GetValue(const string & key) const; ///< Get text based on the sting key
-};
 
 } // namespace nText
 } // namespace nOT

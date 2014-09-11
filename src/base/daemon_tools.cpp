@@ -6,7 +6,10 @@
 #include "lib_common2.hpp"
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 
 namespace nOT {

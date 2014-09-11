@@ -36,8 +36,8 @@ cUseCache::cUseCache()
 {}
 
 cUseOT::cUseOT(const string &mDbgName)
-:
-	mDbgName(mDbgName)
+: mDbgName(mDbgName)
+, mMadeEasy(new opentxs::OT_ME())
 , mDataFolder( opentxs::OTPaths::AppDataFolder().Get() )
 , mDefaultIDsFile( mDataFolder + "defaults.opt" )
 {
@@ -68,6 +68,7 @@ void cUseOT::CloseApi() {
 }
 
 cUseOT::~cUseOT() {
+    delete mMadeEasy;
 }
 
 void cUseOT::LoadDefaults() {
@@ -118,13 +119,15 @@ bool cUseOT::DisplayAllDefaults(bool dryrun) {
 }
 
 bool cUseOT::DisplayHistory(bool dryrun) {
+#ifdef USE_EDITLINE
 	_fact("ot history");
 	if(dryrun) return true;
 
 	for (int i=1; i<history_length; i++) {
 		DisplayStringEndl( cout, history_get(i)->line );
 	}
-	return true;
+#endif
+    return true;
 }
 
 string cUseOT::SubjectGetDescr(const nUtils::eSubjectType type, const string & subject) {
@@ -216,7 +219,7 @@ vector<ID> cUseOT::AccountGetAllIds() {
 
 	_dbg3("Retrieving accounts ID's");
 	vector<string> accountsIDs;
-	for(int i = 0 ; i < OTAPI_Wrap::GetAccountCount ();i++) {
+	for(int i = 0 ; i < opentxs::OTAPI_Wrap::GetAccountCount ();i++) {
 		accountsIDs.push_back(opentxs::OTAPI_Wrap::GetAccountWallet_ID (i));
 	}
 	return accountsIDs;
@@ -293,13 +296,13 @@ bool cUseOT::AccountRefresh(const string & accountName, bool all, bool dryrun) {
 			ID accountID = opentxs::OTAPI_Wrap::GetAccountWallet_ID(accountIndex);
 			ID accountServerID = opentxs::OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 			ID accountNymID = opentxs::OTAPI_Wrap::GetAccountWallet_NymID(accountID);
-			if ( mMadeEasy.retrieve_account(accountServerID, accountNymID, accountID, true) ) { // forcing download
+			if ( mMadeEasy->retrieve_account(accountServerID, accountNymID, accountID, true) ) { // forcing download
 				_info("Account " + AccountGetName(accountID) + "(" + accountID +  ")" + " retrieval success from server " + ServerGetName(accountServerID) + "(" + accountServerID +  ")");
 				++accountsRetrieved;
 			}else
 				_erro("Account " + AccountGetName(accountID) + "(" + accountID +  ")" + " retrieval failure from server " + ServerGetName(accountServerID) + "(" + accountServerID +  ")");
 		}
-		string count = to_string(accountsRetrieved) + "/" + to_string(accountCount);
+        string count = ToStr(accountsRetrieved) + "/" + ToStr(accountCount);
 		if (accountsRetrieved == accountCount) {
 			_info("All accounts were successfully retrieved " << count);
 			return true;
@@ -315,7 +318,7 @@ bool cUseOT::AccountRefresh(const string & accountName, bool all, bool dryrun) {
 		ID accountID = AccountGetId(accountName);
 		ID accountServerID = opentxs::OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 		ID accountNymID = opentxs::OTAPI_Wrap::GetAccountWallet_NymID(accountID);
-		if ( mMadeEasy.retrieve_account(accountServerID, accountNymID, accountID, true) ) { // forcing download
+		if ( mMadeEasy->retrieve_account(accountServerID, accountNymID, accountID, true) ) { // forcing download
 			_info("Account " + accountName + "(" + accountID +  ")" + " retrieval success from server " + ServerGetName(accountServerID) + "(" + accountServerID +  ")");
 			return true;
 		}
@@ -354,10 +357,10 @@ bool cUseOT::AccountCreate(const string & nym, const string & asset, const strin
 	ID assetID = AssetGetId(asset);
 
 	string response;
-	response = mMadeEasy.create_asset_acct(mDefaultIDs.at(nUtils::eSubjectType::Server), nymID, assetID); //TODO server as argument
+	response = mMadeEasy->create_asset_acct(mDefaultIDs.at(nUtils::eSubjectType::Server), nymID, assetID); //TODO server as argument
 
 	// -1 error, 0 failure, 1 success.
-	if (1 != mMadeEasy.VerifyMessageSuccess(response)) {
+	if (1 != mMadeEasy->VerifyMessageSuccess(response)) {
 		_erro("Failed trying to create Account at Server.");
 		return false;
 	}
@@ -395,7 +398,7 @@ bool cUseOT::AccountDisplay(const string & account, bool dryrun) {
 	if(!Init()) return false;
 
 	ID accountID = AccountGetId(account);
-	string stat = mMadeEasy.stat_asset_account(accountID);
+	string stat = mMadeEasy->stat_asset_account(accountID);
 	if ( !stat.empty() ) {
 			nUtils::DisplayStringEndl(cout, stat);
 			return true;
@@ -425,7 +428,7 @@ bool cUseOT::AccountDisplayAll(bool dryrun) {
 		if(accountType=="issuer") tp.SetContentColor(zkr::cc::fore::lightred);
 		else if (accountType=="simple") tp.SetContentColor(zkr::cc::fore::lightgreen);
 
-		tp << std::to_string(i) << "(" + accountType + ")" << AccountGetName(accountID) + "(" + accountID + ")"  << AssetGetName(assetID) + "(" + assetID + ")" << std::to_string(balance);
+        tp << std::to_string(i) << "(" + accountType + ")" << AccountGetName(accountID) + "(" + accountID + ")" << AssetGetName(assetID) + "(" + assetID + ")" << std::to_string(balance);
 	}
 
 	tp.PrintFooter();
@@ -454,10 +457,10 @@ bool cUseOT::AccountTransfer(const string & accountFrom, const string & accountT
 	ID accountServerID = opentxs::OTAPI_Wrap::GetAccountWallet_ServerID(accountFromID);
 	ID accountNymID = opentxs::OTAPI_Wrap::GetAccountWallet_NymID(accountFromID);
 
-	string response = mMadeEasy.send_transfer(accountServerID, accountNymID, accountFromID, accountToID, amount, note);
+	string response = mMadeEasy->send_transfer(accountServerID, accountNymID, accountFromID, accountToID, amount, note);
 
 	// -1 error, 0 failure, 1 success.
-	if (1 != mMadeEasy.VerifyMessageSuccess(response)) {
+	if (1 != mMadeEasy->VerifyMessageSuccess(response)) {
 		_erro("Failed to send transfer from " << accountFrom << " to " << accountTo);
 		return false;
 	}
@@ -507,7 +510,7 @@ bool cUseOT::AccountInDisplay(const string & account, bool dryrun) {
 
 			//TODO Check if Transaction information needs to be verified!!!
 
-		  tp << to_string(index) << to_string(amount) << transactionType << to_string(transactionID) << to_string(refNum)
+            tp << ToStr(index) << ToStr(amount) << transactionType << ToStr(transactionID) << ToStr(refNum)
 				 << NymGetName(senderNymID) + "(" + senderNymID + ")" <<  AccountGetName( senderAcctID ) + "(" + senderAcctID + ")";
 		}
 		tp.PrintFooter();
@@ -548,13 +551,13 @@ bool cUseOT::AccountInAccept(const string & account, const int index, bool all, 
 		}
 
 		for (int32_t index = 0; index < transactionCount; ++index) { //FIXME work successfully only for first transaction
-			if ( mMadeEasy.accept_inbox_items( accountID, nItemType, to_string(index) ) ) {
+			if ( mMadeEasy->accept_inbox_items( accountID, nItemType, ToStr(index) ) ) {
 				_info("Successfully accepted inbox transaction number: " << index);
 				++transactionsAccepted;
 			} else
 				_erro("Failed to accept inbox transaction for number: " << index);
 		}
-		string count = to_string(transactionsAccepted) + "/" + to_string(transactionCount);
+		string count = ToStr(transactionsAccepted) + "/" + ToStr(transactionCount);
 		if (transactionsAccepted == transactionCount) {
 			_info("All transactions were successfully accepted " << count);
 			return true;
@@ -567,7 +570,7 @@ bool cUseOT::AccountInAccept(const string & account, const int index, bool all, 
 		}
 	}
 	else {
-		if ( mMadeEasy.accept_inbox_items( accountID, nItemType, to_string(index) ) ) {
+		if ( mMadeEasy->accept_inbox_items( accountID, nItemType, ToStr(index) ) ) {
 			_info("Successfully accepted inbox transaction number: " << index);
 			return true;
 		}
@@ -586,7 +589,7 @@ bool cUseOT::AccountOutCancel(const string & account, const int index, bool all,
 	ID accountNymID = opentxs::OTAPI_Wrap::GetAccountWallet_NymID(accountID);
 	int32_t nItemType = 0; // TODO pass it as an argument
 
-	if ( mMadeEasy.cancel_outgoing_payments( accountNymID, accountID, to_string(index) ) ) { //TODO cancel_outgoing_payments is not for account outbox
+	if ( mMadeEasy->cancel_outgoing_payments( accountNymID, accountID, ToStr(index) ) ) { //TODO cancel_outgoing_payments is not for account outbox
 		_info("Successfully cancelled outbox transaction: " << index);
 		return true;
 	}
@@ -633,7 +636,7 @@ bool cUseOT::AccountOutDisplay(const string & account, bool dryrun) {
 			string recipientAcctID = opentxs::OTAPI_Wrap::Transaction_GetRecipientAcctID(accountServerID, accountNymID, accountID, transaction);
 
 			//TODO Check if Transaction information needs to be verified!!!
-		 tp << to_string(index) << to_string(amount) << transactionType << to_string(transactionID) << to_string(refNum) << "BUG - working on it" << "BUG - working on it" ;
+		 tp << ToStr(index) << ToStr(amount) << transactionType << ToStr(transactionID) << ToStr(refNum) << "BUG - working on it" << "BUG - working on it" ;
 //			  << NymGetName(recipientNymID) + "(" + recipientNymID + ")" <<  AccountGetName( recipientAcctID ) + "(" + recipientAcctID + ")";
 		}
 		tp.PrintFooter();
@@ -721,10 +724,10 @@ bool cUseOT::AssetIssue(const string & serverID, const string & nymID, bool dryr
 	nUtils::cEnvUtils envUtils;
 	signedContract = envUtils.Compose();
 
-	string strResponse = mMadeEasy.issue_asset_type(serverID, nymID, signedContract);
+	string strResponse = mMadeEasy->issue_asset_type(serverID, nymID, signedContract);
 
 	// -1 error, 0 failure, 1 success.
-	if (1 != mMadeEasy.VerifyMessageSuccess(strResponse))
+	if (1 != mMadeEasy->VerifyMessageSuccess(strResponse))
 	{
 		_erro("Failed trying to issue asset at Server.");
 		return false;
@@ -801,9 +804,9 @@ string cUseOT::CashExport(const ID & nymSenderID, const ID & nymRecipientID, con
 	ID accountAssetID = opentxs::OTAPI_Wrap::GetAccountWallet_AssetTypeID(accountID);
 	ID accountServerID = opentxs::OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
 
-	string contract = mMadeEasy.load_or_retrieve_contract(accountServerID, nymSenderID, accountAssetID);
+	string contract = mMadeEasy->load_or_retrieve_contract(accountServerID, nymSenderID, accountAssetID);
 
-	string exportedCash = mMadeEasy.export_cash(accountServerID, nymSenderID, accountAssetID, nymRecipientID, indices, passwordProtected, retained_copy);
+	string exportedCash = mMadeEasy->export_cash(accountServerID, nymSenderID, accountAssetID, nymRecipientID, indices, passwordProtected, retained_copy);
 	_info("Cash was exported");
 	return exportedCash;
 }
@@ -940,7 +943,7 @@ bool cUseOT::CashDeposit(const string & accountID, const string & nymFromID, con
 	}
 
 	_dbg3("Processing cash deposit to account");
-	int32_t nResult = mMadeEasy.deposit_cash(serverID, accountNymID, accountID, purseValue); // TODO pass reciever nym if exists in purse
+	int32_t nResult = mMadeEasy->deposit_cash(serverID, accountNymID, accountID, purseValue); // TODO pass reciever nym if exists in purse
 	if (nResult < 1) {
 		DisplayStringEndl(cout, "Unable to deposit purse");
 		return false;
@@ -993,9 +996,9 @@ bool cUseOT::CashSend(const string & nymSender, const string & nymRecipient, con
 	bool passwordProtected = false; // TODO check if password protected
 	string exportedCashPurse = CashExport(nymSenderID, nymRecipientID, account, indices, passwordProtected, retainedCopy);
 	if (!exportedCashPurse.empty()) {
-		string response = mMadeEasy.send_user_cash(accountServerID, nymSenderID, nymRecipientID, exportedCashPurse, retainedCopy);
+		string response = mMadeEasy->send_user_cash(accountServerID, nymSenderID, nymRecipientID, exportedCashPurse, retainedCopy);
 
-		int32_t returnVal = mMadeEasy.VerifyMessageSuccess(response);
+		int32_t returnVal = mMadeEasy->VerifyMessageSuccess(response);
 
 		if (1 != returnVal) {
 			// It failed sending the cash to the recipient Nym.
@@ -1115,7 +1118,7 @@ bool cUseOT::CashShow(const string & account, bool dryrun) { // TODO make it wor
 			string status = (time > validTo) ? "expired" : "valid";
 
 			// Display token
-			tp << to_string(index) << to_string(denomination) << to_string(series) << to_string(validFrom) << to_string(validTo) << status;
+			tp << ToStr(index) << ToStr(denomination) << ToStr(series) << ToStr(validFrom) << ToStr(validTo) << status;
 
 		} // while
 		tp.PrintFooter();
@@ -1136,9 +1139,9 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	string assetContract = opentxs::OTAPI_Wrap::LoadAssetContract(accountAssetID);
 
 	if (assetContract.empty()) {
-		string strResponse = mMadeEasy.retrieve_contract(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+		string strResponse = mMadeEasy->retrieve_contract(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
 
-		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse)) {
+		if (1 != mMadeEasy->VerifyMessageSuccess(strResponse)) {
 			_erro( "Unable to retreive asset contract for nym " << accountNymID << " and server " << mDefaultIDs.at(nUtils::eSubjectType::Server) );
 			DisplayStringEndl(cout, "Unable to retreive asset contract for nym " + accountNymID + " and server " + mDefaultIDs.at(nUtils::eSubjectType::Server) );
 			return false;
@@ -1154,7 +1157,7 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	}
 
 	// Make sure the unexpired mint file is available.
-	string mint = mMadeEasy.load_or_retrieve_mint(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
+	string mint = mMadeEasy->load_or_retrieve_mint(mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountAssetID);
 
 	if (mint.empty()) {
 		_erro("Failure: Unable to load or retrieve necessary mint file for withdrawal.");
@@ -1162,10 +1165,10 @@ bool cUseOT::CashWithdraw(const string & account, int64_t amount, bool dryrun) {
 	}
 
 	// Send withdrawal request
-	string response = mMadeEasy.withdraw_cash ( mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountID, amount);//TODO pass server as an argument
+	string response = mMadeEasy->withdraw_cash ( mDefaultIDs.at(nUtils::eSubjectType::Server), accountNymID, accountID, amount);//TODO pass server as an argument
 
 	// Check server response
-	if (1 != mMadeEasy.VerifyMessageSuccess(response) ) {
+	if (1 != mMadeEasy->VerifyMessageSuccess(response) ) {
 		_erro("Failed trying to withdraw cash from account: " << AccountGetName(accountID) );
 		return false;
 	}
@@ -1331,10 +1334,10 @@ bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, cons
 	for (auto varID : recipientID) {
 		_dbg1("Sending message from " + senderID + " to " + varID + "using server " + nUtils::SubjectType2String(nUtils::eSubjectType::Server) );
 
-		string strResponse = mMadeEasy.send_user_msg ( mDefaultIDs.at(nUtils::eSubjectType::Server), senderID, varID, outMsg);
+		string strResponse = mMadeEasy->send_user_msg ( mDefaultIDs.at(nUtils::eSubjectType::Server), senderID, varID, outMsg);
 
 		// -1 error, 0 failure, 1 success.
-		if (1 != mMadeEasy.VerifyMessageSuccess(strResponse)) {
+		if (1 != mMadeEasy->VerifyMessageSuccess(strResponse)) {
 			_erro("Failed trying to send the message");
 			return false;
 		}
@@ -1391,9 +1394,9 @@ bool cUseOT::NymCheck(const string & nymName, bool dryrun) { // wip
 
 	ID nymID = NymGetId(nymName);
 
-	string strResponse = mMadeEasy.check_user( mDefaultIDs.at(nUtils::eSubjectType::Server), mDefaultIDs.at(nUtils::eSubjectType::User), nymID );
+	string strResponse = mMadeEasy->check_user( mDefaultIDs.at(nUtils::eSubjectType::Server), mDefaultIDs.at(nUtils::eSubjectType::User), nymID );
 	// -1 error, 0 failure, 1 success.
-	if (1 != mMadeEasy.VerifyMessageSuccess(strResponse)) {
+	if (1 != mMadeEasy->VerifyMessageSuccess(strResponse)) {
 		_erro("Failed trying to download public key for nym: " << nymName << "(" << nymID << ")" );
 		return false;
 	}
@@ -1414,7 +1417,7 @@ bool cUseOT::NymCreate(const string & nymName, bool registerOnServer, bool dryru
 	int32_t nKeybits = 1024;
 	string NYM_ID_SOURCE = ""; //TODO: check
 	string ALT_LOCATION = "";
-	string nymID = mMadeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+	string nymID = mMadeEasy->create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
 
 	if (nymID.empty()) {
 		_erro("Failed trying to create new Nym: " << nymName);
@@ -1586,7 +1589,7 @@ bool cUseOT::NymRefresh(const string & nymName, bool all, bool dryrun) { //TODO 
 				ID nymID = opentxs::OTAPI_Wrap::GetNym_ID(nymIndex);
 				ID serverID = opentxs::OTAPI_Wrap::GetServer_ID(serverIndex);
 				if (opentxs::OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, serverID)) {
-					if ( mMadeEasy.retrieve_nym(serverID, nymID, true) ){ // forcing download
+					if ( mMadeEasy->retrieve_nym(serverID, nymID, true) ){ // forcing download
 						_info("Nym " + NymGetName(nymID) + "(" + nymID +  ")" + " retrieval success from server " + ServerGetName(serverID) + "(" + serverID +  ")");
 						++nymsRetrieved;
 					} else
@@ -1594,7 +1597,7 @@ bool cUseOT::NymRefresh(const string & nymName, bool all, bool dryrun) { //TODO 
 				}
 			}
 		}
-		string count = to_string(nymsRetrieved) + "/" + to_string(nymCount);
+		string count = ToStr(nymsRetrieved) + "/" + ToStr(nymCount);
 		if (nymsRetrieved == nymCount) {
 			_info("All Nyms were successfully retrieved " << count);
 			return true;
@@ -1611,7 +1614,7 @@ bool cUseOT::NymRefresh(const string & nymName, bool all, bool dryrun) { //TODO 
 		for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex) { // Working for all available servers!
 			ID serverID = opentxs::OTAPI_Wrap::GetServer_ID(serverIndex);
 			if (opentxs::OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, serverID)) {
-				if ( mMadeEasy.retrieve_nym(serverID,nymID, true) ) { // forcing download
+				if ( mMadeEasy->retrieve_nym(serverID,nymID, true) ) { // forcing download
 					_info("Nym " + nymName + "(" + nymID +  ")" + " retrieval success from server " + ServerGetName(serverID) + "(" + serverID +  ")");
 					return true;
 				}
@@ -1632,7 +1635,7 @@ bool cUseOT::NymRegister(const string & nymName, const string & serverName, bool
 	ID serverID = ServerGetId(serverName);
 
 	if (!opentxs::OTAPI_Wrap::IsNym_RegisteredAtServer(nymID, serverID)) {
-		string response = mMadeEasy.register_nym(serverID, nymID);
+		string response = mMadeEasy->register_nym(serverID, nymID);
 		nOT::nUtils::DisplayStringEndl(cout, response);
 		_info("Nym " << nymName << "(" << nymID << ")" << " was registered successfully on server");
 		return true;
@@ -1768,7 +1771,7 @@ bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dry
 //		 //
 //		 // - If NO indices are specified, accept all the ones matching MyAcct's asset type.
 //		 //
-//		 if ((nIndicesCount > 0) && !opentxs::OTAPI_Wrap::NumList_VerifyQuery(strIndices, to_string(nIndex))) {
+//		 if ((nIndicesCount > 0) && !opentxs::OTAPI_Wrap::NumList_VerifyQuery(strIndices, ToStr(nIndex))) {
 //				 //          continue  // apparently not supported by the language.
 //				 bContinue = true;
 //		 }
@@ -1777,9 +1780,9 @@ bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dry
 //		 }
 //	}
 	_dbg3("Get payment instrument");
-	string instrument = mMadeEasy.get_payment_instrument(accountServerID, accountNymID, index, paymentInbox); // strInbox is optional and avoids having to load it multiple times. This function will just load it itself, if it has to.
+	string instrument = mMadeEasy->get_payment_instrument(accountServerID, accountNymID, index, paymentInbox); // strInbox is optional and avoids having to load it multiple times. This function will just load it itself, if it has to.
 	if (instrument.empty()) {
-		opentxs::OTAPI_Wrap::Output(0, "\n\n Unable to get payment instrument based on index: " + to_string(index) + ".\n\n");
+		opentxs::OTAPI_Wrap::Output(0, "\n\n Unable to get payment instrument based on index: " + ToStr(index) + ".\n\n");
 		return false;
 	}
 
@@ -1819,15 +1822,15 @@ bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dry
 
 	string recipientNymID = opentxs::OTAPI_Wrap::Instrmnt_GetRecipientUserID(instrument);
   if ( !recipientNymID.empty() && !CheckIfExists(eSubjectType::User, recipientNymID) ) {
-  	_erro("The instrument " + to_string(index) + " is endorsed to a specific recipient (" + recipientNymID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.)");
-  	opentxs::OTAPI_Wrap::Output(0, "The instrument " + to_string(index) + " is endorsed to a specific recipient (" + recipientNymID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.) \n");
+  	_erro("The instrument " + ToStr(index) + " is endorsed to a specific recipient (" + recipientNymID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.)");
+  	opentxs::OTAPI_Wrap::Output(0, "The instrument " + ToStr(index) + " is endorsed to a specific recipient (" + recipientNymID + ") and that doesn't match the account's owner Nym (" + accountNymID + "). (Skipping.) \n");
   	return false;
   }
   _dbg3("Get instrument assetID");
   string instrumentAssetType = opentxs::OTAPI_Wrap::Instrmnt_GetAssetID(instrument);
 
   if (accountAssetID != instrumentAssetType) {
-  	opentxs::OTAPI_Wrap::Output(0, "The instrument at index " + to_string(index) + " has a different asset type than the selected account. (Skipping.) \n");
+  	opentxs::OTAPI_Wrap::Output(0, "The instrument at index " + ToStr(index) + " has a different asset type than the selected account. (Skipping.) \n");
   	return false;
   }
 
@@ -1838,11 +1841,11 @@ bool cUseOT::PaymentAccept(const string & account, const int64_t index, bool dry
   time64_t tTime = opentxs::OTAPI_Wrap::GetTime();
 
   if (tTime < tFrom) {
-		opentxs::OTAPI_Wrap::Output(0, "The instrument at index " + to_string(index) + " is not yet within its valid date range. (Skipping.)\n");
+		opentxs::OTAPI_Wrap::Output(0, "The instrument at index " + ToStr(index) + " is not yet within its valid date range. (Skipping.)\n");
 		return false;
 	}
 	if (tTo > OT_TIME_ZERO && tTime > tTo) {
-		opentxs::OTAPI_Wrap::Output(0, "The instrument at index " + to_string(index) + " is expired. (Moving it to the record box.)\n");
+		opentxs::OTAPI_Wrap::Output(0, "The instrument at index " + ToStr(index) + " is expired. (Moving it to the record box.)\n");
 
 		// Since this instrument is expired, remove it from the payments inbox, and move to record box.
 		_dbg3("Expired instument - moving into record inbox");
@@ -1925,7 +1928,7 @@ bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun)
 			string transaction = opentxs::OTAPI_Wrap::Ledger_GetTransactionByIndex(serverID, nymID, nymID, paymentInbox, index);
 			int64_t transNumber = opentxs::OTAPI_Wrap::Ledger_GetTransactionIDByIndex(serverID, nymID, nymID, paymentInbox, index);
 
-			string transactionNumber = to_string(transNumber);
+			string transactionNumber = ToStr(transNumber);
 
 			int64_t refNum = opentxs::OTAPI_Wrap::Transaction_GetDisplayReferenceToNum(serverID, nymID, nymID, transaction); // FIXME why we need this?
 
@@ -1948,7 +1951,7 @@ bool cUseOT::PaymentShow(const string & nym, const string & server, bool dryrun)
  			string assetDescr = AssetGetName(instrAssetID) + "(" + instrAssetID + ")";
 			string recipientDescr = recipientNymID; // FIXME Is recipient needed in purse?
 
-			tp << to_string(index) <<  formattedAmount << instrumentType << transactionNumber << assetDescr;
+			tp << ToStr(index) <<  formattedAmount << instrumentType << transactionNumber << assetDescr;
 		} // for
 		tp.PrintFooter();
 	}
@@ -1969,7 +1972,7 @@ bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, 
 		int32_t count = opentxs::OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
 		_dbg1("Count: " << count);
 		count --;
-		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));
+        mMadeEasy->discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));
 		return true;
 	}
 
@@ -1979,7 +1982,7 @@ bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, 
 		int32_t count = opentxs::OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
 		_dbg1("Count: " << count);
 		count --;
-		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));
+        mMadeEasy->discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(count));
 		return true;
 	}
 
@@ -1989,7 +1992,7 @@ bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, 
 	ID nymID = NymGetId(nym);
 	if(!all) {
 		_dbg1("Not all");
-		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, index);
+		mMadeEasy->discard_incoming_payments(ServerGetDefault(), nymID, index);
 		return true;
 	}
 
@@ -2003,7 +2006,7 @@ bool cUseOT::PaymentDiscard(const string & nym, const string & index, bool all, 
 	int32_t count = opentxs::OTAPI_Wrap::Ledger_GetCount(ServerGetDefault(), nymID, nymID, paymentInbox);
 	_dbg2(" PaymentDiscard() count =  " << count);
 	for (int32_t i = 0; i < count; i++) {
-		mMadeEasy.discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(0));
+        mMadeEasy->discard_incoming_payments(ServerGetDefault(), nymID, std::to_string(0));
 	}
 
 	return true;

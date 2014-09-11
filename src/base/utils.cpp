@@ -1,6 +1,7 @@
 /* See other files here for the LICENCE that applies here. */
 /* See header file .hpp for info */
 
+
 #include <algorithm>
 #include <functional>
 #include <cctype>
@@ -15,16 +16,24 @@
 
 #include "runoptions.hpp"
 
-#include <unistd.h>
-
-// TODO nicer os detection?
-#if defined(__unix__) || defined(__posix) || defined(__linux)
-	#include <sys/types.h>
-	#include <sys/stat.h>
-#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
-	#include <Windows.h>
+#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
+#define OS_TYPE_WINDOWS
+#elif defined(__unix__) || defined(__posix) || defined(__linux) || defined(__darwin) || defined(__APPLE__) || defined(__clang__)
+#define OS_TYPE_POSIX
 #else
-	#error "Do not know how to compile this for your platform."
+#warning "Compiler/OS platform is not recognized"
+#warning "Just assuming it will work as POSIX then"
+#define OS_TYPE_POSIX
+#endif
+
+#if defined(OS_TYPE_WINDOWS)
+#include <windows.h>
+#elif defined(OS_TYPE_POSIX)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#else
+#error "Compiler/OS platform detection failed - not supported"
 #endif
 
 namespace nOT {
@@ -64,8 +73,6 @@ std::string & trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
 
-cNullstream::cNullstream() { }
-
 cNullstream g_nullstream; // extern a stream that does nothing (eats/discards data)
 
 // ====================================================================
@@ -93,7 +100,7 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 
 char cFilesystemUtils::GetDirSeparator() {
 	// TODO nicer os detection?
-	#if defined(__unix__) || defined(__posix) || defined(__linux)
+	#if defined(__unix__) || defined(__posix) || defined(__linux) || defined(__APPLE__)
 		return '/';
 	#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
 		return '\\';
@@ -103,52 +110,52 @@ char cFilesystemUtils::GetDirSeparator() {
 }
 
 bool cFilesystemUtils::CreateDirTree(const std::string & dir, bool only_below) {
-	const bool dbg=true;
-	//struct stat st;
-	const char dirch = cFilesystemUtils::GetDirSeparator();
-	std::istringstream iss(dir);
-	string part, sofar="";
-	if (dir.size()<1) return false; // illegal name
-	// dir[0] is valid from here
-	if  (only_below && (dir[0]==dirch)) return false; // no jumping to top (on any os)
-	while (getline(iss,part,dirch)) {
-		if (dbg) cout << '['<<part<<']' << endl;
-		sofar += part;
-		if (part.size()<1) return false; // bad format?
-		if ((only_below) && (part=="..")) return false; // going up
+    const bool dbg = true;
+    //struct stat st;
+    const char dirch = cFilesystemUtils::GetDirSeparator();
+    std::istringstream iss(dir);
+    string part, sofar = "";
+    if (dir.size()<1) return false; // illegal name
+    // dir[0] is valid from here
+    if (only_below && (dir[0] == dirch)) return false; // no jumping to top (on any os)
+    while (getline(iss, part, dirch)) {
+        if (dbg) cout << '[' << part << ']' << endl;
+        sofar += part;
+        if (part.size()<1) return false; // bad format?
+        if ((only_below) && (part == "..")) return false; // going up
 
-		if (dbg) cout << "test ["<<sofar<<"]"<<endl;
-		// TODO nicer os detection?
-		#if defined(__unix__) || defined(__posix) || defined(__linux)
-			struct stat st;
-			bool exists = stat(sofar.c_str() ,&st) == 0; // *
-			if (exists) {
-				if (! S_ISDIR(st.st_mode)) {
-					// std::cerr << "This exists, but as a file: [" << sofar << "]" << (size_t)st.st_ino << endl;
-					return false; // exists but is a file nor dir
-				}
-			}
-		#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
-		  DWORD dwAttrib = GetFileAttributes(szPath);
-		  bool exists = (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
-		#else
-			#error "Do not know how to compile this for your platform."
-		#endif
+        if (dbg) cout << "test [" << sofar << "]" << endl;
+        // TODO nicer os detection?
+#if defined(OS_TYPE_POSIX)
+        struct stat st;
+        bool exists = stat(sofar.c_str() ,&st) == 0; // *
+        if (exists) {
+            if (! S_ISDIR(st.st_mode)) {
+                // std::cerr << "This exists, but as a file: [" << sofar << "]" << (size_t)st.st_ino << endl;
+                return false; // exists but is a file nor dir
+            }
+        }
+#elif defined(OS_TYPE_WINDOWS)
+        DWORD dwAttrib = GetFileAttributesA(sofar.c_str());
+        bool exists = (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+#else
+#error "Do not know how to compile this for your platform."
+#endif
 
-		if (!exists) {
-			if (dbg) cout << "mkdir ["<<sofar<<"]"<<endl;
-			#if defined(__unix__) || defined(__posix) || defined(__linux)
-				bool ok = 0==  mkdir(sofar.c_str(), 0700); // ***
-			#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined (WIN64)
-				bool ok = 0==  _mkdir(sofar.c_str()); // *** http://msdn.microsoft.com/en-us/library/2fkk4dzw.aspx
-			#else
-				#error "Do not know how to compile this for your platform."
-			#endif
-			if (!ok) return false;
-		}
-		sofar += cFilesystemUtils::GetDirSeparator();
-	}
-	return true;
+        if (!exists) {
+            if (dbg) cout << "mkdir [" << sofar << "]" << endl;
+#if defined(OS_TYPE_POSIX)
+            bool ok = 0==  mkdir(sofar.c_str(), 0700); // ***
+#elif defined(OS_TYPE_WINDOWS)
+            bool ok = (bool)CreateDirectoryA(sofar.c_str(), NULL); // TODO use -W() after conversion to unicode UTF16
+#else
+#error "Do not know how to compile this for your platform."
+#endif
+            if (!ok) return false;
+        }
+        sofar += cFilesystemUtils::GetDirSeparator();
+    }
+    return true;
 }
 
 // ====================================================================
@@ -210,7 +217,13 @@ std::ostream & cLogger::SelectOutput(int level, const std::string & channel) {
 
 void cLogger::setOutStreamFile(const string &fname) { // switch to using this file
 	_mark("WILL SWITCH DEBUG NOW to file: " << fname);
-	mOutfile =  make_unique<std::ofstream>(fname);
+
+#ifdef _WIN32
+	mOutfile =  std::make_unique<std::ofstream>(fname);
+#else
+    mOutfile =  make_unique<std::ofstream>(fname);
+#endif
+
 	mStream = & (*mOutfile);
 	_mark("Started new debug, to file: " << fname);
 }
@@ -532,7 +545,7 @@ void cConfigManager::Save(const string & fileName, const map<eSubjectType, strin
 
 cConfigManager configManager;
 
-#ifdef __unix
+#ifdef OS_TYPE_POSIX
 
 void cEnvUtils::GetTmpTextFile() {
 	char filename[] = "/tmp/otcli_text.XXXXXX";
@@ -572,15 +585,22 @@ const string cEnvUtils::ReadFromTmpFile() {
 	return msg;
 }
 
+#endif
+
 const string cEnvUtils::Compose() {
+#ifndef _WIN32
 	GetTmpTextFile();
 	OpenEditor();
 	string input = ReadFromTmpFile();
 	CloseFile();
 	return input;
+#else
+    // TODO: load windows editor
+    return "";
+#endif
 }
 
-#endif
+
 
 const string cEnvUtils::ReadFromFile(const string path) {
 	std::ifstream ifs(path);

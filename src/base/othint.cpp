@@ -5,7 +5,7 @@
 #include "othint.hpp"
 #include "otcli.hpp"
 
-#include "tests.hpp" // TODO Not needed
+//#include "tests.hpp" // TODO Not needed
 #include "daemon_tools.hpp"
 
 #ifndef _WIN32
@@ -297,6 +297,7 @@ cInteractiveShell::cInteractiveShell()
 
 
 bool cInteractiveShell::Execute(const string cmd) {
+#ifdef USE_EDITLINE
 	bool all_ok=false;
 	if (cmd.length()) {
 		add_history(cmd.c_str()); // TODO (leaks memory...) but why
@@ -322,6 +323,9 @@ bool cInteractiveShell::Execute(const string cmd) {
 		}
 	} // length
 	return all_ok;
+#else
+    return true;
+#endif
 }
 
 void cInteractiveShell::_CompleteOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
@@ -342,6 +346,7 @@ void cInteractiveShell::_CompleteOnce(const string line, shared_ptr<nUse::cUseOT
 
 
 void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
+#ifdef USE_EDITLINE
 	_info("Entering CompleteOnceWithDaemon");
 
 	cDaemoninfoComplete dinfo;
@@ -533,15 +538,19 @@ void cInteractiveShell::CompleteOnceWithDaemon(const string & line) {
 			_mark("DONE reading commands as daemon.");
 		}
 	}
+#endif
 }
 
 void cInteractiveShell::CompleteOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
+#ifdef USE_EDITLINE
 	try {
 		_CompleteOnce(line, use);
 	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
+#endif
 }
 
 void cInteractiveShell::_RunOnce(const string cmd, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
+#ifdef USE_EDITLINE
 	gCurrentLogger.setDebugLevel(100);
 
 	auto parser = make_shared<nNewcli::cCmdParser>();
@@ -556,12 +565,15 @@ void cInteractiveShell::_RunOnce(const string cmd, shared_ptr<nUse::cUseOT> use)
 //			++help_needed;
 	}
 	gReadlineHandlerUseOT->CloseApi(); // Close OT_API at the end of shell runtime
+#endif
 }
 
 void cInteractiveShell::RunOnce(const string line, shared_ptr<nUse::cUseOT> use) { // used with bash autocompletion
+#ifdef USE_EDITLINE
 	try {
 		_RunOnce(line, use);
 	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
+#endif
 }
 
 
@@ -588,6 +600,7 @@ bool my_rl_wrapper_debug; // external
 // (done with number=0) is an error (at least currently, in future we might cache various completion
 // arrays, or recalculate on change)
 
+#ifdef USE_EDITLINE
 /**
 Caller: before calling this function gReadlineHandleParser and gReadlineHandlerUseOT must be set!
 Caller: you must free the returned char* memory if not NULL! (this will be done by readline lib implementation that calls us)
@@ -650,15 +663,19 @@ char ** completion(const char* text, int start, int end __attribute__((__unused_
 	}
 	return (matches);
 }
+#endif
 
 void cInteractiveShell::RunEditline(shared_ptr<nUse::cUseOT> use) {
+#ifdef USE_EDITLINE
 	try {
 		_RunEditline(use);
 
 	} catch (const myexception &e) { e.Report(); throw ; } catch (const std::exception &e) { _erro("Exception " << e.what()); throw ; }
+#endif
 }
 
 void cInteractiveShell::_RunEditline(shared_ptr<nUse::cUseOT> use) {
+#ifdef USE_EDITLINE
 	_mark("Running editline loop");
 	// nOT::nUse::useOT.Init(); // Init OT on the beginning // disabled to avoid some problems and delay (and valgrid complain)
 
@@ -717,6 +734,7 @@ void cInteractiveShell::_RunEditline(shared_ptr<nUse::cUseOT> use) {
 	clear_history(); // http://cnswww.cns.cwru.edu/php/chet/readline/history.html#IDX11
 
 	gReadlineHandlerUseOT->CloseApi(); // Close OT_API at the end of shell runtime
+#endif
 }
 
 } // namespace nOTHint

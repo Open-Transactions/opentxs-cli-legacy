@@ -49,7 +49,7 @@ std::string ToStr(const T & obj) {
 }
 
 struct cNullstream : std::ostream {
-		cNullstream();
+    cNullstream() : std::ios(0), std::ostream(0) {}
 };
 extern cNullstream g_nullstream; // a stream that does nothing (eats/discards data)
 
