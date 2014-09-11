@@ -6,7 +6,11 @@ Template for new files, replace word "template" and later delete this line here.
 #ifndef INCLUDE_OT_NEWCLI_USEOT
 #define INCLUDE_OT_NEWCLI_USEOT
 
-#include "lib_common3.hpp"
+#include "lib_common2.hpp"
+
+namespace opentxs{
+class OT_ME;
+};
 
 // Use this to mark methods
 #define	EXEC
@@ -15,6 +19,7 @@ Template for new files, replace word "template" and later delete this line here.
 
 namespace nOT {
 namespace nUse {
+
 
 	INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2 // <=== namespaces
 
@@ -45,9 +50,13 @@ namespace nUse {
 
 	private:
 
+        cUseOT(const cUseOT &) {
+            throw std::exception();
+        }
+
 		string mDbgName;
 
-		opentxs::OT_ME mMadeEasy;
+		opentxs::OT_ME * mMadeEasy;
 
 		cUseCache mCache;
 

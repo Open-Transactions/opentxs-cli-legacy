@@ -128,8 +128,7 @@ cCmdProcessing cCmdParser::StartProcessing(const string &words, shared_ptr<nUse:
 	return cCmdProcessing( shared_from_this() , words , use );
 }
 
-shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name )
-	const throw(cErrParseName)
+shared_ptr<cCmdFormat> cCmdParser::FindFormat(const cCmdName &name) const
 {
 	auto it = mI->mTree.find( name );
 	if (it == mI->mTree.end()) {
@@ -139,7 +138,7 @@ shared_ptr<cCmdFormat> cCmdParser::FindFormat( const cCmdName &name )
 	return it->second;
 }
 
-bool cCmdParser::FindFormatExists( const cCmdName &name ) const throw()
+bool cCmdParser::FindFormatExists( const cCmdName &name ) const
 {
 	try {
 		FindFormat(name);
@@ -970,7 +969,7 @@ size_t cCmdData::SizeAllVar() const { // return size of required mVar + optional
 	return mVar.size() + mVarExt.size();
 }
 
-string cCmdData::VarAccess(int nr, const string &def, bool doThrow) const throw(cErrArgNotFound) { // see [nr] ; if doThrow then will throw on missing var, else returns def
+string cCmdData::VarAccess(int nr, const string &def, bool doThrow) const { // see [nr] ; if doThrow then will throw on missing var, else returns def
 	if (nr <= 0) throw cErrArgIllegal("Illegal number for var, nr="+ToStr(nr)+" (1,2,3... is expected)");
 	const int ix = nr - 1;
 	if (ix >= mVar.size()) { // then this is an extra argument
@@ -986,14 +985,14 @@ string cCmdData::VarAccess(int nr, const string &def, bool doThrow) const throw(
 	return mVar.at(ix);
 }
 
-void cCmdData::AssertLegalOptName(const string &name) const throw(cErrArgIllegal) {
+void cCmdData::AssertLegalOptName(const string &name) const {
 	if (name.size()<1) throw cErrArgIllegal("option name can not be empty");
 	const size_t maxlen=100;
 	if (name.size()>maxlen) throw cErrArgIllegal("option name too long, over" + ToStr(maxlen));
 	// TODO test [a-zA-Z0-9_.-]*
 }
 
-vector<string> cCmdData::OptIf(const string& name) const throw(cErrArgIllegal) {
+vector<string> cCmdData::OptIf(const string& name) const {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) {
@@ -1002,7 +1001,7 @@ vector<string> cCmdData::OptIf(const string& name) const throw(cErrArgIllegal) {
 	return find->second;
 }
 
-string cCmdData::Opt1If(const string& name, const string &def) const throw(cErrArgIllegal) { // same but requires the 1st element; therefore we need def argument again
+string cCmdData::Opt1If(const string& name, const string &def) const { // same but requires the 1st element; therefore we need def argument again
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) {
@@ -1014,23 +1013,23 @@ string cCmdData::Opt1If(const string& name, const string &def) const throw(cErrA
 }
 
 
-string cCmdData::VarDef(int nr, const string &def, bool doThrow) const throw(cErrArgIllegal) {
+string cCmdData::VarDef(int nr, const string &def, bool doThrow) const {
 	return VarAccess(nr, def, false);
 }
 
-string cCmdData::Var(int nr) const throw(cErrArgNotFound) { // nr: 1,2,3,4 including both arg and argExt
+string cCmdData::Var(int nr) const { // nr: 1,2,3,4 including both arg and argExt
 	static string nothing;
 	return nUtils::SpaceFromSpecial( VarAccess(nr, nothing, true) );
 }
 
-vector<string> cCmdData::Opt(const string& name) const throw(cErrArgNotFound) {
+vector<string> cCmdData::Opt(const string& name) const {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) { _warn("Map was: [TODO]"); throw cErrArgMissing("Option " + name + " was missing"); }
 	return find->second;
 }
 
-string cCmdData::Opt1(const string& name) const throw(cErrArgNotFound) {
+string cCmdData::Opt1(const string& name) const {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) {  throw cErrArgMissing("Option " + name + " was missing"); }
@@ -1039,7 +1038,7 @@ string cCmdData::Opt1(const string& name) const throw(cErrArgNotFound) {
 	return vec.at(0);
 }
 
-bool cCmdData::IsOpt(const string &name) const throw(cErrArgIllegal) {
+bool cCmdData::IsOpt(const string &name) const {
 	AssertLegalOptName(name);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) {
@@ -1054,7 +1053,7 @@ bool cCmdData::IsOpt(const string &name) const throw(cErrArgIllegal) {
 	return false; // there was a vector for this options but it's empty now (maybe deleted?)
 }
 
-void cCmdData::AddOpt(const string &name, const string &value) throw(cErrArgIllegal) { // append an option with value (value can be empty
+void cCmdData::AddOpt(const string &name, const string &value) { // append an option with value (value can be empty
 	_dbg3("adding option ["<<name<<"] with value="<<value);
 	auto find = mOption.find( name );
 	if (find == mOption.end()) {

@@ -148,8 +148,8 @@ class cCmdParser : public enable_shared_from_this<cCmdParser> { MAKE_CLASS_NAME(
 	//	cCmdProcessing StartProcessing(const vector<string> &words, shared_ptr<nUse::cUseOT> use );
 		cCmdProcessing StartProcessing(const string &words, shared_ptr<nUse::cUseOT> use );
 
-		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) const throw(cErrParseName);
-		bool FindFormatExists( const cCmdName &name ) const throw();
+		shared_ptr<cCmdFormat> FindFormat( const cCmdName &name ) const;
+		bool FindFormatExists( const cCmdName &name ) const;
 
 		void Init();
 		void Test();
@@ -259,11 +259,11 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 		tVar mVar, mVarExt;
 		tOption mOption;
 
-		void AddOpt(const string &name, const string &value) throw(cErrArgIllegal); // append an option with value (value can be empty)
+		void AddOpt(const string &name, const string &value); // append an option with value (value can be empty)
 
 		// [nr] REMARK: the argument "nr" is indexed like 1,2,3,4 (not from 0) and is including both arg and argExt.
 
-		string VarAccess(int nr, const string &def, bool doThrow) const throw(cErrArgNotFound); // see [nr] ; if doThrow then will throw on missing var, else returns def
+		string VarAccess(int nr, const string &def, bool doThrow) const; // see [nr] ; if doThrow then will throw on missing var, else returns def
 
 	public:
 		cCmdData()=default;
@@ -286,29 +286,29 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 		ever present, e.g. if requestion var number -1 or option named "" or other illegal operation (so in programming error usually)
 		*/
 
-		string VarDef(int nr, const string &def="",  bool doThrow=0) const throw(cErrArgIllegal); // see [nr] ; return def if this var was missing
-		vector<string> OptIf(const string& name) const throw(cErrArgIllegal); // returns option values, or empty vector if missing (if none)
-		string Opt1If(const string& name, const string &def="") const throw(cErrArgIllegal); // same but requires the 1st element; therefore we need def argument again
+		string VarDef(int nr, const string &def="",  bool doThrow=0) const; // see [nr] ; return def if this var was missing
+		vector<string> OptIf(const string& name) const; // returns option values, or empty vector if missing (if none)
+		string Opt1If(const string& name, const string &def="") const; // same but requires the 1st element; therefore we need def argument again
 
-		string Var(int nr) const throw(cErrArgNotFound); // see [nr] ; throws if this var was missing
-		vector<string> Opt(const string& name) const throw(cErrArgNotFound); // --cc bob --bob alice returns option values, throws if missing (if none)
-		string Opt1(const string& name) const throw(cErrArgNotFound); // --prio 100 same but requires the 1st element
+		string Var(int nr) const; // see [nr] ; throws if this var was missing
+		vector<string> Opt(const string& name) const; // --cc bob --bob alice returns option values, throws if missing (if none)
+		string Opt1(const string& name) const; // --prio 100 same but requires the 1st element
 
-		bool IsOpt(const string &name) const throw(cErrArgIllegal); // --dryrun
+		bool IsOpt(const string &name) const; // --dryrun
 
 		size_t SizeAllVar() const ; // return size of required mVar + optional mVarExt
 
 	public: // aliases ; I hope it will be fully optimized out/elided (TODO if not then copy/paste code of above methods)
 	// public? compiler bug? would prefer to have it as private, but lambdas made in cCmdProcessing should access this fields
-		string v(int nr, const string &def="",  bool doThrow=0) const throw(cErrArgIllegal) { return VarDef(nr,def,doThrow); }
-		vector<string> o(const string& name) const throw(cErrArgIllegal)  { return OptIf(name); }
-		string o1(const string& name, const string &def="") const throw(cErrArgIllegal) { return Opt1If(name,def); }
+		string v(int nr, const string &def="",  bool doThrow=0) const { return VarDef(nr,def,doThrow); }
+		vector<string> o(const string& name) const  { return OptIf(name); }
+		string o1(const string& name, const string &def="") const { return Opt1If(name,def); }
 
-		string V(int nr) const throw(cErrArgNotFound) { return Var(nr); }
-		vector<string> O(const string& name) const throw(cErrArgNotFound) { return Opt(name); }
-		string O1(const string& name) const throw(cErrArgNotFound) { return Opt1(name); }
+		string V(int nr) const { return Var(nr); }
+		vector<string> O(const string& name) const { return Opt(name); }
+		string O1(const string& name) const { return Opt1(name); }
 
-		bool has(const string &name) const throw(cErrArgIllegal) { return IsOpt(name); }
+		bool has(const string &name) const { return IsOpt(name); }
 
 //		virtual const cCmdProcessing* MetaGetProcessing() const; // return optional pointer to the processing information
 //		virtual cCmdProcessing MetaGetProcessing() const; // return optional pointer to the processing information
@@ -317,7 +317,7 @@ class cCmdData {  MAKE_CLASS_NAME("cCmdData");
 	const tVar & getmVarExt() const{return this->mVarExt;}
 
 	protected:
-		void AssertLegalOptName(const string & name) const throw(cErrArgIllegal); // used internally to catch programming errors e.g. in binding lambdas
+		void AssertLegalOptName(const string & name) const; // used internally to catch programming errors e.g. in binding lambdas
 };
 
 // ============================================================================
